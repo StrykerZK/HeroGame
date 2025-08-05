@@ -4,13 +4,13 @@ extends CharacterBody3D
 @export_range(0.0, 1.0) var mouse_sensitivity := 0.25
 
 @export_group("Movement")
-@export var base_speed := 40.0
+@export var base_speed := 8.0
 var move_speed := 8.0
-@export var acceleration := 1000.0
+@export var acceleration := 50.0
 @export var sprint_mult := 2.0
 @export var rotation_speed := 12.0
-@export var min_jump_impulse := 30.0
-@export var max_jump_impulse := 100.0
+@export var min_jump_impulse := 12.0
+@export var max_jump_impulse := 50.0
 @export var jump_charge_time := 3.0
 @export var base_fov := 75.0
 
@@ -26,8 +26,7 @@ var _gravity := -70.0
 
 @onready var _camera_pivot: Node3D = %CameraPivot
 @onready var _camera: Camera3D = %Camera
-@onready var _skin: SophiaSkin = %SophiaSkin
-
+@onready var _stickman := %FreeStickman
 
 func _ready():
 	_camera.fov = base_fov
@@ -82,7 +81,7 @@ func _physics_process(delta):
 		if move_direction.length() > 0.2:
 			_last_movement_direction = move_direction
 		var target_angle := Vector3.BACK.signed_angle_to(_last_movement_direction, Vector3.UP)
-		_skin.global_rotation.y = lerp_angle(_skin.rotation.y, target_angle, rotation_speed * delta)
+		_stickman.global_rotation.y = lerp_angle(_stickman.rotation.y, target_angle, rotation_speed * delta)
 	
 	var is_starting_jump := Input.is_action_just_pressed("jump") and is_on_floor()
 	
@@ -121,16 +120,23 @@ func _physics_process(delta):
 	_camera.fov = lerp(_camera.fov, target_fov, delta * 5.0)
 	
 	# Sophia Animations
-	if Input.is_action_just_released("jump") and velocity.y > 0:
-		_skin.jump()
-	elif not is_on_floor() and velocity.y < 0:
-		_skin.fall()
-	elif is_on_floor():
-		var ground_speed := velocity.length()
-		if ground_speed > 0.0:
-			_skin.move()
+	#if Input.is_action_just_released("jump") and velocity.y > 0:
+	#	_skin.jump()
+	#elif not is_on_floor() and velocity.y < 0:
+	#	_skin.fall()
+	#elif is_on_floor():
+	#	var ground_speed := velocity.length()
+	#	if ground_speed > 0.0:
+	#		_skin.move()
+	#	else:
+	#		_skin.idle()
+	
+	# Stickman Animations
+	if is_on_floor():
+		if velocity.length() > 0.0:
+			_stickman.run()
 		else:
-			_skin.idle()
+			_stickman.idle()
 
 func speed_up(new_mult):
 	var temp_mult = speed_mult
