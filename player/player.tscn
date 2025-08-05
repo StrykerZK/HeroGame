@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://c4p7sai8cuiko"]
+
+[ext_resource type="Script" uid="uid://dbw3a6d4xctep" path="res://player/player.gd" id="1_oul6g"]
+[ext_resource type="PackedScene" uid="uid://prh35jb6tjtd" path="res://assets/temp/sophia_skin/sophia_skin.tscn" id="2_rkbax"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_g1dw6"]
+radius = 0.33398438
+height = 1.644043
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_rkbax"]
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_oul6g")
+
+[node name="SophiaSkin" parent="." instance=ExtResource("2_rkbax")]
+script = null
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8220215, 0)
+shape = SubResource("CapsuleShape3D_g1dw6")
+
+[node name="CameraPivot" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.9702957, -0.2419219, 0, 0.2419219, 0.9702957, 0, 1.157555, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0, 0)
+shape = SubResource("SphereShape3D_rkbax")
+spring_length = 8.0
+
+[node name="Camera" type="Camera3D" parent="CameraPivot/SpringArm3D"]
+unique_name_in_owner = true
