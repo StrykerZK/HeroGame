@@ -36,3 +36,5 @@ bones/21/position = Vector3(0.18097514, 0.30787617, -0.12972422)
 
 [node name="AnimationPlayer" parent="." index="1"]
 unique_name_in_owner = true
+
+[connection signal="animation_finished" from="AnimationPlayer" to="." method="charging"]

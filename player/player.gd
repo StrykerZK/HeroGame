@@ -26,7 +26,9 @@ var is_flying:= false
 var is_boosting:= false
 var is_ascending:= false
 var is_descending:= false
+var is_jumping:= false
 var is_charging_jump := false
+var is_jump_charged:= false
 var speed_mult := 1.0
 var current_jump_charge := 0.0
 
@@ -85,7 +87,12 @@ func _input(event):
 			velocity.y = 0.0
 	if event.is_action_pressed("jump") and not is_on_floor():
 		if not is_flying:
-			fly()
+			if is_jumping and not is_jump_charged:
+				pass
+			else:
+				fly()
+				if is_jump_charged: is_jump_charged = false
+				if is_jumping: is_jumping = false
 		else:
 			click_count += 1
 			if click_count == 1: double_click_timer.start()
@@ -113,12 +120,18 @@ func _unhandled_input(event):
 		_camera_input_direction = event.screen_relative * mouse_sensitivity
 
 func _physics_process(delta):
+	# Resetting conditions
+	if is_on_floor():
+		if is_jumping: is_jumping = false
+	
+	# Camera control
 	_camera_pivot.rotation.x += _camera_input_direction.y * delta
 	_camera_pivot.rotation.x = clamp(_camera_pivot.rotation.x, -PI / 6.0, PI / 3.0)
 	_camera_pivot.rotation.y -= _camera_input_direction.x * delta
 	
 	_camera_input_direction = Vector2.ZERO
 	
+	# Movement data
 	var raw_input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var forward := _camera.global_basis.z
 	var right := _camera.global_basis.x
@@ -159,8 +172,11 @@ func _physics_process(delta):
 		current_jump_charge += delta / jump_charge_time
 		current_jump_charge = min(current_jump_charge, 1.0)
 		move_speed -= current_jump_charge * 60 # FOV effect
+		if current_jump_charge >= 0.5 and not is_jump_charged:
+			is_jump_charged = true
 		
 	if Input.is_action_just_released("jump") and is_charging_jump:
+		is_jumping = true
 		var jump_impulse = lerp(min_jump_impulse, max_jump_impulse, current_jump_charge)
 		velocity.y = jump_impulse
 		
