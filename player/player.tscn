@@ -1,35 +1,112 @@
-[gd_scene load_steps=5 format=3 uid="uid://c4p7sai8cuiko"]
+[gd_scene load_steps=12 format=3 uid="uid://c4p7sai8cuiko"]
 
 [ext_resource type="Script" uid="uid://dbw3a6d4xctep" path="res://player/player.gd" id="1_oul6g"]
-[ext_resource type="PackedScene" uid="uid://hypy2td15yv5" path="res://assets/3d_models/free_stickman.tscn" id="2_rkbax"]
+[ext_resource type="PackedScene" uid="uid://c4gojo1r0wqaq" path="res://assets/3d_models/bob.tscn" id="2_rkbax"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_g1dw6"]
 radius = 0.4892578
-height = 2.0144043
+height = 1.6829834
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rkbax"]
+radius = 0.515625
+height = 1.6359336
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rkbax"]
 
+[sub_resource type="Gradient" id="Gradient_rkbax"]
+offsets = PackedFloat32Array(0, 0.5065502, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0.5058824, 0.5058824, 0.5058824, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_g1dw6"]
+gradient = SubResource("Gradient_rkbax")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_rkbax"]
+particle_flag_align_y = true
+emission_shape = 3
+emission_box_extents = Vector3(0.6, 1, 0.4)
+direction = Vector3(0, 0, -1)
+spread = 30.0
+initial_velocity_min = 50.0
+initial_velocity_max = 80.0
+gravity = Vector3(0, 0, 0)
+color_ramp = SubResource("GradientTexture1D_g1dw6")
+
+[sub_resource type="Curve" id="Curve_g1dw6"]
+_data = [Vector2(0.007272728, 0), 0.0, 0.0, 0, 0, Vector2(0.9672727, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g1dw6"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+
+[sub_resource type="TubeTrailMesh" id="TubeTrailMesh_yw30f"]
+material = SubResource("StandardMaterial3D_g1dw6")
+radius = 0.005
+section_length = 0.5
+curve = SubResource("Curve_g1dw6")
+
 [node name="Player" type="CharacterBody3D"]
+collision_layer = 2
 script = ExtResource("1_oul6g")
 
-[node name="FreeStickman" parent="." instance=ExtResource("2_rkbax")]
+[node name="Bob" parent="." instance=ExtResource("2_rkbax")]
 unique_name_in_owner = true
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0072021, 0)
+[node name="Skeleton3D" parent="Bob/Armature" index="0"]
+bones/6/rotation = Quaternion(0.29883024, -0.049629763, 0.93164515, 0.20068577)
+bones/7/rotation = Quaternion(0.0018209405, -7.51524e-09, 7.0392994e-09, 0.99999833)
+bones/8/rotation = Quaternion(0.29878697, 0.049831618, -0.93163437, 0.2007505)
+bones/9/rotation = Quaternion(0.0022337232, 2.2776222e-08, 5.3006116e-10, 0.9999975)
+bones/13/rotation = Quaternion(-7.895483e-09, 1.596786e-08, 0.02310017, 0.9997332)
+bones/14/position = Vector3(0.43405825, 0.009275077, -0.0030941665)
+bones/15/position = Vector3(-0.43405825, 0.009275077, -0.0030941665)
+
+[node name="StandardCollision" type="CollisionShape3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8414917, 0)
 shape = SubResource("CapsuleShape3D_g1dw6")
+
+[node name="FlyCollision" type="CollisionShape3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.584647, 0.06824753)
+shape = SubResource("CapsuleShape3D_rkbax")
+disabled = true
+debug_color = Color(0, 0.6470472, 0.22957921, 0.41960785)
 
 [node name="CameraPivot" type="Node3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 0.9702957, -0.2419219, 0, 0.2419219, 0.9702957, 0, 1.5197866, 0)
+transform = Transform3D(1, 0, 0, 0, 0.9702957, -0.2419219, 0, 0.2419219, 0.9702957, 0, 1.8912327, 0)
 
 [node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0, 0)
 shape = SubResource("SphereShape3D_rkbax")
-spring_length = 8.0
+spring_length = 6.0
 
 [node name="Camera" type="Camera3D" parent="CameraPivot/SpringArm3D"]
 unique_name_in_owner = true
 
 [node name="Marker3D" type="Marker3D" parent="."]
 unique_name_in_owner = true
+
+[node name="SpeedTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 3.0
+one_shot = true
+
+[node name="DoubleClickTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 0.3
+one_shot = true
+
+[node name="SpeedLinesVFX" type="GPUParticles3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0279217, 0)
+visible = false
+lifetime = 0.5
+process_material = SubResource("ParticleProcessMaterial_rkbax")
+draw_pass_1 = SubResource("TubeTrailMesh_yw30f")
+
+[connection signal="timeout" from="DoubleClickTimer" to="." method="_on_double_click_timer_timeout"]
+
+[editable path="Bob"]
