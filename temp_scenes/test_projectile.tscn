@@ -1,0 +1,81 @@
+[gd_scene load_steps=4 format=3 uid="uid://c4txmunbr6quj"]
+
+[sub_resource type="GDScript" id="GDScript_c1dww"]
+resource_name = "projectile"
+script/source = "extends RigidBody3D
+
+@export var destruction_power: int = 1
+@export var radius: float = 0.3
+@export var min_dmg_speed: float = 15.0
+@export var impact_slowdown: float = 0.4
+
+const SPEED = 25.0
+
+var impact_velocity: Vector3
+
+@onready var collision_shape:= $CollisionShape3D
+
+func _ready():
+	# Set the projectile's initial velocity
+	linear_velocity = global_transform.basis.z * SPEED
+
+	# Make sure contact monitor is detecting
+	contact_monitor = true
+	max_contacts_reported = 10
+	
+	# Connect the body_entered signal to a function
+	body_entered.connect(_on_body_entered)
+
+func _physics_process(delta: float) -> void:
+	impact_velocity = linear_velocity
+
+func _on_body_entered(body):
+	var impact_speed = impact_velocity.length()
+	print(impact_speed)
+	if impact_speed >= min_dmg_speed:
+		# Check if the body we hit is part of the \"destructible\" group
+		if body.is_in_group(\"Destructible\"):
+			linear_velocity *= impact_slowdown
+			# To get the precise impact point, we need a little more info.
+			# A good way is to get the contact point from the physics state.
+			var space_state = get_world_3d().direct_space_state
+			var query = PhysicsRayQueryParameters3D.create(global_position - linear_velocity.normalized(), global_position)
+			var result = space_state.intersect_ray(query)
+			
+			if result:
+				print(\"DMG\")
+				# If the body has a \"take_damage\" function, call it!
+				if body.has_method(\"take_damage\"):
+					body.take_damage(result.position, radius)
+				
+				# Phasing through the hole
+				collision_shape.disabled = true
+				await get_tree().create_timer(0.1).timeout
+				
+				if is_instance_valid(self):
+					collision_shape.disabled = false
+
+	# The projectile should be destroyed on any impact
+	# queue_free()
+"
+
+[sub_resource type="SphereMesh" id="SphereMesh_c1dww"]
+radius = 0.3
+height = 0.6
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_77hc5"]
+radius = 0.3
+
+[node name="TestProjectile" type="RigidBody3D"]
+collision_layer = 4
+collision_mask = 3
+contact_monitor = true
+max_contacts_reported = 5
+script = SubResource("GDScript_c1dww")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_c1dww")
+skeleton = NodePath("../CollisionShape3D")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_77hc5")

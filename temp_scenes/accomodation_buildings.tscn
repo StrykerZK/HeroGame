@@ -1,0 +1,94 @@
+[gd_scene load_steps=7 format=3 uid="uid://ddc4vjpi46yae"]
+
+[ext_resource type="PackedScene" uid="uid://bghvpu8glblc2" path="res://assets/3d_models/city_buildings/low_poly_accommodations_buildings.glb" id="1_e32ud"]
+[ext_resource type="PackedScene" uid="uid://bcvsq0c0cvn74" path="res://scenes/buildings/house_1.tscn" id="2_607o7"]
+[ext_resource type="PackedScene" uid="uid://c4txmunbr6quj" path="res://temp_scenes/test_projectile.tscn" id="3_607o7"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_607o7"]
+sky_top_color = Color(0.53155154, 0.7817248, 1, 1)
+sky_horizon_color = Color(0.94721884, 1.0020121, 1.047581, 1)
+ground_horizon_color = Color(0.94721884, 1.0020121, 1.047581, 1)
+
+[sub_resource type="Sky" id="Sky_4gpt7"]
+sky_material = SubResource("ProceduralSkyMaterial_607o7")
+
+[sub_resource type="Environment" id="Environment_bwdx3"]
+background_mode = 2
+sky = SubResource("Sky_4gpt7")
+tonemap_mode = 2
+glow_enabled = true
+
+[node name="Sketchfab_Scene" instance=ExtResource("1_e32ud")]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." index="0"]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." index="1"]
+environment = SubResource("Environment_bwdx3")
+
+[node name="PublicBuilding_1" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode" index="0"]
+visible = false
+
+[node name="PublicBuilding_1_Pack3_0" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode/PublicBuilding_1" index="0"]
+transparency = 0.66
+
+[node name="PublicBuilding_2" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode" index="1"]
+visible = false
+
+[node name="PublicBuilding_2_Pack3_0" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode/PublicBuilding_2" index="0"]
+transparency = 0.66
+
+[node name="PublicBuilding_3_Pack3_0" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode/PublicBuilding_3" index="0"]
+transparency = 0.5
+
+[node name="PublicBuilding_4" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode" index="3"]
+visible = false
+
+[node name="PublicBuilding_4_Pack3_0" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode/PublicBuilding_4" index="0"]
+transparency = 0.66
+
+[node name="PublicBuilding_5" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode" index="4"]
+visible = false
+
+[node name="PublicBuilding_5_Pack3_0" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode/PublicBuilding_5" index="0"]
+transparency = 0.66
+
+[node name="PublicBuilding_6" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode" index="5"]
+visible = false
+
+[node name="PublicBuilding_6_Pack3_0" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode/PublicBuilding_6" index="0"]
+transparency = 0.66
+
+[node name="PublicBuilding_7" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode" index="6"]
+visible = false
+
+[node name="PublicBuilding_7_Pack3_0" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode/PublicBuilding_7" index="0"]
+transparency = 0.66
+
+[node name="PublicBuilding_8" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode" index="7"]
+visible = false
+
+[node name="PublicBuilding_8_Pack3_0" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode/PublicBuilding_8" index="0"]
+transparency = 0.66
+
+[node name="PublicBuilding_9" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode" index="8"]
+visible = false
+
+[node name="PublicBuilding_9_Pack3_0" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode/PublicBuilding_9" index="0"]
+transparency = 0.66
+
+[node name="PublicBuilding_10" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode" index="9"]
+visible = false
+
+[node name="PublicBuilding_10_Pack3_0" parent="Sketchfab_model/AccomodationBuildingsPackC_fbx/RootNode/PublicBuilding_10" index="0"]
+transparency = 0.66
+
+[node name="House_1" parent="." index="3" instance=ExtResource("2_607o7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 16)
+
+[node name="TestProjectile" parent="." index="4" instance=ExtResource("3_607o7")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 9.422372, 1.5544991, 15.852671)
+
+[node name="Camera3D" type="Camera3D" parent="." index="5"]
+transform = Transform3D(0.5685331, -0.37335202, 0.73306096, 1.8626451e-09, 0.89108574, 0.45383498, -0.82266045, -0.25802022, 0.5066118, 7.1016917, 3.0959282, 18.131348)

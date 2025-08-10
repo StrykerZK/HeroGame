@@ -9,15 +9,13 @@ var move_speed := 8.0
 @export var acceleration := 50.0
 @export var sprint_mult := 2.0
 @export var flying_mult := 4.0
-@export var flying_acceleration_mult := 5.0
+@export var flying_acceleration_mult := 10.0
 @export var flying_ascend_descend_speed := 20.0
 @export var rotation_speed := 12.0
 @export var min_jump_impulse := 12.0
 @export var max_jump_impulse := 50.0
 @export var jump_charge_time := 3.0
 @export var base_fov := 75.0
-
-@export var poof_effect_scene: PackedScene = preload("res://assets/vfx/poof.tscn")
 
 var can_move:= true
 var is_running:= false
@@ -42,6 +40,9 @@ var click_count := 0
 @onready var _stickman := %Bob
 @onready var double_click_timer := %DoubleClickTimer
 @onready var speed_lines_vfx := %SpeedLinesVFX
+
+@onready var poof_effect_scene: PackedScene = preload("res://assets/vfx/poof.tscn")
+@onready var projectile_scene: PackedScene = preload("res://temp_scenes/test_projectile.tscn")
 
 func _ready():
 	_camera.fov = base_fov
@@ -109,7 +110,7 @@ func _input(event):
 	if event.is_action_pressed("skill_1") and %SpeedTimer.is_stopped():
 		speed_up(15.0)
 	if event.is_action_pressed("skill_2"):
-		pass
+		spawn_projectile()
 
 func _unhandled_input(event):
 	var is_camera_motion := (
@@ -158,6 +159,8 @@ func _physics_process(delta):
 	_stickman.global_rotation.y = lerp_angle(_stickman.rotation.y, target_angle, rotation_speed * delta)
 	speed_lines_vfx.global_rotation.y = lerp_angle(speed_lines_vfx.rotation.y, target_angle, rotation_speed * delta)
 	%FlyCollision.global_rotation.y = lerp_angle(%FlyCollision.rotation.y, target_angle, rotation_speed * delta)
+	$SpawnPivot.global_rotation.y = lerp_angle($SpawnPivot.rotation.y, target_angle, rotation_speed * delta)
+
 	
 	var is_starting_jump := Input.is_action_just_pressed("jump") and is_on_floor()
 	
@@ -192,7 +195,7 @@ func _physics_process(delta):
 		current_jump_charge = 0.0
 		can_move = true
 	
-	if can_move:
+	if not is_charging_jump:
 		move_and_slide()
 	
 	
@@ -207,36 +210,36 @@ func _physics_process(delta):
 			%StandardCollision.disabled = true
 			%FlyCollision.disabled = false
 			if is_descending:
-				_stickman.fly_down()
+				_stickman.update_animation("fly_down")
 			elif is_ascending:
-				_stickman.fly_up()
+				_stickman.update_animation("fly_up")
 			else:
 				if velocity.length() > 0.0:
-					_stickman.fly()
+					_stickman.update_animation("fly")
 				else:
-					_stickman.hover()
+					_stickman.update_animation("hover")
 					%StandardCollision.disabled = false
 					%FlyCollision.disabled = true
 		else:
 			%StandardCollision.disabled = false
 			%FlyCollision.disabled = true
 			if velocity.y > 0:
-				_stickman.rise()
+				_stickman.update_animation("rise")
 			elif velocity.y < 0:
-				_stickman.fall()
+				_stickman.update_animation("fall")
 	elif is_on_floor():
 		%StandardCollision.disabled = false
 		%FlyCollision.disabled = true
 		var ground_speed := velocity.length()
 		if is_charging_jump:
 			if Input.is_action_just_pressed("jump"):
-				_stickman.charge()
+				_stickman.update_animation("charge_jump")
 			else: return
 		else:
 			if ground_speed > 0.0:
-				if not is_running: _stickman.walk()
-				else: _stickman.run()
-			else: _stickman.idle()
+				if not is_running: _stickman.update_animation("walk")
+				else: _stickman.update_animation("run")
+			else: _stickman.update_animation("idle")
 	
 	# Stop flying if hit ground
 	if is_flying and is_on_floor():
@@ -268,6 +271,11 @@ func fly():
 		_gravity = -70.0
 		speed_mult /= flying_mult
 		acceleration /= flying_acceleration_mult
+
+func spawn_projectile():
+	var ball = projectile_scene.instantiate()
+	ball.global_transform = %BallSpawn.global_transform
+	get_tree().root.add_child(ball)
 
 func speedlines():
 	if not speed_lines_vfx.emitting:

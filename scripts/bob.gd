@@ -1,7 +1,17 @@
 extends Node3D
 
 
-@onready var anim_player: AnimationPlayer = $AnimationPlayer
+@onready var anim_player: AnimationPlayer = %AnimationPlayer
+@onready var anim_tree: AnimationTree = %AnimationTree
+
+var anim_state_machine
+
+func _ready():
+	anim_state_machine = anim_tree.get("parameters/playback")
+
+func update_animation(state: String):
+	anim_state_machine.travel(state)
+
 
 func idle():
 	anim_player.play("idle")

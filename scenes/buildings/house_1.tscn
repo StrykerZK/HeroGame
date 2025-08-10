@@ -1,0 +1,59 @@
+[gd_scene load_steps=3 format=3 uid="uid://bcvsq0c0cvn74"]
+
+[ext_resource type="Script" uid="uid://d27jer3stk2pt" path="res://scripts/destructible_building.gd" id="1_ghgk3"]
+[ext_resource type="PackedScene" uid="uid://deqroqg8qafbn" path="res://scenes/building_addons/house_window_small.tscn" id="2_pfpm0"]
+
+[node name="House_1" type="Node3D"]
+
+[node name="CSGCombiner3D" type="CSGCombiner3D" parent="." groups=["Destructible"]]
+use_collision = true
+collision_mask = 6
+script = ExtResource("1_ghgk3")
+
+[node name="OuterWall" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.10000014, 1.05, -0.14999962)
+size = Vector3(2.4, 1.9, 3.3)
+
+[node name="Interior" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.10000038, 0.8606248, -0.14999962)
+operation = 2
+size = Vector3(2, 2.156125, 3)
+
+[node name="Window" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.987278, 0.81866455, 0.88406754)
+operation = 2
+size = Vector3(0.24841309, 0.7252197, 0.69677734)
+
+[node name="Window2" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.987278, 0.81866455, -1.1998224)
+operation = 2
+size = Vector3(0.24841309, 0.7252197, 0.69677734)
+
+[node name="Window3" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.33597636, 0.81866455, -1.7696514)
+operation = 2
+size = Vector3(0.24841309, 0.7252197, 0.69677734)
+
+[node name="Window6" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.3359765, 0.81866455, 1.3861046)
+operation = 2
+size = Vector3(0.24841309, 0.7252197, 0.69677734)
+
+[node name="Window4" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -0.6557486, 0.81866455, -1.7696514)
+operation = 2
+size = Vector3(0.24841309, 0.7252197, 0.69677734)
+
+[node name="Window5" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -0.6557485, 0.81866455, 1.3775511)
+operation = 2
+size = Vector3(0.24841309, 0.7252197, 0.69677734)
+
+[node name="Door" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0100951, 0.65070665, -0.1461792)
+operation = 2
+size = Vector3(0.2206726, 1.0401611, 0.6949463)
+
+[node name="StaticWindow" parent="." instance=ExtResource("2_pfpm0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0293531, 0.8093821, 0.8911667)
+visible = false
