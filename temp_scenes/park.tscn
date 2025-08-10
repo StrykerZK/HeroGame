@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://c762ogq3qvpj4"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cge8l"]
+albedo_color = Color(0.029794872, 0.51663405, 2.8878452e-07, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_64vni"]
+
+[node name="Park" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+material_override = SubResource("StandardMaterial3D_cge8l")
+mesh = SubResource("PlaneMesh_64vni")

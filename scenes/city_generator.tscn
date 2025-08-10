@@ -1,0 +1,79 @@
+[gd_scene load_steps=16 format=3 uid="uid://bv6yk7ataw5la"]
+
+[ext_resource type="Script" uid="uid://bc8dmb62cwuyw" path="res://scripts/city_generator.gd" id="1_s04yr"]
+[ext_resource type="PackedScene" uid="uid://crwlyd8qousvq" path="res://temp_scenes/business_building.tscn" id="2_gwbpe"]
+[ext_resource type="PackedScene" uid="uid://pxjcafke2lsu" path="res://temp_scenes/residential_building.tscn" id="3_dmasn"]
+[ext_resource type="PackedScene" uid="uid://bwil5gus1d7xr" path="res://temp_scenes/wealthy_building.tscn" id="4_74wtb"]
+[ext_resource type="PackedScene" uid="uid://ufxn12ks6uq3" path="res://temp_scenes/leisure_building.tscn" id="4_c02yt"]
+[ext_resource type="PackedScene" uid="uid://dso0520cb3hff" path="res://temp_scenes/road.tscn" id="5_c02yt"]
+[ext_resource type="PackedScene" uid="uid://cwidklv0miht5" path="res://temp_scenes/commercial_building.tscn" id="5_oliwm"]
+[ext_resource type="PackedScene" uid="uid://c762ogq3qvpj4" path="res://temp_scenes/park.tscn" id="6_74wtb"]
+[ext_resource type="PackedScene" uid="uid://clxqrv8hfslyk" path="res://temp_scenes/food_building.tscn" id="6_rw74d"]
+[ext_resource type="PackedScene" uid="uid://bs02lslhidr36" path="res://temp_scenes/tech_building.tscn" id="7_7puq0"]
+[ext_resource type="PackedScene" uid="uid://deiujb7lvh8gf" path="res://temp_scenes/government_building.tscn" id="8_2y0xv"]
+[ext_resource type="PackedScene" uid="uid://c4p7sai8cuiko" path="res://player/player.tscn" id="11_mpuha"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_s04yr"]
+sky_top_color = Color(0.358965, 0.732122, 0.9701895, 1)
+sky_horizon_color = Color(0.77625674, 0.8636967, 0.9166315, 1)
+ground_bottom_color = Color(0.13403323, 0.110636376, 0.084307976, 1)
+ground_horizon_color = Color(0.77625674, 0.8636967, 0.9166315, 1)
+
+[sub_resource type="Sky" id="Sky_w3j7k"]
+sky_material = SubResource("ProceduralSkyMaterial_s04yr")
+
+[sub_resource type="Environment" id="Environment_ystin"]
+background_mode = 2
+sky = SubResource("Sky_w3j7k")
+tonemap_mode = 2
+glow_enabled = true
+
+[node name="CityGenerator" type="Node3D"]
+script = ExtResource("1_s04yr")
+cell_size = 30.0
+business_cluster_count = 5
+business_cluster_size = Vector2i(30, 40)
+wealthy_cluster_size = Vector2i(50, 40)
+entertainment_cluster_count = 4
+entertainment_cluster_size = Vector2i(20, 30)
+technology_cluster_count = 2
+technology_cluster_size = Vector2i(40, 40)
+government_cluster_size = Vector2i(10, 20)
+commercial_cluster_count = 8
+commercial_cluster_size = Vector2i(8, 10)
+food_cluster_count = 12
+food_cluster_size = Vector2i(6, 10)
+park_cluster_count = 10
+park_cluster_size = Vector2i(10, 20)
+major_road_count_horizontal = Vector2i(1, 3)
+major_road_count_vertical = Vector2i(1, 3)
+min_major_road_spacing = 10
+minor_road_from_major_chance = 0.3000000000029104
+minor_road_min_straight_length = 12
+minor_road_max_length = 100
+business_buildings = Array[PackedScene]([ExtResource("2_gwbpe")])
+residential_buildings = Array[PackedScene]([ExtResource("3_dmasn")])
+wealthy_residential_buildings = Array[PackedScene]([ExtResource("4_74wtb")])
+commercial_buildings = Array[PackedScene]([ExtResource("5_oliwm")])
+entertainment_buildings = Array[PackedScene]([ExtResource("4_c02yt")])
+food_buildings = Array[PackedScene]([ExtResource("6_rw74d")])
+technology_buildings = Array[PackedScene]([ExtResource("7_7puq0")])
+government_buildings = Array[PackedScene]([ExtResource("8_2y0xv")])
+road_scene = ExtResource("5_c02yt")
+park_scene = ExtResource("6_74wtb")
+business_color = Color(0.044623896, 0.24602458, 1, 1)
+residential_color = Color(1, 1, 1, 1)
+wealthy_residential_color = Color(0.79620886, 0.7286621, 3.85046e-07, 1)
+commercial_color = Color(1.0107458e-06, 0.7003128, 0.26463595, 1)
+food_color = Color(0.9023514, 0.21924311, 0, 1)
+technology_color = Color(4.6205523e-06, 0.8339306, 0.9303323, 1)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_ystin")
+
+[node name="Player" parent="." instance=ExtResource("11_mpuha")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 278.84253, 357.46768, 196.02185)

@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://bwil5gus1d7xr"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_m45ak"]
+albedo_color = Color(0.74591124, 0.66251516, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fnp2j"]
+
+[node name="WealthyBuilding" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+material_override = SubResource("StandardMaterial3D_m45ak")
+mesh = SubResource("BoxMesh_fnp2j")
