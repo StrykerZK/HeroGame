@@ -8,9 +8,9 @@ extends CharacterBody3D
 var move_speed := 8.0
 @export var acceleration := 50.0
 @export var sprint_mult := 2.0
-@export var flying_mult := 4.0
+@export var flying_mult := 6.0
 @export var flying_acceleration_mult := 10.0
-@export var flying_ascend_descend_speed := 20.0
+@export var flying_ascend_descend_speed := 70.0
 @export var rotation_speed := 12.0
 @export var min_jump_impulse := 12.0
 @export var max_jump_impulse := 50.0
@@ -123,6 +123,8 @@ func _unhandled_input(event):
 func _physics_process(delta):
 	# Resetting conditions
 	if is_on_floor():
+		if is_jumping: is_jumping = false
+	if velocity.y <= -70:
 		if is_jumping: is_jumping = false
 	
 	# Camera control

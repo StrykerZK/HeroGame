@@ -368,7 +368,7 @@ func _generate_residential_filler():
 	for x in range(grid_size.x):
 		for y in range(grid_size.y):
 			var pos = Vector2i(x,y)
-			if not grid_data.has(pos):
+			if not grid_data.has(pos): # Is it empty?
 				if _is_road(pos + Vector2i.UP) or _is_road(pos + Vector2i.DOWN) or \
 				   _is_road(pos + Vector2i.LEFT) or _is_road(pos + Vector2i.RIGHT):
 					road_adjacent_candidates.append(pos)
@@ -376,6 +376,7 @@ func _generate_residential_filler():
 	var visited: Dictionary = {}
 	for pos in road_adjacent_candidates:
 		if not visited.has(pos):
+			# Use the flood-fill helper, but tell it to only search within our candidate list
 			var area = _find_contiguous_area_from_list(pos, road_adjacent_candidates, visited)
 			if area.size() >= min_residential_area_size:
 				for tile_pos in area:
@@ -419,6 +420,7 @@ func _find_contiguous_empty_area(start_pos: Vector2i, visited: Dictionary) -> Ar
 		for n_dir in neighbors:
 			var neighbor_pos = current_pos + n_dir
 			
+			# Check if the neighbor is within bounds, is empty, and hasn't been visited yet
 			if Rect2i(Vector2i.ZERO, grid_size).has_point(neighbor_pos) and not visited.has(neighbor_pos) and not grid_data.has(neighbor_pos):
 				visited[neighbor_pos] = true
 				frontier.append(neighbor_pos)
@@ -501,8 +503,34 @@ func _place_objects():
 
 		if object_to_place:
 			var instance = object_to_place.instantiate()
+			
+			# --- FIXED: Rotation Logic ---
+			# Only rotate actual buildings, not roads, parks, or outskirts
+			if zone_type >= Zone.BUSINESS and zone_type <= Zone.GOVERNMENT:
+				var target_road_pos = _get_nearest_road_pos(grid_pos)
+				if target_road_pos != grid_pos: # Make sure a road was actually found
+					var target_world_pos = Vector3(target_road_pos.x * cell_size, 0, target_road_pos.y * cell_size)
+					# Use look_at_from_position, providing the building's CURRENT position and the TARGET position.
+					instance.look_at_from_position(world_pos, target_world_pos, Vector3.UP)
+			
 			instance.position = world_pos
 			generated_city_node.add_child(instance)
+
+# --- NEW: Helper function for building rotation ---
+func _get_nearest_road_pos(grid_pos: Vector2i) -> Vector2i:
+	# Check neighbors in a logical order (e.g., North, East, South, West)
+	var neighbors = [
+		grid_pos + Vector2i(0, -1), # North
+		grid_pos + Vector2i(1, 0),  # East
+		grid_pos + Vector2i(0, 1),  # South
+		grid_pos + Vector2i(-1, 0)  # West
+	]
+	for neighbor in neighbors:
+		if _is_road(neighbor):
+			return neighbor
+	
+	# Default fallback if no adjacent road is found (should be rare)
+	return grid_pos
 
 
 func _create_zone_plane(pos: Vector3, color: Color):
