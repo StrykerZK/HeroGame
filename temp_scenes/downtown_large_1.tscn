@@ -1,0 +1,36 @@
+[gd_scene load_steps=6 format=3 uid="uid://da0515wewwd4l"]
+
+[ext_resource type="Script" uid="uid://bftln882qe6pw" path="res://scripts/building_data.gd" id="1_1g4wn"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iedpj"]
+albedo_color = Color(0, 0.11503818, 0.32208884, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_iedpj"]
+size = Vector3(35, 100, 35)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_iedpj"]
+size = Vector2(40, 40)
+
+[sub_resource type="SphereMesh" id="SphereMesh_1g4wn"]
+radius = 5.0
+height = 10.0
+
+[node name="DowntownLarge1" type="Node3D"]
+script = ExtResource("1_1g4wn")
+size = Vector2i(2, 2)
+global_limit = 6
+local_limit = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50.100002, 0)
+material_override = SubResource("StandardMaterial3D_iedpj")
+mesh = SubResource("BoxMesh_iedpj")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("PlaneMesh_iedpj")
+skeleton = NodePath("../MeshInstance3D")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 82, -18)
+mesh = SubResource("SphereMesh_1g4wn")

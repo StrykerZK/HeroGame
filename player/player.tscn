@@ -2125,21 +2125,21 @@ script = ExtResource("1_oul6g")
 unique_name_in_owner = true
 
 [node name="Skeleton3D" parent="Bob/Armature" index="0"]
-bones/1/rotation = Quaternion(-4.5782297e-05, 0.704266, 0.7099362, -0.00026031592)
-bones/2/rotation = Quaternion(-0.004009474, 0.0002158958, 0.00015243184, 0.99999195)
-bones/3/rotation = Quaternion(-0.0040094736, 0.00021533294, 0.00015316409, 0.99999195)
-bones/4/rotation = Quaternion(-0.0040094736, 0.0002148114, 0.00015389468, 0.99999195)
-bones/5/rotation = Quaternion(-0.0024329207, 0.00017352644, 0.00016886974, 0.999997)
-bones/7/position = Vector3(-0.25972334, -0.048423637, 0.00059268466)
-bones/7/rotation = Quaternion(0.308376, -0.05892046, 0.9334409, 0.17355303)
-bones/10/position = Vector3(0.25975978, -0.048423637, 0.00059280713)
-bones/10/rotation = Quaternion(0.3114065, 0.057596147, -0.9326379, 0.17290296)
-bones/13/rotation = Quaternion(-0.7071632, 0.008111225, 0.70695895, -0.0079723345)
-bones/14/rotation = Quaternion(-9.967558e-09, 1.3507922e-07, -0.02917895, 0.9995743)
-bones/16/rotation = Quaternion(0.706943, 0.001531124, 0.70726687, 0.0017479514)
-bones/17/rotation = Quaternion(-4.3492925e-09, 1.596629e-08, 0.012713672, 0.9999192)
-bones/19/position = Vector3(0.41783628, 0.009275124, -0.0030941665)
-bones/21/position = Vector3(-0.41783628, 0.009275256, -0.0030944645)
+bones/1/rotation = Quaternion(-5.1277425e-06, 0.7079065, 0.7063062, -2.8934246e-05)
+bones/2/rotation = Quaternion(0.0011315905, 2.3996357e-05, 1.6915343e-05, 0.9999994)
+bones/3/rotation = Quaternion(0.0011315903, 2.3895036e-05, 1.6996664e-05, 0.9999994)
+bones/4/rotation = Quaternion(0.0011315906, 2.3837167e-05, 1.7077742e-05, 0.9999994)
+bones/5/rotation = Quaternion(-0.00040035314, 2.8554898e-05, 2.7788594e-05, 0.99999994)
+bones/7/position = Vector3(-0.25974038, -0.06294221, 3.8723407e-05)
+bones/7/rotation = Quaternion(0.29938966, -0.050223805, 0.9317974, 0.19899029)
+bones/10/position = Vector3(0.25974277, -0.06294232, 3.884876e-05)
+bones/10/rotation = Quaternion(0.29953048, 0.05032773, -0.9317428, 0.19900787)
+bones/13/rotation = Quaternion(-0.7070772, 0.008784243, 0.7070277, -0.008750745)
+bones/14/rotation = Quaternion(-7.816967e-09, 1.3509909e-07, -0.022873787, 0.99973845)
+bones/16/rotation = Quaternion(0.70703936, 0.008711628, 0.70706666, 0.008730011)
+bones/17/rotation = Quaternion(-7.648703e-09, 1.5967414e-08, 0.022381606, 0.9997496)
+bones/19/position = Vector3(0.43299675, 0.009275124, -0.0030941665)
+bones/21/position = Vector3(-0.43299675, 0.009275132, -0.0030941963)
 
 [node name="AnimationTree" parent="Bob" index="2"]
 libraries = {
@@ -2164,12 +2164,13 @@ debug_color = Color(0, 0.6470472, 0.22957921, 0.41960785)
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 0.9702957, -0.2419219, 0, 0.2419219, 0.9702957, 0, 1.8912327, 0)
 
-[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
+[node name="CameraSpring" type="SpringArm3D" parent="CameraPivot"]
+unique_name_in_owner = true
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0, 0)
 shape = SubResource("SphereShape3D_rkbax")
 spring_length = 6.0
 
-[node name="Camera" type="Camera3D" parent="CameraPivot/SpringArm3D"]
+[node name="Camera" type="Camera3D" parent="CameraPivot/CameraSpring"]
 unique_name_in_owner = true
 
 [node name="Marker3D" type="Marker3D" parent="."]

@@ -59,7 +59,7 @@ func _input(event):
 	if event.is_action_pressed("sprint"):
 		if is_flying and not is_boosting:
 			is_boosting = true
-			speed_mult *= (sprint_mult * 4)
+			speed_mult *= (sprint_mult * 2)
 			speedlines()
 		elif is_on_floor() and not is_running:
 			is_running = true
@@ -67,7 +67,7 @@ func _input(event):
 	if event.is_action_released("sprint"):
 		if is_flying and is_boosting:
 			is_boosting = false
-			speed_mult /= (sprint_mult * 4)
+			speed_mult /= (sprint_mult * 2)
 			speedlines()
 		elif is_on_floor() and is_running:
 				is_running = false

@@ -1,18 +1,34 @@
-[gd_scene load_steps=17 format=3 uid="uid://bv6yk7ataw5la"]
+[gd_scene load_steps=33 format=3 uid="uid://bv6yk7ataw5la"]
 
 [ext_resource type="Script" uid="uid://bc8dmb62cwuyw" path="res://scripts/city_generator.gd" id="1_s04yr"]
 [ext_resource type="PackedScene" uid="uid://crwlyd8qousvq" path="res://temp_scenes/business_building.tscn" id="2_gwbpe"]
+[ext_resource type="PackedScene" uid="uid://df2dcboi6a6a2" path="res://temp_scenes/downtown_1.tscn" id="2_wy0y2"]
 [ext_resource type="PackedScene" uid="uid://78r105d8itax" path="res://temp_scenes/house_1.tscn" id="3_oliwm"]
-[ext_resource type="PackedScene" uid="uid://bwil5gus1d7xr" path="res://temp_scenes/wealthy_building.tscn" id="4_74wtb"]
-[ext_resource type="PackedScene" uid="uid://ufxn12ks6uq3" path="res://temp_scenes/leisure_building.tscn" id="4_c02yt"]
+[ext_resource type="PackedScene" uid="uid://da0515wewwd4l" path="res://temp_scenes/downtown_large_1.tscn" id="3_u0kti"]
+[ext_resource type="PackedScene" uid="uid://b20pp22tbgv4" path="res://temp_scenes/business_landmark_1.tscn" id="4_edvgp"]
 [ext_resource type="PackedScene" uid="uid://bibor25njjlg2" path="res://temp_scenes/apartment_1.tscn" id="4_ocjyt"]
-[ext_resource type="PackedScene" uid="uid://dso0520cb3hff" path="res://temp_scenes/road.tscn" id="5_c02yt"]
-[ext_resource type="PackedScene" uid="uid://cwidklv0miht5" path="res://temp_scenes/commercial_building.tscn" id="5_oliwm"]
+[ext_resource type="PackedScene" uid="uid://5a4f7xb20erg" path="res://temp_scenes/food_small_1.tscn" id="5_2y0xv"]
+[ext_resource type="PackedScene" uid="uid://cxuhkpjl0dkwd" path="res://temp_scenes/commercial_1.tscn" id="5_twqjo"]
+[ext_resource type="PackedScene" uid="uid://bhf3fnsw8hkdy" path="res://temp_scenes/food_large_1.tscn" id="6_03cvu"]
 [ext_resource type="PackedScene" uid="uid://c762ogq3qvpj4" path="res://temp_scenes/park.tscn" id="6_74wtb"]
-[ext_resource type="PackedScene" uid="uid://clxqrv8hfslyk" path="res://temp_scenes/food_building.tscn" id="6_rw74d"]
-[ext_resource type="PackedScene" uid="uid://bs02lslhidr36" path="res://temp_scenes/tech_building.tscn" id="7_7puq0"]
-[ext_resource type="PackedScene" uid="uid://deiujb7lvh8gf" path="res://temp_scenes/government_building.tscn" id="8_2y0xv"]
+[ext_resource type="PackedScene" uid="uid://dvbj4sb6pnlgs" path="res://temp_scenes/entertainment_large_1.tscn" id="6_584jt"]
+[ext_resource type="PackedScene" uid="uid://cpb8ihhpqg78y" path="res://temp_scenes/business_large_1.tscn" id="7_ehvgl"]
+[ext_resource type="PackedScene" uid="uid://doy0j5edqikx3" path="res://temp_scenes/government_large_1.tscn" id="7_twqjo"]
+[ext_resource type="PackedScene" uid="uid://deiujb7lvh8gf" path="res://temp_scenes/government_building.tscn" id="8_pantm"]
+[ext_resource type="PackedScene" uid="uid://b1j1d3sru8cpi" path="res://temp_scenes/rock.tscn" id="9_edvgp"]
+[ext_resource type="PackedScene" uid="uid://dkmtyp11ifovy" path="res://temp_scenes/walkway.tscn" id="10_mpuha"]
 [ext_resource type="PackedScene" uid="uid://c4p7sai8cuiko" path="res://player/player.tscn" id="11_mpuha"]
+[ext_resource type="PackedScene" uid="uid://c562fl4lsf25k" path="res://temp_scenes/trashcan.tscn" id="11_ocjyt"]
+[ext_resource type="PackedScene" uid="uid://rhrytv8m5wam" path="res://temp_scenes/gate.tscn" id="12_ehvgl"]
+[ext_resource type="PackedScene" uid="uid://bxukkn6lrj007" path="res://temp_scenes/road_straight.tscn" id="15_abltw"]
+[ext_resource type="PackedScene" uid="uid://6c4dnrgpdddh" path="res://temp_scenes/road_corner.tscn" id="16_584jt"]
+[ext_resource type="PackedScene" uid="uid://1r1qaam0jfrt" path="res://temp_scenes/road_t_shape.tscn" id="17_edswn"]
+[ext_resource type="PackedScene" uid="uid://njv7wpwhwovr" path="res://temp_scenes/road_intersection.tscn" id="18_wy0y2"]
+[ext_resource type="PackedScene" uid="uid://iv7bx1usl0ll" path="res://temp_scenes/road_end.tscn" id="19_u0kti"]
+[ext_resource type="PackedScene" uid="uid://cx5qn1kdnmpc1" path="res://temp_scenes/major_road_straight.tscn" id="19_urcfc"]
+[ext_resource type="PackedScene" uid="uid://c2avxn6o4fwn8" path="res://temp_scenes/major_road_intersection.tscn" id="24_w3khq"]
+[ext_resource type="PackedScene" uid="uid://cg1av2loqmtl8" path="res://temp_scenes/major_road_t_shape.tscn" id="25_1sk2r"]
+[ext_resource type="PackedScene" uid="uid://xaxqlrw34dai" path="res://temp_scenes/outofbounds_road.tscn" id="26_w3khq"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_s04yr"]
 sky_top_color = Color(0.358965, 0.732122, 0.9701895, 1)
@@ -31,43 +47,69 @@ glow_enabled = true
 
 [node name="CityGenerator" type="Node3D"]
 script = ExtResource("1_s04yr")
+grid_size = Vector2i(100, 100)
 cell_size = 20.0
-business_cluster_count = 5
-business_cluster_size = Vector2i(30, 40)
-wealthy_cluster_size = Vector2i(50, 40)
-entertainment_cluster_count = 5
-entertainment_cluster_size = Vector2i(20, 40)
+downtown_cluster_size = Vector2i(70, 110)
+business_cluster_count = 3
+business_cluster_size = Vector2i(50, 80)
+wealthy_cluster_size = Vector2i(60, 90)
+hospital_cluster_size = Vector2i(10, 10)
+police_cluster_count = 2
+police_cluster_size = Vector2i(10, 10)
+fire_cluster_size = Vector2i(10, 10)
+government_cluster_size = Vector2i(50, 70)
+university_cluster_size = Vector2i(40, 40)
+sports_cluster_count = 2
+sports_cluster_size = Vector2i(20, 20)
+entertainment_cluster_size = Vector2i(40, 50)
 technology_cluster_count = 2
-technology_cluster_size = Vector2i(40, 40)
-government_cluster_size = Vector2i(10, 20)
-commercial_cluster_count = 8
-commercial_cluster_size = Vector2i(10, 15)
-food_cluster_count = 10
-food_cluster_size = Vector2i(6, 10)
-park_cluster_count = 4
-park_cluster_size = Vector2i(30, 30)
-major_road_count_horizontal = Vector2i(1, 3)
-major_road_count_vertical = Vector2i(1, 3)
-min_major_road_spacing = 10
-minor_road_from_major_chance = 0.5
-minor_road_min_straight_length = 12
-minor_road_max_length = 100
-business_buildings = Array[PackedScene]([ExtResource("2_gwbpe")])
+technology_cluster_size = Vector2i(80, 100)
+commercial_cluster_count = 5
+commercial_cluster_size = Vector2i(10, 40)
+food_cluster_count = 6
+food_cluster_size = Vector2i(5, 25)
+industrial_cluster_size = Vector2i(40, 50)
+park_cluster_count = 3
+park_cluster_size = Vector2i(40, 60)
+single_buildings_per_zone = 6
+plaza_size = Vector2i(0, 0)
+major_road_count_horizontal = Vector2i(3, 3)
+major_road_count_vertical = Vector2i(3, 3)
+min_major_road_spacing = 30
+minor_road_from_major_chance = 0.3000000000029104
+minor_road_from_edge_count = 20
+minor_road_min_straight_length = 20
+minor_road_max_length = 80
+enforce_variety_in_standard_zones = false
+downtown_buildings = Array[PackedScene]([ExtResource("2_wy0y2"), ExtResource("3_u0kti")])
+business_buildings = Array[PackedScene]([ExtResource("2_gwbpe"), ExtResource("7_ehvgl"), ExtResource("4_edvgp")])
+commercial_buildings = Array[PackedScene]([ExtResource("5_twqjo")])
+entertainment_buildings = Array[PackedScene]([ExtResource("6_584jt")])
+food_buildings = Array[PackedScene]([ExtResource("5_2y0xv"), ExtResource("6_03cvu")])
+government_buildings = Array[PackedScene]([ExtResource("7_twqjo"), ExtResource("8_pantm")])
 residential_buildings = Array[PackedScene]([ExtResource("3_oliwm"), ExtResource("4_ocjyt")])
-wealthy_residential_buildings = Array[PackedScene]([ExtResource("4_74wtb")])
-commercial_buildings = Array[PackedScene]([ExtResource("5_oliwm")])
-entertainment_buildings = Array[PackedScene]([ExtResource("4_c02yt")])
-food_buildings = Array[PackedScene]([ExtResource("6_rw74d")])
-technology_buildings = Array[PackedScene]([ExtResource("7_7puq0")])
-government_buildings = Array[PackedScene]([ExtResource("8_2y0xv")])
-road_scene = ExtResource("5_c02yt")
+outskirt_objects = Array[PackedScene]([ExtResource("9_edvgp")])
+dead_zone_objects = Array[PackedScene]([ExtResource("11_ocjyt")])
+walkway_objects = Array[PackedScene]([ExtResource("10_mpuha")])
+road_straight_scene = ExtResource("15_abltw")
+major_road_straight_scene = ExtResource("19_urcfc")
+major_road_straight_inbetween_scene = ExtResource("19_urcfc")
+road_corner_scene = ExtResource("16_584jt")
+road_t_intersection_scene = ExtResource("17_edswn")
+major_road_t_intersection_scene = ExtResource("25_1sk2r")
+road_4way_intersection_scene = ExtResource("18_wy0y2")
+road_end_scene = ExtResource("19_u0kti")
+major_road_4way_intersection_2x2_scene = ExtResource("24_w3khq")
+out_of_bounds_road_scene = ExtResource("26_w3khq")
 park_scene = ExtResource("6_74wtb")
+gate_objects = Array[Resource]([ExtResource("12_ehvgl")])
 business_color = Color(0.044623896, 0.24602458, 1, 1)
-residential_color = Color(1, 1, 1, 1)
 wealthy_residential_color = Color(0.79620886, 0.7286621, 3.85046e-07, 1)
+technology_color = Color(4.6205523e-06, 0.8339306, 0.9303323, 1)
 commercial_color = Color(1.0107458e-06, 0.7003128, 0.26463595, 1)
 food_color = Color(0.9023514, 0.21924311, 0, 1)
-technology_color = Color(4.6205523e-06, 0.8339306, 0.9303323, 1)
+residential_color = Color(1, 1, 1, 1)
+walkway_color = Color(0.80694324, 0, 0.20859775, 1)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)

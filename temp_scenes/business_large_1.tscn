@@ -1,0 +1,39 @@
+[gd_scene load_steps=6 format=3 uid="uid://cpb8ihhpqg78y"]
+
+[ext_resource type="Script" uid="uid://bftln882qe6pw" path="res://scripts/building_data.gd" id="1_ipq8v"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ikyeg"]
+albedo_color = Color(0.11196827, 0, 0.95480436, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ipq8v"]
+size = Vector3(30, 15, 30)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ipq8v"]
+size = Vector2(40, 40)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_ipq8v"]
+radius = 2.0
+height = 11.74
+
+[node name="BusinessLarge1" type="Node3D"]
+script = ExtResource("1_ipq8v")
+size = Vector2i(2, 2)
+global_limit = 6
+local_limit = 2
+
+[node name="Node3D" type="Node3D" parent="."]
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.3, 0)
+material_override = SubResource("StandardMaterial3D_ikyeg")
+mesh = SubResource("BoxMesh_ipq8v")
+skeleton = NodePath("../..")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Node3D"]
+visible = false
+mesh = SubResource("PlaneMesh_ipq8v")
+skeleton = NodePath("../..")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 14.8, -14.8)
+mesh = SubResource("CapsuleMesh_ipq8v")

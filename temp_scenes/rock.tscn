@@ -1,0 +1,20 @@
+[gd_scene load_steps=5 format=3 uid="uid://b1j1d3sru8cpi"]
+
+[ext_resource type="Script" uid="uid://bftln882qe6pw" path="res://scripts/building_data.gd" id="1_gmjf3"]
+[ext_resource type="Texture2D" uid="uid://cg1ysfawy4uu8" path="res://assets/textures/everytexture.com-stock-nature-dirt-texture-00048.jpg" id="1_tmrn4"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gmjf3"]
+albedo_texture = ExtResource("1_tmrn4")
+
+[sub_resource type="SphereMesh" id="SphereMesh_e2thg"]
+radius = 4.0
+height = 8.0
+
+[node name="Rock" type="Node3D"]
+script = ExtResource("1_gmjf3")
+local_limit = 6
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.9681913, -0.25021103, 0, 0.25021103, 0.9681913, 0, 0.12878823, 0)
+material_override = SubResource("StandardMaterial3D_gmjf3")
+mesh = SubResource("SphereMesh_e2thg")
