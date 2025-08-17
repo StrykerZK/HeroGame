@@ -171,26 +171,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.15057999)
 mesh = SubResource("ArrayMesh_21ax1")
 skeleton = NodePath("")
 
-[node name="StaticBody3D" type="RigidBody3D" parent="Sketchfab_Scene/D-4_3/Object_10"]
+[node name="StaticBody3D" type="StaticBody3D" parent="Sketchfab_Scene/D-4_3/Object_10"]
 collision_mask = 3
-mass = 10.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Sketchfab_Scene/D-4_3/Object_10/StaticBody3D"]
-shape = SubResource("ConcavePolygonShape3D_1bdni")
-
-[node name="D-4_4" type="Node3D" parent="Sketchfab_Scene"]
-transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, -0.83417475, 0, -1.1918684)
-
-[node name="Object_10" type="MeshInstance3D" parent="Sketchfab_Scene/D-4_4"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.15057999)
-mesh = SubResource("ArrayMesh_21ax1")
-skeleton = NodePath("")
-
-[node name="StaticBody3D" type="RigidBody3D" parent="Sketchfab_Scene/D-4_4/Object_10"]
-collision_mask = 3
-mass = 10.0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Sketchfab_Scene/D-4_4/Object_10/StaticBody3D"]
 shape = SubResource("ConcavePolygonShape3D_1bdni")
 
 [node name="D-1_4" type="Node3D" parent="Sketchfab_Scene"]
@@ -200,9 +184,8 @@ transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, -0.91336006, 0, -0.6101
 mesh = SubResource("ArrayMesh_28b11")
 skeleton = NodePath("")
 
-[node name="StaticBody3D" type="RigidBody3D" parent="Sketchfab_Scene/D-1_4/Object_12"]
+[node name="StaticBody3D" type="StaticBody3D" parent="Sketchfab_Scene/D-1_4/Object_12"]
 collision_mask = 3
-mass = 0.5
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Sketchfab_Scene/D-1_4/Object_12/StaticBody3D"]
 shape = SubResource("ConcavePolygonShape3D_0ne8b")
@@ -214,54 +197,11 @@ transform = Transform3D(0.39270806, 0, -0.0760289, 0, 0.4, 0, 0.0760289, 0, 0.39
 mesh = SubResource("ArrayMesh_28b11")
 skeleton = NodePath("")
 
-[node name="StaticBody3D" type="RigidBody3D" parent="Sketchfab_Scene/D-1_6/Object_12"]
+[node name="StaticBody3D" type="StaticBody3D" parent="Sketchfab_Scene/D-1_6/Object_12"]
 collision_mask = 3
-mass = 0.5
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Sketchfab_Scene/D-1_6/Object_12/StaticBody3D"]
 shape = SubResource("ConcavePolygonShape3D_0ne8b")
-
-[node name="D-1_7" type="Node3D" parent="Sketchfab_Scene"]
-transform = Transform3D(0.33988348, 0, -0.21090098, 0, 0.4, 0, 0.21090098, 0, 0.33988348, 1.4761565, 0, -1.4862872)
-
-[node name="Object_12" type="MeshInstance3D" parent="Sketchfab_Scene/D-1_7"]
-mesh = SubResource("ArrayMesh_28b11")
-skeleton = NodePath("")
-
-[node name="StaticBody3D" type="RigidBody3D" parent="Sketchfab_Scene/D-1_7/Object_12"]
-collision_mask = 3
-mass = 0.5
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Sketchfab_Scene/D-1_7/Object_12/StaticBody3D"]
-shape = SubResource("ConcavePolygonShape3D_0ne8b")
-
-[node name="D-1_5" type="Node3D" parent="Sketchfab_Scene"]
-transform = Transform3D(0.37856737, 0, 0.12917721, 0, 0.4, 0, -0.12917721, 0, 0.37856737, -0.3299757, 0, -0.5873745)
-
-[node name="Object_12" type="MeshInstance3D" parent="Sketchfab_Scene/D-1_5"]
-mesh = SubResource("ArrayMesh_28b11")
-skeleton = NodePath("")
-
-[node name="StaticBody3D" type="RigidBody3D" parent="Sketchfab_Scene/D-1_5/Object_12"]
-collision_mask = 3
-mass = 0.5
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Sketchfab_Scene/D-1_5/Object_12/StaticBody3D"]
-shape = SubResource("ConcavePolygonShape3D_0ne8b")
-
-[node name="D-2_5" type="Node3D" parent="Sketchfab_Scene"]
-transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, -1.2585052, 0, -0.627485)
-
-[node name="Object_14" type="MeshInstance3D" parent="Sketchfab_Scene/D-2_5"]
-mesh = SubResource("ArrayMesh_pgfoi")
-skeleton = NodePath("")
-
-[node name="StaticBody3D" type="RigidBody3D" parent="Sketchfab_Scene/D-2_5/Object_14"]
-collision_mask = 3
-mass = 0.5
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Sketchfab_Scene/D-2_5/Object_14/StaticBody3D"]
-shape = SubResource("ConcavePolygonShape3D_ndl4g")
 
 [node name="D-2_6" type="Node3D" parent="Sketchfab_Scene"]
 transform = Transform3D(0.367431, 0, 0.15809636, 0, 0.4, 0, -0.15809636, 0, 0.367431, 0.8806805, 0, -0.66162103)
@@ -270,9 +210,8 @@ transform = Transform3D(0.367431, 0, 0.15809636, 0, 0.4, 0, -0.15809636, 0, 0.36
 mesh = SubResource("ArrayMesh_pgfoi")
 skeleton = NodePath("")
 
-[node name="StaticBody3D" type="RigidBody3D" parent="Sketchfab_Scene/D-2_6/Object_14"]
+[node name="StaticBody3D" type="StaticBody3D" parent="Sketchfab_Scene/D-2_6/Object_14"]
 collision_mask = 3
-mass = 0.5
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Sketchfab_Scene/D-2_6/Object_14/StaticBody3D"]
 shape = SubResource("ConcavePolygonShape3D_ndl4g")
@@ -284,25 +223,10 @@ transform = Transform3D(0.3347669, 0, -0.21893182, 0, 0.4, 0, 0.21893182, 0, 0.3
 mesh = SubResource("ArrayMesh_pgfoi")
 skeleton = NodePath("")
 
-[node name="StaticBody3D" type="RigidBody3D" parent="Sketchfab_Scene/D-2_7/Object_14"]
+[node name="StaticBody3D" type="StaticBody3D" parent="Sketchfab_Scene/D-2_7/Object_14"]
 collision_mask = 3
-mass = 0.5
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Sketchfab_Scene/D-2_7/Object_14/StaticBody3D"]
-shape = SubResource("ConcavePolygonShape3D_ndl4g")
-
-[node name="D-2_8" type="Node3D" parent="Sketchfab_Scene"]
-transform = Transform3D(0.37513134, 0, -0.13883974, 0, 0.4, 0, 0.13883974, 0, 0.37513134, -1.4974571, 0, -0.7071357)
-
-[node name="Object_14" type="MeshInstance3D" parent="Sketchfab_Scene/D-2_8"]
-mesh = SubResource("ArrayMesh_pgfoi")
-skeleton = NodePath("")
-
-[node name="StaticBody3D" type="RigidBody3D" parent="Sketchfab_Scene/D-2_8/Object_14"]
-collision_mask = 3
-mass = 0.5
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Sketchfab_Scene/D-2_8/Object_14/StaticBody3D"]
 shape = SubResource("ConcavePolygonShape3D_ndl4g")
 
 [node name="Road Closed-04_14" type="Node3D" parent="Sketchfab_Scene"]
@@ -312,9 +236,8 @@ transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0, 0
 mesh = SubResource("ArrayMesh_1pj6d")
 skeleton = NodePath("")
 
-[node name="StaticBody3D" type="RigidBody3D" parent="Sketchfab_Scene/Road Closed-04_14/Object_32"]
+[node name="StaticBody3D" type="StaticBody3D" parent="Sketchfab_Scene/Road Closed-04_14/Object_32"]
 collision_mask = 3
-mass = 30.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Sketchfab_Scene/Road Closed-04_14/Object_32/StaticBody3D"]
 shape = SubResource("ConcavePolygonShape3D_jctcs")

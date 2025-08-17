@@ -63,6 +63,7 @@ extends Node3D
 @export_group("Filler Zone Settings")
 @export var min_residential_area_size := 2
 @export var min_dead_zone_to_park_size := 3
+@export_range(5, 50, 1) var apartment_max_distance_from_core := 15 # NEW
 
 @export_group("Priority Zone Fill Settings")
 # These are now only used as fallbacks if a local_limit is not set to a positive number.
@@ -100,7 +101,9 @@ extends Node3D
 @export var university_buildings: Array[PackedScene]
 @export var industrial_buildings: Array[PackedScene]
 @export_subgroup("Standard Buildings & Objects")
-@export var residential_buildings: Array[PackedScene]
+@export_subgroup("Standard Buildings & Objects")
+@export var apartment_buildings: Array[PackedScene] # REPLACED
+@export var housing_buildings: Array[PackedScene]   # REPLACED
 @export var outskirt_objects: Array[PackedScene]
 @export var dead_zone_objects: Array[PackedScene]
 @export var walkway_objects: Array[PackedScene]
@@ -135,7 +138,8 @@ extends Node3D
 @export var commercial_color := Color.YELLOW_GREEN
 @export var food_color := Color.ORANGE
 @export var industrial_color := Color.DARK_SLATE_GRAY
-@export var residential_color := Color.GOLDENROD
+@export var apartment_color := Color.GOLDENROD # REPLACED
+@export var housing_color := Color.DARK_GOLDENROD # REPLACED
 @export var outskirt_color := Color.SANDY_BROWN
 @export var road_color := Color.DIM_GRAY
 @export var park_color := Color.FOREST_GREEN
@@ -149,13 +153,13 @@ extends Node3D
 			generate_city()
 
 # --- INTERNAL VARIABLES ---
-enum Zone { 
-	EMPTY, PARK, 
-	MAJOR_ROAD, MINOR_ROAD, MAJOR_INTERSECTION, # Added MAJOR_INTERSECTION
-	DOWNTOWN, BUSINESS, WEALTHY_RESIDENTIAL, 
+enum Zone {
+	EMPTY, PARK,
+	MAJOR_ROAD, MINOR_ROAD, MAJOR_INTERSECTION,
+	DOWNTOWN, BUSINESS, WEALTHY_RESIDENTIAL,
 	HOSPITAL, POLICE, FIRE, GOVERNMENT, UNIVERSITY,
 	SPORTS, ENTERTAINMENT, TECHNOLOGY, COMMERCIAL, FOOD, INDUSTRIAL,
-	RESIDENTIAL, OUTSKIRT, WALKWAY 
+	APARTMENTS, HOUSING, OUTSKIRT, WALKWAY
 }
 enum Direction { NONE, UP, DOWN, LEFT, RIGHT }
 var road_direction_data: Dictionary = {}
@@ -427,10 +431,52 @@ func _grow_area(start_pos: Vector2i, min_size: int, max_size: int) -> Array[Vect
 	return area_tiles
 
 func _fill_remaining_space():
-	_generate_residential_filler()
+	_generate_residential_zones()
 	_generate_outskirts_and_parks()
-	
-func _generate_residential_filler():
+
+func _generate_residential_zones():
+	# First, find all the "urban core" tiles to measure distance from.
+	var urban_core_tiles: Array[Vector2i] = []
+	for pos in grid_data:
+		var zone = grid_data.get(pos)
+		if zone == Zone.DOWNTOWN or zone == Zone.BUSINESS or zone == Zone.UNIVERSITY or zone == Zone.SPORTS:
+			urban_core_tiles.append(pos)
+
+	if urban_core_tiles.is_empty():
+		# Fallback: If no downtown/business, treat everything as housing
+		_generate_residential_filler(Zone.HOUSING)
+		return
+
+	# Find all empty areas adjacent to roads
+	var road_adjacent_candidates: Array[Vector2i] = []
+	for x in range(grid_size.x):
+		for y in range(grid_size.y):
+			var pos = Vector2i(x,y)
+			if not grid_data.has(pos):
+				if _is_road(pos + Vector2i.UP) or _is_road(pos + Vector2i.DOWN) or _is_road(pos + Vector2i.LEFT) or _is_road(pos + Vector2i.RIGHT):
+					road_adjacent_candidates.append(pos)
+
+	# For each area, determine if it should be apartments or housing
+	var visited: Dictionary = {}
+	for pos in road_adjacent_candidates:
+		if not visited.has(pos):
+			var area = _find_contiguous_area_from_list(pos, road_adjacent_candidates, visited)
+			if area.size() >= min_residential_area_size:
+				# Calculate the area's average distance to the nearest urban core
+				var total_min_dist = 0.0
+				for tile_pos in area:
+					var min_dist_for_tile = INF
+					for core_pos in urban_core_tiles:
+						min_dist_for_tile = min(min_dist_for_tile, tile_pos.distance_to(core_pos))
+					total_min_dist += min_dist_for_tile
+				var avg_dist = total_min_dist / area.size()
+
+				# Assign the zone based on the distance
+				var new_zone_type = Zone.APARTMENTS if avg_dist <= apartment_max_distance_from_core else Zone.HOUSING
+				for tile_pos in area:
+					grid_data[tile_pos] = new_zone_type
+
+func _generate_residential_filler(zone_to_fill: Zone):
 	var road_adjacent_candidates: Array[Vector2i] = []
 	for x in range(grid_size.x):
 		for y in range(grid_size.y):
@@ -443,7 +489,7 @@ func _generate_residential_filler():
 		if not visited.has(pos):
 			var area = _find_contiguous_area_from_list(pos, road_adjacent_candidates, visited)
 			if area.size() >= min_residential_area_size:
-				for tile_pos in area: grid_data[tile_pos] = Zone.RESIDENTIAL
+				for tile_pos in area: grid_data[tile_pos] = zone_to_fill
 
 func _generate_outskirts_and_parks():
 	var visited: Dictionary = {}
@@ -514,7 +560,8 @@ func _place_objects():
 		if grid_data.has(pos):
 			zone_pools[grid_data[pos]].append(pos)
 
-	_populate_standard_zone(Zone.RESIDENTIAL, zone_pools[Zone.RESIDENTIAL], occupied_cells)
+	_populate_standard_zone(Zone.APARTMENTS, zone_pools[Zone.APARTMENTS], occupied_cells)
+	_populate_standard_zone(Zone.HOUSING, zone_pools[Zone.HOUSING], occupied_cells)
 	_populate_standard_zone(Zone.OUTSKIRT, zone_pools[Zone.OUTSKIRT], occupied_cells)
 	_populate_standard_zone(Zone.PARK, zone_pools[Zone.PARK], occupied_cells)
 	_populate_standard_zone(Zone.EMPTY, zone_pools[Zone.EMPTY], occupied_cells)
@@ -599,7 +646,8 @@ func _populate_standard_zone(zone_type: Zone, available_tiles: Array[Vector2i], 
 	var scene_list: Array[PackedScene] = []
 	
 	match zone_type:
-		Zone.RESIDENTIAL: scene_list = residential_buildings
+		Zone.APARTMENTS: scene_list = apartment_buildings
+		Zone.HOUSING: scene_list = housing_buildings
 		Zone.OUTSKIRT: scene_list = outskirt_objects
 		Zone.EMPTY: scene_list = dead_zone_objects
 		Zone.PARK: 
@@ -936,7 +984,8 @@ func _get_zone_color(zone_type: Zone) -> Color:
 		Zone.COMMERCIAL: return commercial_color
 		Zone.FOOD: return food_color
 		Zone.INDUSTRIAL: return industrial_color
-		Zone.RESIDENTIAL: return residential_color
+		Zone.APARTMENTS: return apartment_color # REPLACED
+		Zone.HOUSING: return housing_color     # REPLACED
 		Zone.OUTSKIRT: return outskirt_color
 		Zone.MAJOR_ROAD: return road_color
 		Zone.MAJOR_INTERSECTION: return intersection_color
@@ -952,7 +1001,7 @@ func _cache_all_building_data():
 		downtown_buildings, business_buildings, wealthy_residential_buildings,
 		hospital_buildings, police_buildings, fire_buildings, government_buildings, university_buildings,
 		sports_buildings, entertainment_buildings, technology_buildings, commercial_buildings, food_buildings, industrial_buildings,
-		residential_buildings, outskirt_objects, dead_zone_objects, walkway_objects
+		apartment_buildings, housing_buildings, outskirt_objects, dead_zone_objects, walkway_objects
 	]
 	
 	for scene_array in all_scene_arrays:
@@ -1044,7 +1093,7 @@ func _place_road_network(occupied_cells: Dictionary):
 			scene_to_place = major_road_t_intersection_scene
 			if up and down: # Vertical Major Road
 				# UPDATED: Swapped 90 and 270
-				rotation = 90 if minor_left else 270
+				rotation = 270 if minor_left else 90
 			else: # Horizontal Major Road
 				rotation = 180 if minor_up else 0
 		elif minor_neighbor_count == 0:
@@ -1118,9 +1167,9 @@ func _place_road_network(occupied_cells: Dictionary):
 		match mask:
 			0, 1, 2, 4, 8: # Road Ends. This logic was already CCW.
 				scene_to_place = road_end_scene
-				if mask == 1: rotation = 180 # End pointing Up
+				if mask == 1: rotation = 0 # End pointing Up
 				elif mask == 2: rotation = 270 # End pointing Right
-				elif mask == 4: rotation = 0   # End pointing Down
+				elif mask == 4: rotation = 180  # End pointing Down
 				elif mask == 8: rotation = 90  # End pointing Left
 			3, 6, 9, 12: # Corners
 				scene_to_place = road_corner_scene
@@ -1138,8 +1187,8 @@ func _place_road_network(occupied_cells: Dictionary):
 				# Assuming 0-rotation asset is a horizontal road with a branch pointing Down.
 				if mask == 14: rotation = 0    # Main: L-R, Branch: Down (Text is upright)
 				elif mask == 11: rotation = 180  # Main: L-R, Branch: Up (Text is upside down)
-				elif mask == 13: rotation = 90   # UPDATED: Main: U-D, Branch: Left (was 270)
-				elif mask == 7: rotation = 270   # UPDATED: Main: U-D, Branch: Right (was 90)
+				elif mask == 13: rotation = 270   # UPDATED: Main: U-D, Branch: Left (was 270)
+				elif mask == 7: rotation = 90   # UPDATED: Main: U-D, Branch: Right (was 90)
 			15: # 4-Way Intersection
 				scene_to_place = road_4way_intersection_scene
 		

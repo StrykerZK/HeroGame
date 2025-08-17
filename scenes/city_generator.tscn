@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://bv6yk7ataw5la"]
+[gd_scene load_steps=37 format=3 uid="uid://bv6yk7ataw5la"]
 
 [ext_resource type="Script" uid="uid://bc8dmb62cwuyw" path="res://scripts/city_generator.gd" id="1_s04yr"]
 [ext_resource type="PackedScene" uid="uid://crwlyd8qousvq" path="res://temp_scenes/business_building.tscn" id="2_gwbpe"]
@@ -21,8 +21,12 @@
 [ext_resource type="PackedScene" uid="uid://c562fl4lsf25k" path="res://temp_scenes/trashcan.tscn" id="11_ocjyt"]
 [ext_resource type="PackedScene" uid="uid://rhrytv8m5wam" path="res://temp_scenes/gate.tscn" id="12_ehvgl"]
 [ext_resource type="PackedScene" uid="uid://bxukkn6lrj007" path="res://temp_scenes/road_straight.tscn" id="15_abltw"]
+[ext_resource type="PackedScene" uid="uid://bjwu74big7iva" path="res://temp_scenes/house_2.tscn" id="15_w3fuv"]
 [ext_resource type="PackedScene" uid="uid://6c4dnrgpdddh" path="res://temp_scenes/road_corner.tscn" id="16_584jt"]
+[ext_resource type="PackedScene" uid="uid://bulyj8f4hm8u5" path="res://temp_scenes/house_3.tscn" id="16_opje5"]
 [ext_resource type="PackedScene" uid="uid://1r1qaam0jfrt" path="res://temp_scenes/road_t_shape.tscn" id="17_edswn"]
+[ext_resource type="PackedScene" uid="uid://b6a2qoqmucdm1" path="res://temp_scenes/house_4.tscn" id="17_uxkew"]
+[ext_resource type="PackedScene" uid="uid://j874vbnr7bcl" path="res://temp_scenes/house_5.tscn" id="18_f30l1"]
 [ext_resource type="PackedScene" uid="uid://njv7wpwhwovr" path="res://temp_scenes/road_intersection.tscn" id="18_wy0y2"]
 [ext_resource type="PackedScene" uid="uid://iv7bx1usl0ll" path="res://temp_scenes/road_end.tscn" id="19_u0kti"]
 [ext_resource type="PackedScene" uid="uid://cx5qn1kdnmpc1" path="res://temp_scenes/major_road_straight.tscn" id="19_urcfc"]
@@ -73,13 +77,13 @@ park_cluster_count = 3
 park_cluster_size = Vector2i(40, 60)
 single_buildings_per_zone = 6
 plaza_size = Vector2i(0, 0)
-major_road_count_horizontal = Vector2i(3, 3)
-major_road_count_vertical = Vector2i(3, 3)
-min_major_road_spacing = 30
-minor_road_from_major_chance = 0.3000000000029104
+major_road_count_horizontal = Vector2i(2, 4)
+major_road_count_vertical = Vector2i(2, 4)
+min_major_road_spacing = 20
+minor_road_from_major_chance = 0.4000000000087311
 minor_road_from_edge_count = 20
 minor_road_min_straight_length = 20
-minor_road_max_length = 80
+minor_road_max_length = 70
 enforce_variety_in_standard_zones = false
 downtown_buildings = Array[PackedScene]([ExtResource("2_wy0y2"), ExtResource("3_u0kti")])
 business_buildings = Array[PackedScene]([ExtResource("2_gwbpe"), ExtResource("7_ehvgl"), ExtResource("4_edvgp")])
@@ -87,7 +91,8 @@ commercial_buildings = Array[PackedScene]([ExtResource("5_twqjo")])
 entertainment_buildings = Array[PackedScene]([ExtResource("6_584jt")])
 food_buildings = Array[PackedScene]([ExtResource("5_2y0xv"), ExtResource("6_03cvu")])
 government_buildings = Array[PackedScene]([ExtResource("7_twqjo"), ExtResource("8_pantm")])
-residential_buildings = Array[PackedScene]([ExtResource("3_oliwm"), ExtResource("4_ocjyt")])
+apartment_buildings = Array[PackedScene]([ExtResource("4_ocjyt")])
+housing_buildings = Array[PackedScene]([ExtResource("3_oliwm"), ExtResource("15_w3fuv"), ExtResource("16_opje5"), ExtResource("17_uxkew"), ExtResource("18_f30l1")])
 outskirt_objects = Array[PackedScene]([ExtResource("9_edvgp")])
 dead_zone_objects = Array[PackedScene]([ExtResource("11_ocjyt")])
 walkway_objects = Array[PackedScene]([ExtResource("10_mpuha")])
@@ -108,7 +113,6 @@ wealthy_residential_color = Color(0.79620886, 0.7286621, 3.85046e-07, 1)
 technology_color = Color(4.6205523e-06, 0.8339306, 0.9303323, 1)
 commercial_color = Color(1.0107458e-06, 0.7003128, 0.26463595, 1)
 food_color = Color(0.9023514, 0.21924311, 0, 1)
-residential_color = Color(1, 1, 1, 1)
 walkway_color = Color(0.80694324, 0, 0.20859775, 1)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
@@ -119,4 +123,4 @@ shadow_enabled = true
 environment = SubResource("Environment_ystin")
 
 [node name="Player" parent="." instance=ExtResource("11_mpuha")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 278.84253, 357.46768, 196.02185)
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 278.84253, 357.46768, 196.02185)

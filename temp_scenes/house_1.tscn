@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=4 uid="uid://78r105d8itax"]
+[gd_scene load_steps=14 format=4 uid="uid://78r105d8itax"]
 
 [ext_resource type="Script" uid="uid://bftln882qe6pw" path="res://scripts/building_data.gd" id="1_7yca7"]
 [ext_resource type="Texture2D" uid="uid://cwbfhx34raeyv" path="res://assets/3d_models/city_buildings/low_poly_house_5_0.png" id="1_da7r2"]
@@ -49,11 +49,31 @@ data = PackedVector3Array(1.0770999, 0.4511, -0.67609996, 1.0770999, 0.47869998,
 [sub_resource type="PlaneMesh" id="PlaneMesh_da7r2"]
 size = Vector2(20, 20)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7yca7"]
+shading_mode = 0
+albedo_color = Color(0.52019656, 0.588798, 0.2115615, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cwhdv"]
+size = Vector3(20, 0.74, 13)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_cwhdv"]
+data = PackedVector3Array(-10, 0.37, 6.5, 10, 0.37, 6.5, -10, -0.37, 6.5, 10, 0.37, 6.5, 10, -0.37, 6.5, -10, -0.37, 6.5, 10, 0.37, -6.5, -10, 0.37, -6.5, 10, -0.37, -6.5, -10, 0.37, -6.5, -10, -0.37, -6.5, 10, -0.37, -6.5, 10, 0.37, 6.5, 10, 0.37, -6.5, 10, -0.37, 6.5, 10, 0.37, -6.5, 10, -0.37, -6.5, 10, -0.37, 6.5, -10, 0.37, -6.5, -10, 0.37, 6.5, -10, -0.37, -6.5, -10, 0.37, 6.5, -10, -0.37, 6.5, -10, -0.37, -6.5, 10, 0.37, 6.5, -10, 0.37, 6.5, 10, 0.37, -6.5, -10, 0.37, 6.5, -10, 0.37, -6.5, 10, 0.37, -6.5, -10, -0.37, 6.5, 10, -0.37, 6.5, -10, -0.37, -6.5, 10, -0.37, 6.5, 10, -0.37, -6.5, -10, -0.37, -6.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cwhdv"]
+shading_mode = 0
+albedo_color = Color(0.47397572, 0.47397572, 0.47397572, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xityw"]
+size = Vector3(20, 0.74, 7)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_xityw"]
+data = PackedVector3Array(-10, 0.37, 3.5, 10, 0.37, 3.5, -10, -0.37, 3.5, 10, 0.37, 3.5, 10, -0.37, 3.5, -10, -0.37, 3.5, 10, 0.37, -3.5, -10, 0.37, -3.5, 10, -0.37, -3.5, -10, 0.37, -3.5, -10, -0.37, -3.5, 10, -0.37, -3.5, 10, 0.37, 3.5, 10, 0.37, -3.5, 10, -0.37, 3.5, 10, 0.37, -3.5, 10, -0.37, -3.5, 10, -0.37, 3.5, -10, 0.37, -3.5, -10, 0.37, 3.5, -10, -0.37, -3.5, -10, 0.37, 3.5, -10, -0.37, 3.5, -10, -0.37, -3.5, 10, 0.37, 3.5, -10, 0.37, 3.5, 10, 0.37, -3.5, -10, 0.37, 3.5, -10, 0.37, -3.5, 10, 0.37, -3.5, -10, -0.37, 3.5, 10, -0.37, 3.5, -10, -0.37, -3.5, 10, -0.37, 3.5, 10, -0.37, -3.5, -10, -0.37, -3.5)
+
 [node name="House1" type="Node3D"]
 script = ExtResource("1_7yca7")
 
 [node name="PublicBuilding_3_Pack3_001_0" type="MeshInstance3D" parent="."]
-transform = Transform3D(-2.4041265e-07, 0, 5.5, 0, 5.5, 0, -5.5, 0, -2.4041265e-07, 0, 0, 2.4)
+transform = Transform3D(-1.5298986e-07, 0, 3.5, 0, 3.5, 0, -3.5, 0, -1.5298986e-07, 0, 0.5085555, 5)
 mesh = SubResource("ArrayMesh_d7u80")
 skeleton = NodePath("")
 
@@ -63,4 +83,25 @@ skeleton = NodePath("")
 shape = SubResource("ConcavePolygonShape3D_7yca7")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+visible = false
 mesh = SubResource("PlaneMesh_da7r2")
+
+[node name="Grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37092873, 3.5)
+material_override = SubResource("StandardMaterial3D_7yca7")
+mesh = SubResource("BoxMesh_cwhdv")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Grass"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Grass/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_cwhdv")
+
+[node name="Pavement" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.371, -6.5)
+material_override = SubResource("StandardMaterial3D_cwhdv")
+mesh = SubResource("BoxMesh_xityw")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Pavement"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pavement/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_xityw")
