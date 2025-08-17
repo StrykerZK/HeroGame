@@ -1,4 +1,4 @@
-[gd_scene load_steps=42 format=3 uid="uid://bv6yk7ataw5la"]
+[gd_scene load_steps=44 format=3 uid="uid://bv6yk7ataw5la"]
 
 [ext_resource type="Script" uid="uid://bc8dmb62cwuyw" path="res://scripts/city_generator.gd" id="1_s04yr"]
 [ext_resource type="PackedScene" uid="uid://crwlyd8qousvq" path="res://temp_scenes/business_building.tscn" id="2_gwbpe"]
@@ -38,6 +38,8 @@
 [ext_resource type="PackedScene" uid="uid://cg1av2loqmtl8" path="res://scenes/roads/major_road_t_shape.tscn" id="32_jmqnt"]
 [ext_resource type="PackedScene" uid="uid://dijaruekmtpqd" path="res://scenes/roads/major_road_t_shape_2_width.tscn" id="33_oimxg"]
 [ext_resource type="PackedScene" uid="uid://c2avxn6o4fwn8" path="res://scenes/roads/major_road_intersection.tscn" id="34_nh5ie"]
+[ext_resource type="PackedScene" uid="uid://dsas2wcdm61n1" path="res://scenes/roads/major_intersection_corner.tscn" id="35_wctwy"]
+[ext_resource type="PackedScene" uid="uid://sdy7rdj1a7oc" path="res://scenes/roads/road_filler.tscn" id="36_4wwbn"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_s04yr"]
 sky_top_color = Color(0.358965, 0.732122, 0.9701895, 1)
@@ -84,6 +86,7 @@ single_buildings_per_zone = 6
 plaza_size = Vector2i(0, 0)
 major_road_count_horizontal = Vector2i(2, 4)
 major_road_count_vertical = Vector2i(2, 4)
+major_road_width = 4
 min_major_road_spacing = 20
 minor_road_from_major_chance = 0.4000000000087311
 minor_road_from_edge_count = 20
@@ -114,6 +117,8 @@ major_road_middle_scene = ExtResource("31_0ovt3")
 major_road_t_intersection_scene = ExtResource("32_jmqnt")
 major_road_2_width_t_intersection_scene = ExtResource("33_oimxg")
 major_road_4way_intersection_2x2_scene = ExtResource("34_nh5ie")
+major_road_intersection_corner_scene = ExtResource("35_wctwy")
+major_road_intersection_filler_scene = ExtResource("36_4wwbn")
 out_of_bounds_road_scene = ExtResource("26_w3khq")
 park_scene = ExtResource("6_74wtb")
 gate_objects = Array[Resource]([ExtResource("12_ehvgl")])

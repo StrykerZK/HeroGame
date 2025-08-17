@@ -122,9 +122,8 @@ extends Node3D
 @export var major_road_t_intersection_scene: PackedScene
 @export var major_road_2_width_t_intersection_scene: PackedScene
 @export var major_road_4way_intersection_2x2_scene: PackedScene
-@export var major_road_4way_intersection_3x3_scene: PackedScene
-@export var major_road_4way_intersection_4x4_scene: PackedScene
-@export var major_road_4way_intersection_5x5_scene: PackedScene
+@export var major_road_intersection_corner_scene: PackedScene
+@export var major_road_intersection_filler_scene: PackedScene
 # Generic
 @export var out_of_bounds_road_scene: PackedScene
 @export var park_scene: PackedScene
@@ -1066,25 +1065,34 @@ func _place_road_network(occupied_cells: Dictionary):
 	if major_road_width >= 2: # Ensure this only runs for wider roads
 		for pos in intersection_tiles:
 			if processed_tiles.has(pos): continue
-			match major_road_width:
-				2: # Check for a 2x2 block of intersection tiles
-					if _check_road_intersection_neighbors(pos, major_road_width):
-						_place_scene_at_pos(major_road_4way_intersection_2x2_scene, pos, Vector2i(2,2), 0, occupied_cells)
-						for x in range(2):
-							for y in range(2):
-								processed_tiles[pos + Vector2i(x,y)] = true
-				3: # Check for a 3x3 block of intersection tiles
-					if _check_road_intersection_neighbors(pos, major_road_width):
-						_place_scene_at_pos(major_road_4way_intersection_3x3_scene, pos, Vector2i(3,3), 0, occupied_cells)
-						for x in range(3):
-							for y in range(3):
-								processed_tiles[pos + Vector2i(x,y)] = true
-				4:# Check for a 4x4 block of intersection tiles
-					if _check_road_intersection_neighbors(pos, major_road_width):
-						_place_scene_at_pos(major_road_4way_intersection_4x4_scene, pos, Vector2i(4,4), 0, occupied_cells)
-						for x in range(4):
-							for y in range(4):
-								processed_tiles[pos + Vector2i(x,y)] = true
+			if major_road_width == 2:
+				# Check for a 2x2 block of intersection tiles
+				if _check_road_intersection_neighbors(pos, major_road_width):
+					_place_scene_at_pos(major_road_4way_intersection_2x2_scene, pos, Vector2i(2,2), 0, occupied_cells)
+					for x in range(2):
+						for y in range(2):
+							processed_tiles[pos + Vector2i(x,y)] = true
+			else:
+				# Check for major road neighbors to identify an Intersection Corner
+				var scene_value = 0
+				var scene_rotation = 0
+				if grid_data.get(pos + Vector2i.UP) == Zone.MAJOR_ROAD:
+					scene_value += 1
+				if grid_data.get(pos + Vector2i.DOWN) == Zone.MAJOR_ROAD:
+					scene_value += 2
+				if grid_data.get(pos + Vector2i.LEFT) == Zone.MAJOR_ROAD:
+					scene_value += 4
+				if grid_data.get(pos + Vector2i.RIGHT) == Zone.MAJOR_ROAD:
+					scene_value += 8
+				match scene_value:
+					5, 6, 9, 10:
+						if scene_value == 5: scene_rotation = 0 # Top Left
+						elif scene_value == 6: scene_rotation = 90 # Bottom Left
+						elif scene_value == 9: scene_rotation = 270 # Top Right
+						elif scene_value == 10: scene_rotation = 180 # Bottom Right
+						_place_scene_at_pos(major_road_intersection_corner_scene, pos, Vector2i(1,1), scene_rotation, occupied_cells)
+					_:
+						_place_scene_at_pos(major_road_intersection_filler_scene, pos, Vector2i(1,1), 0, occupied_cells)
 
 	# --- PASS 2: Place all other Major Road pieces ---
 	# This pass places T-intersections and all straight road segments based on width.
