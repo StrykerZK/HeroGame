@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=4 uid="uid://cx5qn1kdnmpc1"]
+[gd_scene load_steps=19 format=4 uid="uid://0pahpde7kwiu"]
 
 [ext_resource type="Script" uid="uid://ua25auqbfppy" path="res://scripts/major_road_straight.gd" id="1_emxec"]
 
@@ -191,7 +191,7 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_unqwr")
 
-[node name="MajorRoadStraight" type="Node3D"]
+[node name="MajorRoadEdge" type="Node3D"]
 script = ExtResource("1_emxec")
 
 [node name="Text" type="Node3D" parent="."]

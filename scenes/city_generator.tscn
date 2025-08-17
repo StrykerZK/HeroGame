@@ -1,4 +1,4 @@
-[gd_scene load_steps=37 format=3 uid="uid://bv6yk7ataw5la"]
+[gd_scene load_steps=42 format=3 uid="uid://bv6yk7ataw5la"]
 
 [ext_resource type="Script" uid="uid://bc8dmb62cwuyw" path="res://scripts/city_generator.gd" id="1_s04yr"]
 [ext_resource type="PackedScene" uid="uid://crwlyd8qousvq" path="res://temp_scenes/business_building.tscn" id="2_gwbpe"]
@@ -20,19 +20,24 @@
 [ext_resource type="PackedScene" uid="uid://c4p7sai8cuiko" path="res://player/player.tscn" id="11_mpuha"]
 [ext_resource type="PackedScene" uid="uid://c562fl4lsf25k" path="res://temp_scenes/trashcan.tscn" id="11_ocjyt"]
 [ext_resource type="PackedScene" uid="uid://rhrytv8m5wam" path="res://temp_scenes/gate.tscn" id="12_ehvgl"]
-[ext_resource type="PackedScene" uid="uid://bxukkn6lrj007" path="res://temp_scenes/road_straight.tscn" id="15_abltw"]
 [ext_resource type="PackedScene" uid="uid://bjwu74big7iva" path="res://temp_scenes/house_2.tscn" id="15_w3fuv"]
-[ext_resource type="PackedScene" uid="uid://6c4dnrgpdddh" path="res://temp_scenes/road_corner.tscn" id="16_584jt"]
 [ext_resource type="PackedScene" uid="uid://bulyj8f4hm8u5" path="res://temp_scenes/house_3.tscn" id="16_opje5"]
-[ext_resource type="PackedScene" uid="uid://1r1qaam0jfrt" path="res://temp_scenes/road_t_shape.tscn" id="17_edswn"]
 [ext_resource type="PackedScene" uid="uid://b6a2qoqmucdm1" path="res://temp_scenes/house_4.tscn" id="17_uxkew"]
 [ext_resource type="PackedScene" uid="uid://j874vbnr7bcl" path="res://temp_scenes/house_5.tscn" id="18_f30l1"]
-[ext_resource type="PackedScene" uid="uid://njv7wpwhwovr" path="res://temp_scenes/road_intersection.tscn" id="18_wy0y2"]
-[ext_resource type="PackedScene" uid="uid://iv7bx1usl0ll" path="res://temp_scenes/road_end.tscn" id="19_u0kti"]
-[ext_resource type="PackedScene" uid="uid://cx5qn1kdnmpc1" path="res://temp_scenes/major_road_straight.tscn" id="19_urcfc"]
-[ext_resource type="PackedScene" uid="uid://c2avxn6o4fwn8" path="res://temp_scenes/major_road_intersection.tscn" id="24_w3khq"]
-[ext_resource type="PackedScene" uid="uid://cg1av2loqmtl8" path="res://temp_scenes/major_road_t_shape.tscn" id="25_1sk2r"]
+[ext_resource type="PackedScene" uid="uid://bxukkn6lrj007" path="res://scenes/roads/road_straight.tscn" id="22_ryj47"]
+[ext_resource type="PackedScene" uid="uid://6c4dnrgpdddh" path="res://scenes/roads/road_corner.tscn" id="23_rdvkw"]
+[ext_resource type="PackedScene" uid="uid://1r1qaam0jfrt" path="res://scenes/roads/road_t_shape.tscn" id="24_wctwy"]
+[ext_resource type="PackedScene" uid="uid://njv7wpwhwovr" path="res://scenes/roads/road_intersection.tscn" id="25_4wwbn"]
+[ext_resource type="PackedScene" uid="uid://iv7bx1usl0ll" path="res://scenes/roads/road_end.tscn" id="26_5syc6"]
 [ext_resource type="PackedScene" uid="uid://xaxqlrw34dai" path="res://temp_scenes/outofbounds_road.tscn" id="26_w3khq"]
+[ext_resource type="PackedScene" uid="uid://08rhg2lung76" path="res://scenes/roads/major_road_straight_2_width.tscn" id="27_w3fuv"]
+[ext_resource type="PackedScene" uid="uid://0pahpde7kwiu" path="res://scenes/roads/major_road_edge.tscn" id="28_xi71e"]
+[ext_resource type="PackedScene" uid="uid://b6dcwd11313at" path="res://scenes/roads/major_road_odd_center.tscn" id="29_gt42s"]
+[ext_resource type="PackedScene" uid="uid://bd06374w5pbra" path="res://scenes/roads/major_road_even_center.tscn" id="30_h53l6"]
+[ext_resource type="PackedScene" uid="uid://tk2um4rw2q3e" path="res://scenes/roads/major_road_middle.tscn" id="31_0ovt3"]
+[ext_resource type="PackedScene" uid="uid://cg1av2loqmtl8" path="res://scenes/roads/major_road_t_shape.tscn" id="32_jmqnt"]
+[ext_resource type="PackedScene" uid="uid://dijaruekmtpqd" path="res://scenes/roads/major_road_t_shape_2_width.tscn" id="33_oimxg"]
+[ext_resource type="PackedScene" uid="uid://c2avxn6o4fwn8" path="res://scenes/roads/major_road_intersection.tscn" id="34_nh5ie"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_s04yr"]
 sky_top_color = Color(0.358965, 0.732122, 0.9701895, 1)
@@ -96,15 +101,19 @@ housing_buildings = Array[PackedScene]([ExtResource("3_oliwm"), ExtResource("15_
 outskirt_objects = Array[PackedScene]([ExtResource("9_edvgp")])
 dead_zone_objects = Array[PackedScene]([ExtResource("11_ocjyt")])
 walkway_objects = Array[PackedScene]([ExtResource("10_mpuha")])
-road_straight_scene = ExtResource("15_abltw")
-major_road_straight_scene = ExtResource("19_urcfc")
-major_road_straight_inbetween_scene = ExtResource("19_urcfc")
-road_corner_scene = ExtResource("16_584jt")
-road_t_intersection_scene = ExtResource("17_edswn")
-major_road_t_intersection_scene = ExtResource("25_1sk2r")
-road_4way_intersection_scene = ExtResource("18_wy0y2")
-road_end_scene = ExtResource("19_u0kti")
-major_road_4way_intersection_2x2_scene = ExtResource("24_w3khq")
+road_straight_scene = ExtResource("22_ryj47")
+road_corner_scene = ExtResource("23_rdvkw")
+road_t_intersection_scene = ExtResource("24_wctwy")
+road_4way_intersection_scene = ExtResource("25_4wwbn")
+road_end_scene = ExtResource("26_5syc6")
+major_road_2_width_edge_scene = ExtResource("27_w3fuv")
+major_road_edge_scene = ExtResource("28_xi71e")
+major_road_odd_center_scene = ExtResource("29_gt42s")
+major_road_even_center_scene = ExtResource("30_h53l6")
+major_road_middle_scene = ExtResource("31_0ovt3")
+major_road_t_intersection_scene = ExtResource("32_jmqnt")
+major_road_2_width_t_intersection_scene = ExtResource("33_oimxg")
+major_road_4way_intersection_2x2_scene = ExtResource("34_nh5ie")
 out_of_bounds_road_scene = ExtResource("26_w3khq")
 park_scene = ExtResource("6_74wtb")
 gate_objects = Array[Resource]([ExtResource("12_ehvgl")])

@@ -101,24 +101,32 @@ extends Node3D
 @export var university_buildings: Array[PackedScene]
 @export var industrial_buildings: Array[PackedScene]
 @export_subgroup("Standard Buildings & Objects")
-@export_subgroup("Standard Buildings & Objects")
 @export var apartment_buildings: Array[PackedScene] # REPLACED
 @export var housing_buildings: Array[PackedScene]   # REPLACED
 @export var outskirt_objects: Array[PackedScene]
 @export var dead_zone_objects: Array[PackedScene]
 @export var walkway_objects: Array[PackedScene]
 @export_subgroup("Infrastructure")
+# Minor Roads
 @export var road_straight_scene: PackedScene
-@export var major_road_straight_scene: PackedScene
-@export var major_road_straight_inbetween_scene: PackedScene # For future use with wider roads
 @export var road_corner_scene: PackedScene
-@export var major_road_corner_scene: PackedScene # Added for major road corners
 @export var road_t_intersection_scene: PackedScene
-@export var major_road_t_intersection_scene: PackedScene
 @export var road_4way_intersection_scene: PackedScene
 @export var road_end_scene: PackedScene
+# Major Roads (NEW SYSTEM)
+@export var major_road_2_width_edge_scene: PackedScene
+@export var major_road_edge_scene: PackedScene
+@export var major_road_odd_center_scene: PackedScene
+@export var major_road_even_center_scene: PackedScene
+@export var major_road_middle_scene: PackedScene
+@export var major_road_t_intersection_scene: PackedScene
+@export var major_road_2_width_t_intersection_scene: PackedScene
 @export var major_road_4way_intersection_2x2_scene: PackedScene
-@export var out_of_bounds_road_scene: PackedScene # ADDED: Scene for roads at the map edge
+@export var major_road_4way_intersection_3x3_scene: PackedScene
+@export var major_road_4way_intersection_4x4_scene: PackedScene
+@export var major_road_4way_intersection_5x5_scene: PackedScene
+# Generic
+@export var out_of_bounds_road_scene: PackedScene
 @export var park_scene: PackedScene
 @export var gate_objects: Array[Resource]
 
@@ -271,9 +279,9 @@ func _build_horizontal_major_road(y_coord: int, used_y: Array):
 				grid_data[pos] = Zone.MAJOR_ROAD
 			# Assign direction
 			if lane < major_road_width / 2.0:
-				road_direction_data[pos] = Direction.LEFT
-			else:
 				road_direction_data[pos] = Direction.RIGHT
+			else:
+				road_direction_data[pos] = Direction.LEFT
 
 # ADDED: Helper function to build a vertical major road
 func _build_vertical_major_road(x_coord: int, used_x: Array):
@@ -290,9 +298,9 @@ func _build_vertical_major_road(x_coord: int, used_x: Array):
 				grid_data[pos] = Zone.MAJOR_ROAD
 			# Assign direction
 			if lane < major_road_width / 2.0:
-				road_direction_data[pos] = Direction.DOWN
-			else:
 				road_direction_data[pos] = Direction.UP
+			else:
+				road_direction_data[pos] = Direction.DOWN
 
 func _generate_minor_roads():
 	for i in range(minor_road_from_edge_count):
@@ -1037,6 +1045,7 @@ func _generate_floor_collision():
 	floor_body.add_child(collision_shape)
 	generated_city_node.add_child(floor_body)
 
+# --- UPDATED ROAD PLACEMENT LOGIC ---
 func _place_road_network(occupied_cells: Dictionary):
 	var intersection_tiles: Array[Vector2i] = []
 	var major_road_tiles: Array[Vector2i] = []
@@ -1054,102 +1063,141 @@ func _place_road_network(occupied_cells: Dictionary):
 
 	# --- PASS 1: Place Large Intersections ---
 	# This handles the pre-identified intersection zones.
-	if major_road_width == 2:
+	if major_road_width >= 2: # Ensure this only runs for wider roads
 		for pos in intersection_tiles:
 			if processed_tiles.has(pos): continue
-			if grid_data.get(pos + Vector2i.RIGHT) == Zone.MAJOR_INTERSECTION and \
-			   grid_data.get(pos + Vector2i.DOWN) == Zone.MAJOR_INTERSECTION and \
-			   grid_data.get(pos + Vector2i(1,1)) == Zone.MAJOR_INTERSECTION:
-				_place_scene_at_pos(major_road_4way_intersection_2x2_scene, pos, Vector2i(2,2), 0, occupied_cells)
-				for x in range(2):
-					for y in range(2):
-						processed_tiles[pos + Vector2i(x,y)] = true
+			match major_road_width:
+				2: # Check for a 2x2 block of intersection tiles
+					if _check_road_intersection_neighbors(pos, major_road_width):
+						_place_scene_at_pos(major_road_4way_intersection_2x2_scene, pos, Vector2i(2,2), 0, occupied_cells)
+						for x in range(2):
+							for y in range(2):
+								processed_tiles[pos + Vector2i(x,y)] = true
+				3: # Check for a 3x3 block of intersection tiles
+					if _check_road_intersection_neighbors(pos, major_road_width):
+						_place_scene_at_pos(major_road_4way_intersection_3x3_scene, pos, Vector2i(3,3), 0, occupied_cells)
+						for x in range(3):
+							for y in range(3):
+								processed_tiles[pos + Vector2i(x,y)] = true
+				4:# Check for a 4x4 block of intersection tiles
+					if _check_road_intersection_neighbors(pos, major_road_width):
+						_place_scene_at_pos(major_road_4way_intersection_4x4_scene, pos, Vector2i(4,4), 0, occupied_cells)
+						for x in range(4):
+							for y in range(4):
+								processed_tiles[pos + Vector2i(x,y)] = true
 
 	# --- PASS 2: Place all other Major Road pieces ---
-	# This single pass analyzes and places all remaining major road types.
+	# This pass places T-intersections and all straight road segments based on width.
 	for pos in major_road_tiles:
 		if processed_tiles.has(pos): continue
 
-		var up = _is_major_road(pos + Vector2i.UP)
-		var down = _is_major_road(pos + Vector2i.DOWN)
-		var left = _is_major_road(pos + Vector2i.LEFT)
-		var right = _is_major_road(pos + Vector2i.RIGHT)
-		
+		# Check for minor road neighbors to identify a T-Junction
 		var minor_up = grid_data.get(pos + Vector2i.UP) == Zone.MINOR_ROAD
 		var minor_down = grid_data.get(pos + Vector2i.DOWN) == Zone.MINOR_ROAD
 		var minor_left = grid_data.get(pos + Vector2i.LEFT) == Zone.MINOR_ROAD
 		var minor_right = grid_data.get(pos + Vector2i.RIGHT) == Zone.MINOR_ROAD
+		var is_t_junction = minor_up or minor_down or minor_left or minor_right
 		
-		var major_neighbor_count = int(up) + int(down) + int(left) + int(right)
-		var minor_neighbor_count = int(minor_up) + int(minor_down) + int(minor_left) + int(minor_right)
-
 		var scene_to_place = null
-		var rotation = 0
-		var direction = road_direction_data.get(pos, Direction.NONE)
+		var scene_rotation = 0
 
-		# This logic handles all non-intersection major road pieces based on neighbor counts.
-		if minor_neighbor_count == 1 and ((up and down) or (left and right)):
-			# T-Junction. Rotations are now Godot-friendly (CCW).
-			scene_to_place = major_road_t_intersection_scene
-			if up and down: # Vertical Major Road
-				# UPDATED: Swapped 90 and 270
-				rotation = 270 if minor_left else 90
-			else: # Horizontal Major Road
-				rotation = 180 if minor_up else 0
-		elif minor_neighbor_count == 0:
-			if major_neighbor_count == 4:
-				# This is an in-between piece for roads wider than 2.
-				scene_to_place = major_road_straight_inbetween_scene if major_road_straight_inbetween_scene else major_road_straight_scene
-				var is_horizontal = not _is_major_road(pos + Vector2i(0, -2)) or not _is_major_road(pos + Vector2i(0, 2))
-				if is_horizontal:
-					rotation = 90 # Default to Right
-					if direction == Direction.LEFT: rotation = 270
+		if is_t_junction:
+			# --- T-JUNCTION LOGIC ---
+			# Determine which T-Junction scene to use based on road width
+			if major_road_width == 2:
+				scene_to_place = major_road_2_width_t_intersection_scene
+			else:
+				scene_to_place = major_road_t_intersection_scene
+			
+			# Determine rotation based on which side the minor road is on
+			var is_horizontal = _is_major_road(pos + Vector2i.LEFT) and _is_major_road(pos + Vector2i.RIGHT)
+			if is_horizontal:
+				scene_rotation = 180 if minor_up else 0
+			else: # Vertical Major Road
+				scene_rotation = 270 if minor_left else 90
+		else:
+			# --- STRAIGHT ROAD LOGIC ---
+			var direction = road_direction_data.get(pos, Direction.NONE)
+			var is_horizontal = (direction == Direction.LEFT or direction == Direction.RIGHT)
+			var lane_index = 0
+
+			# Find the start of the road segment to determine the lane index
+			if is_horizontal:
+				# For horizontal roads, count how many lanes are directly above this one.
+				var check_pos = pos + Vector2i.UP
+				while _is_major_road(check_pos):
+					var neighbor_dir = road_direction_data.get(check_pos, Direction.NONE)
+					# Only count it if it's also a horizontal road piece.
+					if (neighbor_dir == Direction.LEFT or neighbor_dir == Direction.RIGHT):
+						lane_index += 1
+						check_pos += Vector2i.UP
+					else:
+						# Stop if we hit a perpendicular road
+						break
+			else: # is_vertical
+				# For vertical roads, count how many lanes are directly to the left of this one.
+				var check_pos = pos + Vector2i.LEFT
+				while _is_major_road(check_pos):
+					var neighbor_dir = road_direction_data.get(check_pos, Direction.NONE)
+					# Only count it if it's also a vertical road piece.
+					if (neighbor_dir == Direction.UP or neighbor_dir == Direction.DOWN):
+						lane_index += 1
+						check_pos += Vector2i.LEFT
+					else:
+						# Stop if we hit a perpendicular road
+						break
+
+			# Apply rules based on major_road_width and lane_index
+			if major_road_width == 2:
+				scene_to_place = major_road_2_width_edge_scene
+			else:
+				# Rule 1: Check if the lane is an outer edge
+				if lane_index == 0 or lane_index == major_road_width - 1:
+					scene_to_place = major_road_edge_scene
 				else:
-					rotation = 0
-					if direction == Direction.UP: rotation = 180
-			elif major_neighbor_count == 3:
-				# This is an edge piece of a straight road.
-				scene_to_place = major_road_straight_scene
-				if not left or not right: # Vertical
-					rotation = 0
-					if direction == Direction.UP: rotation = 180
-				else: # Horizontal
-					rotation = 90 # Default to Right
-					if direction == Direction.LEFT: rotation = 270
-			elif major_neighbor_count == 2:
-				# Can be a straight or a corner.
-				if up and down: # Vertical straight
-					scene_to_place = major_road_straight_scene
-					rotation = 0
-					if direction == Direction.UP: rotation = 180
-				elif left and right: # Horizontal straight
-					scene_to_place = major_road_straight_scene
-					rotation = 90 # Default to Right
-					if direction == Direction.LEFT: rotation = 270
-				else: # Corner. This logic appears to be CCW already, assuming a (Right, Down) base asset.
-					scene_to_place = major_road_corner_scene
-					if up and right: rotation = 90
-					elif right and down: rotation = 0
-					elif down and left: rotation = 270
-					elif left and up: rotation = 180
+					var is_odd_width = major_road_width % 2 != 0
+					# Rule 2: Handle odd-width roads
+					if is_odd_width:
+						var center_index = int(major_road_width / 2)
+						if lane_index == center_index:
+							scene_to_place = major_road_odd_center_scene
+						else:
+							scene_to_place = major_road_middle_scene
+					# Rule 3: Handle even-width roads
+					else: # is_even_width
+						var center_index1 = int(major_road_width / 2)
+						var center_index2 = center_index1 - 1
+						if lane_index == center_index1 or lane_index == center_index2:
+							scene_to_place = major_road_even_center_scene
+						else:
+							scene_to_place = major_road_middle_scene
+			
+			# Determine rotation based on traffic flow direction
+			if is_horizontal:
+				scene_rotation = 270 # Default to Right (+X)
+				if direction == Direction.LEFT: scene_rotation = 90 # Left (-X)
+			else: # is_vertical
+				scene_rotation = 180 # Default to Down (+Z)
+				if direction == Direction.UP: scene_rotation = 0 # Up (-Z)
 		
+		# Place the determined scene
 		if scene_to_place:
-			_place_scene_at_pos(scene_to_place, pos, Vector2i.ONE, rotation, occupied_cells)
+			_place_scene_at_pos(scene_to_place, pos, Vector2i.ONE, scene_rotation, occupied_cells)
 			processed_tiles[pos] = true
-		else: # ADDED: Handle uncategorized roads on the map border
+		else: # Handle uncategorized roads on the map border
 			if pos.x == 0 or pos.x == grid_size.x - 1 or pos.y == 0 or pos.y == grid_size.y - 1:
 				if out_of_bounds_road_scene:
 					var inward_rotation = 0
-					if pos.x == 0: inward_rotation = 270 # Face right, into the map
-					elif pos.x == grid_size.x - 1: inward_rotation = 90 # Face left, into the map
-					elif pos.y == 0: inward_rotation = 180 # Face down, into the map
-					elif pos.y == grid_size.y - 1: inward_rotation = 0 # Face up, into the map
+					if pos.x == 0: inward_rotation = 270
+					elif pos.x == grid_size.x - 1: inward_rotation = 90
+					elif pos.y == 0: inward_rotation = 180
+					elif pos.y == grid_size.y - 1: inward_rotation = 0
 					_place_scene_at_pos(out_of_bounds_road_scene, pos, Vector2i.ONE, inward_rotation, occupied_cells)
 					processed_tiles[pos] = true
 
 
 	# --- PASS 3: Place all Minor Road pieces ---
-	# This pass is now isolated and only deals with minor roads.
+	# This pass is isolated and only deals with minor roads.
 	for pos in minor_road_tiles:
 		if processed_tiles.has(pos): continue
 		
@@ -1161,47 +1209,60 @@ func _place_road_network(occupied_cells: Dictionary):
 		if _is_road(pos + Vector2i.LEFT): mask += 8
 		
 		var scene_to_place = null
-		var rotation = 0
+		var scene_rotation = 0
 		
 		# Determine tile type and rotation based on the bitmask of its neighbors
 		match mask:
-			0, 1, 2, 4, 8: # Road Ends. This logic was already CCW.
+			0, 1, 2, 4, 8: # Road Ends
 				scene_to_place = road_end_scene
-				if mask == 1: rotation = 0 # End pointing Up
-				elif mask == 2: rotation = 270 # End pointing Right
-				elif mask == 4: rotation = 180  # End pointing Down
-				elif mask == 8: rotation = 90  # End pointing Left
+				if mask == 1: scene_rotation = 0
+				elif mask == 2: scene_rotation = 270
+				elif mask == 4: scene_rotation = 180
+				elif mask == 8: scene_rotation = 90
 			3, 6, 9, 12: # Corners
 				scene_to_place = road_corner_scene
-				# Assuming 0-rotation corner connects Down and Left
-				if mask == 3: rotation = 180   # Corner connecting Up and Right
-				elif mask == 6: rotation = 90    # UPDATED: Corner connecting Right and Down (was 270)
-				elif mask == 9: rotation = 270   # UPDATED: Corner connecting Up and Left (was 90)
-				elif mask == 12: rotation = 0    # Corner connecting Down and Left
-			5, 10: # Straights. This logic was already CCW.
+				if mask == 3: scene_rotation = 180
+				elif mask == 6: scene_rotation = 90
+				elif mask == 9: scene_rotation = 270
+				elif mask == 12: scene_rotation = 0
+			5, 10: # Straights
 				scene_to_place = road_straight_scene
-				if mask == 5: rotation = 0  # Vertical (Up-Down)
-				elif mask == 10: rotation = 90 # Horizontal (Left-Right)
+				if mask == 5: scene_rotation = 0
+				elif mask == 10: scene_rotation = 90
 			7, 11, 13, 14: # T-Intersections
 				scene_to_place = road_t_intersection_scene
-				# Assuming 0-rotation asset is a horizontal road with a branch pointing Down.
-				if mask == 14: rotation = 0    # Main: L-R, Branch: Down (Text is upright)
-				elif mask == 11: rotation = 180  # Main: L-R, Branch: Up (Text is upside down)
-				elif mask == 13: rotation = 270   # UPDATED: Main: U-D, Branch: Left (was 270)
-				elif mask == 7: rotation = 90   # UPDATED: Main: U-D, Branch: Right (was 90)
+				if mask == 14: scene_rotation = 0
+				elif mask == 11: scene_rotation = 180
+				elif mask == 13: scene_rotation = 270
+				elif mask == 7: scene_rotation = 90
 			15: # 4-Way Intersection
 				scene_to_place = road_4way_intersection_scene
 		
 		if scene_to_place:
-			_place_scene_at_pos(scene_to_place, pos, Vector2i.ONE, rotation, occupied_cells)
+			_place_scene_at_pos(scene_to_place, pos, Vector2i.ONE, scene_rotation, occupied_cells)
 			processed_tiles[pos] = true
-		else: # ADDED: Handle uncategorized roads on the map border
+		else: # Handle uncategorized roads on the map border
 			if pos.x == 0 or pos.x == grid_size.x - 1 or pos.y == 0 or pos.y == grid_size.y - 1:
 				if out_of_bounds_road_scene:
 					var inward_rotation = 0
-					if pos.x == 0: inward_rotation = 270 # Face right, into the map
-					elif pos.x == grid_size.x - 1: inward_rotation = 90 # Face left, into the map
-					elif pos.y == 0: inward_rotation = 180 # Face down, into the map
-					elif pos.y == grid_size.y - 1: inward_rotation = 0 # Face up, into the map
+					if pos.x == 0: inward_rotation = 270
+					elif pos.x == grid_size.x - 1: inward_rotation = 90
+					elif pos.y == 0: inward_rotation = 180
+					elif pos.y == grid_size.y - 1: inward_rotation = 0
 					_place_scene_at_pos(out_of_bounds_road_scene, pos, Vector2i.ONE, inward_rotation, occupied_cells)
 					processed_tiles[pos] = true
+
+func _check_road_intersection_neighbors(pos, width) -> bool:
+	if grid_data.get(pos + Vector2i.RIGHT) == Zone.MAJOR_INTERSECTION and \
+	   grid_data.get(pos + Vector2i.DOWN) == Zone.MAJOR_INTERSECTION and \
+	   grid_data.get(pos + Vector2i(1,1)) == Zone.MAJOR_INTERSECTION:
+		if width == 2: return true
+		elif grid_data.get(pos + Vector2i(2,0)) == Zone.MAJOR_INTERSECTION and \
+			 grid_data.get(pos + Vector2i(0,2)) == Zone.MAJOR_INTERSECTION and \
+			 grid_data.get(pos + Vector2i(2,2)) == Zone.MAJOR_INTERSECTION:
+			if width == 3: return true
+			elif grid_data.get(pos + Vector2i(3,0)) == Zone.MAJOR_INTERSECTION and \
+				 grid_data.get(pos + Vector2i(0,3)) == Zone.MAJOR_INTERSECTION and \
+				 grid_data.get(pos + Vector2i(3,3)) == Zone.MAJOR_INTERSECTION:
+					if width == 4: return true
+	return false
