@@ -376,10 +376,14 @@ func _generate_secondary_priority_zones():
 	_place_area_clusters(Zone.INDUSTRIAL, industrial_cluster_count, industrial_cluster_size.x, industrial_cluster_size.y)
 	_place_area_clusters(Zone.PARK, park_cluster_count, park_cluster_size.x, park_cluster_size.y)
 
+# --- MODIFIED FUNCTION ---
 func _place_area_clusters(zone_type: Zone, count: int, min_size: int, max_size: int):
 	if count <= 0:
 		return
 
+	var clusters_placed = 0
+	
+	# --- PASS 1: Organic Placement (Original Method) ---
 	var available_starts: Array[Vector2i] = []
 	for x in range(grid_size.x):
 		for y in range(grid_size.y):
@@ -389,7 +393,6 @@ func _place_area_clusters(zone_type: Zone, count: int, min_size: int, max_size: 
 	
 	available_starts.shuffle()
 
-	var clusters_placed = 0
 	for start_pos in available_starts:
 		if clusters_placed >= count:
 			break 
@@ -415,9 +418,68 @@ func _place_area_clusters(zone_type: Zone, count: int, min_size: int, max_size: 
 						for t in cluster_tiles:
 							grid_data[t] = zone_type
 						clusters_placed += 1
+						print("Successfully placed an organic ", Zone.keys()[zone_type], " district. (", clusters_placed, "/", count, ")")
 
+
+	# --- PASS 2: Forced Placement (New Fallback) ---
 	if clusters_placed < count:
-		print("Warning: Could not place all ", Zone.keys()[zone_type], " districts. Placed ", clusters_placed, " out of ", count, " requested.")
+		print("Warning: Organic placement failed for ", Zone.keys()[zone_type], ". Attempting forced placement for remaining ", count - clusters_placed, " clusters.")
+		var forced_placements = 0
+		for i in range(count - clusters_placed):
+			if _force_place_cluster(zone_type, min_size, max_size):
+				forced_placements += 1
+			else:
+				# If even the force placement fails, we're out of options.
+				print("Error: Could not force place a ", Zone.keys()[zone_type], " district. The map may be too full or fragmented.")
+				break # Stop trying for this zone type
+		clusters_placed += forced_placements
+
+	print("Finished placing ", Zone.keys()[zone_type], " districts. Total placed: ", clusters_placed, " out of ", count, " requested.")
+
+
+# --- NEW HELPER FUNCTION ---
+# This function is more aggressive. It specifically finds empty cells next to roads
+# and tries to grow a zone from there, guaranteeing road adjacency.
+func _force_place_cluster(zone_type: Zone, min_size: int, max_size: int) -> bool:
+	# Find all empty cells that are adjacent to a road.
+	var road_adjacent_empties: Array[Vector2i] = []
+	for x in range(grid_size.x):
+		for y in range(grid_size.y):
+			var pos = Vector2i(x, y)
+			if not grid_data.has(pos): # Is it empty?
+				# Check neighbors for a road
+				if _is_road(pos + Vector2i.UP) or \
+				   _is_road(pos + Vector2i.DOWN) or \
+				   _is_road(pos + Vector2i.LEFT) or \
+				   _is_road(pos + Vector2i.RIGHT):
+					road_adjacent_empties.append(pos)
+
+	if road_adjacent_empties.is_empty():
+		return false # No possible place to start from.
+
+	road_adjacent_empties.shuffle()
+
+	for start_pos in road_adjacent_empties:
+		# Check if the start_pos is still available (it might have been taken by a previous forced placement)
+		if not grid_data.has(start_pos):
+			# Use the existing _grow_area function. It works by expanding into any empty cell.
+			var cluster_tiles = _grow_area(start_pos, min_size, max_size)
+
+			if cluster_tiles.size() >= min_size:
+				# We need to double-check that all the tiles in the grown area are still empty.
+				var can_place = true
+				for tile in cluster_tiles:
+					if grid_data.has(tile):
+						can_place = false
+						break
+				
+				if can_place:
+					for t in cluster_tiles:
+						grid_data[t] = zone_type
+					print("Successfully force-placed a ", Zone.keys()[zone_type], " district.")
+					return true # Success! We placed the cluster.
+
+	return false # We looped through all candidates and couldn't find a large enough spot.
 
 
 func _grow_area(start_pos: Vector2i, min_size: int, max_size: int) -> Array[Vector2i]:

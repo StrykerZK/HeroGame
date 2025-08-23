@@ -1,15 +1,20 @@
 [gd_scene load_steps=4 format=3 uid="uid://dkmtyp11ifovy"]
 
-[ext_resource type="Texture2D" uid="uid://cluytlm2s3s74" path="res://assets/textures/granular_concrete_diff_1k.jpg" id="1_7hlla"]
+[ext_resource type="Material" uid="uid://jhqx62uer4m8" path="res://assets/materials/walkway.tres" id="1_7hlla"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vxqm1"]
-albedo_texture = ExtResource("1_7hlla")
+[sub_resource type="BoxMesh" id="BoxMesh_7hlla"]
+size = Vector3(20, 0.74, 20)
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_qshp2"]
-size = Vector2(15, 15)
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_vxqm1"]
+data = PackedVector3Array(-10, 0.37, 10, 10, 0.37, 10, -10, -0.37, 10, 10, 0.37, 10, 10, -0.37, 10, -10, -0.37, 10, 10, 0.37, -10, -10, 0.37, -10, 10, -0.37, -10, -10, 0.37, -10, -10, -0.37, -10, 10, -0.37, -10, 10, 0.37, 10, 10, 0.37, -10, 10, -0.37, 10, 10, 0.37, -10, 10, -0.37, -10, 10, -0.37, 10, -10, 0.37, -10, -10, 0.37, 10, -10, -0.37, -10, -10, 0.37, 10, -10, -0.37, 10, -10, -0.37, -10, 10, 0.37, 10, -10, 0.37, 10, 10, 0.37, -10, -10, 0.37, 10, -10, 0.37, -10, 10, 0.37, -10, -10, -0.37, 10, 10, -0.37, 10, -10, -0.37, -10, 10, -0.37, 10, 10, -0.37, -10, -10, -0.37, -10)
 
-[node name="Walkway" type="Node3D"]
+[node name="Walkway" type="StaticBody3D"]
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-material_override = SubResource("StandardMaterial3D_vxqm1")
-mesh = SubResource("PlaneMesh_qshp2")
+[node name="Pavement" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37371293, 0)
+material_override = ExtResource("1_7hlla")
+mesh = SubResource("BoxMesh_7hlla")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37371293, 0)
+shape = SubResource("ConcavePolygonShape3D_vxqm1")
