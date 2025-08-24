@@ -102,7 +102,7 @@ data = PackedVector3Array(-10, 0.37, 3.5, 10, 0.37, 3.5, -10, -0.37, 3.5, 10, 0.
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_xityw"]
 data = PackedVector3Array(-10, 0.37, 6.5, 10, 0.37, 6.5, -10, -0.37, 6.5, 10, 0.37, 6.5, 10, -0.37, 6.5, -10, -0.37, 6.5, 10, 0.37, -6.5, -10, 0.37, -6.5, 10, -0.37, -6.5, -10, 0.37, -6.5, -10, -0.37, -6.5, 10, -0.37, -6.5, 10, 0.37, 6.5, 10, 0.37, -6.5, 10, -0.37, 6.5, 10, 0.37, -6.5, 10, -0.37, -6.5, 10, -0.37, 6.5, -10, 0.37, -6.5, -10, 0.37, 6.5, -10, -0.37, -6.5, -10, 0.37, 6.5, -10, -0.37, 6.5, -10, -0.37, -6.5, 10, 0.37, 6.5, -10, 0.37, 6.5, 10, 0.37, -6.5, -10, 0.37, 6.5, -10, 0.37, -6.5, 10, 0.37, -6.5, -10, -0.37, 6.5, 10, -0.37, 6.5, -10, -0.37, -6.5, 10, -0.37, 6.5, 10, -0.37, -6.5, -10, -0.37, -6.5)
 
-[node name="House1" type="StaticBody3D"]
+[node name="House1" type="Node3D"]
 script = ExtResource("1_7yca7")
 
 [node name="Grass" type="MeshInstance3D" parent="."]
@@ -128,14 +128,14 @@ transform = Transform3D(1, 0, 0, 0, -1.6292067e-07, 1, 0, -1, -1.6292067e-07, 0,
 mesh = SubResource("ArrayMesh_7f1ao")
 skeleton = NodePath("")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="House1Collision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
 transform = Transform3D(-1.5298986e-07, -3.5, -5.7022237e-07, 0, -5.7022237e-07, 3.5, -3.5, 1.5298986e-07, 2.492521e-14, 0, 0.509, 5)
 shape = SubResource("ConcavePolygonShape3D_7yca7")
 
-[node name="CollisionShape3D3" type="CollisionShape3D" parent="."]
+[node name="PavementCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.371, -6.5)
 shape = SubResource("ConcavePolygonShape3D_cwhdv")
 
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="."]
+[node name="GrassCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37092873, 3.5)
 shape = SubResource("ConcavePolygonShape3D_xityw")

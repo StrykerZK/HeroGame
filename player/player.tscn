@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://c4p7sai8cuiko"]
+[gd_scene load_steps=25 format=3 uid="uid://c4p7sai8cuiko"]
 
 [ext_resource type="Script" uid="uid://dbw3a6d4xctep" path="res://player/player.gd" id="1_oul6g"]
 [ext_resource type="PackedScene" uid="uid://c4gojo1r0wqaq" path="res://assets/3d_models/bob.tscn" id="2_rkbax"]
@@ -2117,6 +2117,8 @@ radius = 0.005
 section_length = 0.5
 curve = SubResource("Curve_g1dw6")
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_rkbax"]
+
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2
 script = ExtResource("1_oul6g")
@@ -2125,21 +2127,21 @@ script = ExtResource("1_oul6g")
 unique_name_in_owner = true
 
 [node name="Skeleton3D" parent="Bob/Armature" index="0"]
-bones/1/rotation = Quaternion(-5.1277425e-06, 0.7079065, 0.7063062, -2.8934246e-05)
-bones/2/rotation = Quaternion(0.0011315905, 2.3996357e-05, 1.6915343e-05, 0.9999994)
-bones/3/rotation = Quaternion(0.0011315903, 2.3895036e-05, 1.6996664e-05, 0.9999994)
-bones/4/rotation = Quaternion(0.0011315906, 2.3837167e-05, 1.7077742e-05, 0.9999994)
-bones/5/rotation = Quaternion(-0.00040035314, 2.8554898e-05, 2.7788594e-05, 0.99999994)
-bones/7/position = Vector3(-0.25974038, -0.06294221, 3.8723407e-05)
-bones/7/rotation = Quaternion(0.29938966, -0.050223805, 0.9317974, 0.19899029)
-bones/10/position = Vector3(0.25974277, -0.06294232, 3.884876e-05)
-bones/10/rotation = Quaternion(0.29953048, 0.05032773, -0.9317428, 0.19900787)
-bones/13/rotation = Quaternion(-0.7070772, 0.008784243, 0.7070277, -0.008750745)
-bones/14/rotation = Quaternion(-7.816967e-09, 1.3509909e-07, -0.022873787, 0.99973845)
-bones/16/rotation = Quaternion(0.70703936, 0.008711628, 0.70706666, 0.008730011)
-bones/17/rotation = Quaternion(-7.648703e-09, 1.5967414e-08, 0.022381606, 0.9997496)
-bones/19/position = Vector3(0.43299675, 0.009275124, -0.0030941665)
-bones/21/position = Vector3(-0.43299675, 0.009275132, -0.0030941963)
+bones/1/rotation = Quaternion(-2.4570672e-06, 0.70814496, 0.706067, -1.3734381e-05)
+bones/2/rotation = Quaternion(0.0014693148, 1.139015e-05, 8.013005e-06, 0.9999989)
+bones/3/rotation = Quaternion(0.0014693142, 1.1319158e-05, 8.051591e-06, 0.9999989)
+bones/4/rotation = Quaternion(0.0014693148, 1.1291717e-05, 8.089984e-06, 0.9999989)
+bones/5/rotation = Quaternion(-0.000117605676, 8.388118e-06, 8.163019e-06, 1)
+bones/7/position = Vector3(-0.2597407, -0.06323015, 2.7742248e-05)
+bones/7/rotation = Quaternion(0.29916817, -0.049989462, 0.93173796, 0.19965956)
+bones/10/position = Vector3(0.2597424, -0.06323022, 2.7866428e-05)
+bones/10/rotation = Quaternion(0.29924807, 0.050139606, -0.9317023, 0.19966872)
+bones/13/rotation = Quaternion(-0.7070702, 0.008837497, 0.7070334, -0.008812588)
+bones/14/rotation = Quaternion(-7.762669e-09, 1.3510011e-07, -0.022713594, 0.9997421)
+bones/16/rotation = Quaternion(0.7070419, 0.008952428, 0.70705825, 0.008963457)
+bones/17/rotation = Quaternion(-7.784979e-09, 1.5968528e-08, 0.0227747, 0.99974066)
+bones/19/position = Vector3(0.43335098, 0.009275124, -0.0030941665)
+bones/21/position = Vector3(-0.4333511, 0.009275256, -0.0030944645)
 
 [node name="AnimationTree" parent="Bob" index="2"]
 libraries = {
@@ -2199,6 +2201,11 @@ visible = false
 lifetime = 0.5
 process_material = SubResource("ParticleProcessMaterial_rkbax")
 draw_pass_1 = SubResource("TubeTrailMesh_yw30f")
+
+[node name="StepUpCast" type="ShapeCast3D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("BoxShape3D_rkbax")
+target_position = Vector3(0, -0.5, 0)
 
 [connection signal="timeout" from="DoubleClickTimer" to="." method="_on_double_click_timer_timeout"]
 

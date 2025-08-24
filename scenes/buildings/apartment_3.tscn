@@ -90,11 +90,11 @@ data = PackedVector3Array(1.8476, -2.3685, 1.6233, 1.8476, -0.659, 1.6233, 1.951
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_o4axw"]
 data = PackedVector3Array(-10, 0.37, 10, 10, 0.37, 10, -10, -0.37, 10, 10, 0.37, 10, 10, -0.37, 10, -10, -0.37, 10, 10, 0.37, -10, -10, 0.37, -10, 10, -0.37, -10, -10, 0.37, -10, -10, -0.37, -10, 10, -0.37, -10, 10, 0.37, 10, 10, 0.37, -10, 10, -0.37, 10, 10, 0.37, -10, 10, -0.37, -10, 10, -0.37, 10, -10, 0.37, -10, -10, 0.37, 10, -10, -0.37, -10, -10, 0.37, 10, -10, -0.37, 10, -10, -0.37, -10, 10, 0.37, 10, -10, 0.37, 10, 10, 0.37, -10, -10, 0.37, 10, -10, 0.37, -10, 10, 0.37, -10, -10, -0.37, 10, 10, -0.37, 10, -10, -0.37, -10, 10, -0.37, 10, 10, -0.37, -10, -10, -0.37, -10)
 
-[node name="Apartment3" type="StaticBody3D"]
+[node name="Apartment3" type="Node3D"]
 script = ExtResource("1_kn807")
 
 [node name="Sketchfab_Scene" type="Node3D" parent="."]
-transform = Transform3D(-1.4861872e-07, 0, 3.4, 0, 3.4, 0, -3.4, 0, -1.4861872e-07, 0, 0.7588528, 0)
+transform = Transform3D(-1.09278474e-07, 0, 2.5, 0, 2.5, 0, -2.5, 0, -1.09278474e-07, 0, 0.7588528, 2.8)
 
 [node name="PublicBuilding_8_Pack3_0" type="MeshInstance3D" parent="Sketchfab_Scene"]
 transform = Transform3D(1, 0, 0, 0, 1, -1.6292067e-07, 0, 1.6292067e-07, 1, 0, 0, 0)
@@ -111,10 +111,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37371293, 0)
 material_override = ExtResource("2_kn807")
 mesh = SubResource("BoxMesh_kn807")
 
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="."]
-transform = Transform3D(-1.4861872e-07, -3.4, -5.539303e-07, 0, -5.539303e-07, 3.4, -3.4, 1.4861872e-07, 2.4213062e-14, 0, 0.7588528, 0)
+[node name="Apartment3Collision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+transform = Transform3D(-1.09278474e-07, -2.5, -4.0730168e-07, 0, -4.0730168e-07, 2.5, -2.5, 1.09278474e-07, 1.7803723e-14, 0, 0.7588528, 2.8)
 shape = SubResource("ConcavePolygonShape3D_kn807")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="PavementCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37371293, 0)
 shape = SubResource("ConcavePolygonShape3D_o4axw")

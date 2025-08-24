@@ -37,9 +37,6 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_vxfuu")
 
-[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_6qqya"]
-data = PackedVector3Array(-1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, 1, -1, 1, -1, 1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, 1, -1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1)
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w2ub7"]
 resource_name = "Road Yellow"
 cull_mode = 2
@@ -141,6 +138,9 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_xnjuk")
 
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_6qqya"]
+data = PackedVector3Array(-1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, 1, -1, 1, -1, 1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1, 1, -1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1)
+
 [node name="MajorRoadMiddle" type="Node3D"]
 
 [node name="major_road_straight_middle" type="Node3D" parent="."]
@@ -150,11 +150,6 @@ transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_yfoid")
 skeleton = NodePath("")
-
-[node name="StaticBody3D" type="StaticBody3D" parent="major_road_straight_middle/Cube_031"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="major_road_straight_middle/Cube_031/StaticBody3D"]
-shape = SubResource("ConcavePolygonShape3D_6qqya")
 
 [node name="Cube_033" type="MeshInstance3D" parent="major_road_straight_middle"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0.033707906, 1)
@@ -170,3 +165,7 @@ skeleton = NodePath("")
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, -0.982, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_6nama")
 skeleton = NodePath("")
+
+[node name="RoadCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
+shape = SubResource("ConcavePolygonShape3D_6qqya")

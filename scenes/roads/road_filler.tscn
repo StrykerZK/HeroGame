@@ -42,7 +42,7 @@ data = PackedVector3Array(-1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1,
 
 [node name="RoadFiller" type="Node3D"]
 
-[node name="road_filler" type="StaticBody3D" parent="."]
+[node name="road_filler" type="Node3D" parent="."]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
 [node name="Cube_043" type="MeshInstance3D" parent="road_filler"]
@@ -50,6 +50,6 @@ transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_tpno5")
 skeleton = NodePath("")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="road_filler"]
-transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
+[node name="RoadCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_seft4")

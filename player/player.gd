@@ -16,6 +16,8 @@ var move_speed := 8.0
 @export var max_jump_impulse := 50.0
 @export var jump_charge_time := 3.0
 @export var base_fov := 75.0
+@export var max_step_height := 0.5
+@export var step_check_distance := 0.8
 
 var can_move:= true
 var is_running:= false
@@ -40,6 +42,7 @@ var click_count := 0
 @onready var _stickman := %Bob
 @onready var double_click_timer := %DoubleClickTimer
 @onready var speed_lines_vfx := %SpeedLinesVFX
+@onready var step_up_cast := %StepUpCast
 
 @onready var poof_effect_scene: PackedScene = preload("res://assets/vfx/poof.tscn")
 @onready var projectile_scene: PackedScene = preload("res://temp_scenes/test_projectile.tscn")
@@ -162,7 +165,13 @@ func _physics_process(delta):
 	speed_lines_vfx.global_rotation.y = lerp_angle(speed_lines_vfx.rotation.y, target_angle, rotation_speed * delta)
 	%FlyCollision.global_rotation.y = lerp_angle(%FlyCollision.rotation.y, target_angle, rotation_speed * delta)
 	$SpawnPivot.global_rotation.y = lerp_angle($SpawnPivot.rotation.y, target_angle, rotation_speed * delta)
-
+	
+	# Handle Step-Up
+	if is_on_floor() and move_direction.length() > 0:
+		var step_height = _get_step_height(move_direction)
+		if step_height > 0.0:
+			global_position.y += step_height + 0.05
+			velocity.y = 0
 	
 	var is_starting_jump := Input.is_action_just_pressed("jump") and is_on_floor()
 	
@@ -216,7 +225,7 @@ func _physics_process(delta):
 			elif is_ascending:
 				_stickman.update_animation("fly_up")
 			else:
-				if velocity.length() > 0.0:
+				if velocity.x > 0.0 or velocity.z > 0.0:
 					_stickman.update_animation("fly")
 				else:
 					_stickman.update_animation("hover")
@@ -285,6 +294,27 @@ func speedlines():
 	else:
 		speed_lines_vfx.emitting = false
 
+func _get_step_height(move_direction: Vector3) -> float:
+	# Position the shapecast slightly in front of the character and at the max step height
+	var cast_origin = Vector3.UP * (max_step_height + 0.1)
+	var cast_forward = move_direction.normalized() * step_check_distance
+	step_up_cast.global_position = global_position + cast_origin + cast_forward
+	
+	# Force the shapecast to update its collision information
+	step_up_cast.force_shapecast_update()
+	
+	# Check if the shapecast hit something below it
+	if step_up_cast.is_colliding():
+		# Get the vertical distance to the collision point
+		var step_height = step_up_cast.get_collision_point(0).y - global_position.y
+		
+		# Check if the step is within a valid range (not too high, and not a ramp/floor)
+		if step_height > 0.01 and step_height <= max_step_height:
+			# Return the height of the valid step
+			return step_height
+	
+	# If no valid step is found, return 0.0
+	return 0.0
 
 func _on_double_click_timer_timeout() -> void:
 	click_count = 0

@@ -8,6 +8,8 @@ extends Node3D
 @export_group("Grid Settings")
 @export var grid_size := Vector2i(50, 50)
 @export var cell_size := 10.0
+@export_subgroup("Chunk Settings")
+@export var chunk_size := Vector2i(16, 16)
 
 @export_group("Priority Zone Clusters")
 # High Priority
@@ -171,6 +173,7 @@ enum Zone {
 enum Direction { NONE, UP, DOWN, LEFT, RIGHT }
 var road_direction_data: Dictionary = {}
 var grid_data: Dictionary = {}
+var collision_chunks: Dictionary = {}
 var generated_city_node: Node3D
 var global_placement_counts: Dictionary = {}
 var building_data_cache: Dictionary = {}
@@ -375,6 +378,60 @@ func _generate_secondary_priority_zones():
 	_place_area_clusters(Zone.FOOD, food_cluster_count, food_cluster_size.x, food_cluster_size.y)
 	_place_area_clusters(Zone.INDUSTRIAL, industrial_cluster_count, industrial_cluster_size.x, industrial_cluster_size.y)
 	_place_area_clusters(Zone.PARK, park_cluster_count, park_cluster_size.x, park_cluster_size.y)
+
+func _add_collision_to_chunk(instance: Node3D):
+	# 1. Validate the incoming instance and its metadata
+	if not is_instance_valid(instance):
+		printerr("Aborting collision chunking: provided instance is not valid.")
+		return
+	if not instance.has_meta("grid_position"):
+		var scene_path = instance.scene_file_path if instance.scene_file_path else "[dynamic instance]"
+		printerr("Aborting collision chunking: instance is missing 'grid_position' metadata. Scene path: %s" % scene_path)
+		return
+		
+	var grid_pos = instance.get_meta("grid_position")
+	if not grid_pos is Vector2i:
+		printerr("Aborting collision chunking: 'grid_position' metadata is not a Vector2i.")
+		return
+		
+	var chunk_coord = grid_pos / chunk_size
+
+	# 2. Get or create the StaticBody3D for this chunk
+	var chunk_body: StaticBody3D
+	
+	if not collision_chunks.has(chunk_coord):
+		chunk_body = StaticBody3D.new()
+		chunk_body.name = "CollisionChunk_%d_%d" % [chunk_coord.x, chunk_coord.y]
+		var chunk_world_pos = Vector3(chunk_coord.x * chunk_size.x * cell_size, 0, chunk_coord.y * chunk_size.y * cell_size)
+		chunk_body.position = chunk_world_pos
+		generated_city_node.add_child(chunk_body)
+		collision_chunks[chunk_coord] = chunk_body
+	else:
+		chunk_body = collision_chunks[chunk_coord]
+
+	if not is_instance_valid(chunk_body):
+		printerr("FATAL: chunk_body is null after creation/retrieval for chunk: %s" % chunk_coord)
+		return
+
+	# 3. Find all collision shapes and add them to the chunk using the Godot 4 API
+	for shape_node in instance.find_children("*", "CollisionShape3D"):
+		if shape_node.is_in_group("collision_for_chunking"):
+			if shape_node.shape:
+				# Step A: Create a new shape owner for this specific shape.
+				var owner_id = chunk_body.create_shape_owner(shape_node)
+				
+				# Step B: Calculate the shape's transform relative to the chunk body.
+				var shape_global_transform = shape_node.global_transform
+				var local_transform = chunk_body.global_transform.affine_inverse() * shape_global_transform
+				
+				# Step C: Set the transform for the new owner.
+				chunk_body.shape_owner_set_transform(owner_id, local_transform)
+
+				# Step D: Add the shape to the new owner.
+				chunk_body.shape_owner_add_shape(owner_id, shape_node.shape.duplicate())
+			
+			# The original CollisionShape3D node is now redundant.
+			shape_node.queue_free()
 
 # --- MODIFIED FUNCTION ---
 func _place_area_clusters(zone_type: Zone, count: int, min_size: int, max_size: int):
@@ -846,6 +903,9 @@ func _place_scene_at_pos(scene: PackedScene, grid_pos: Vector2i, footprint: Vect
 	
 	generated_city_node.add_child(instance)
 	
+	# Extract scene's collision and add it to correct chunk.
+	_add_collision_to_chunk(instance)
+	
 	for x in range(footprint.x):
 		for y in range(footprint.y):
 			occupied_cells[grid_pos + Vector2i(x,y)] = instance
@@ -1025,6 +1085,7 @@ func _clear_city():
 	var old_city = find_child("GeneratedCity", false, false)
 	if is_instance_valid(old_city): remove_child(old_city); old_city.free()
 	grid_data.clear()
+	collision_chunks.clear()
 
 func _find_contiguous_zone_area(start_pos: Vector2i, zone_type: Zone, visited: Dictionary) -> Array[Vector2i]:
 	var area_tiles: Array[Vector2i] = []; var frontier: Array[Vector2i] = [start_pos]

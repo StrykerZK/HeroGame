@@ -101,7 +101,7 @@ data = PackedVector3Array(-10, 0.37, 6.5, 10, 0.37, 6.5, -10, -0.37, 6.5, 10, 0.
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_om2eo"]
 data = PackedVector3Array(-10, 0.37, 3.5, 10, 0.37, 3.5, -10, -0.37, 3.5, 10, 0.37, 3.5, 10, -0.37, 3.5, -10, -0.37, 3.5, 10, 0.37, -3.5, -10, 0.37, -3.5, 10, -0.37, -3.5, -10, 0.37, -3.5, -10, -0.37, -3.5, 10, -0.37, -3.5, 10, 0.37, 3.5, 10, 0.37, -3.5, 10, -0.37, 3.5, 10, 0.37, -3.5, 10, -0.37, -3.5, 10, -0.37, 3.5, -10, 0.37, -3.5, -10, 0.37, 3.5, -10, -0.37, -3.5, -10, 0.37, 3.5, -10, -0.37, 3.5, -10, -0.37, -3.5, 10, 0.37, 3.5, -10, 0.37, 3.5, 10, 0.37, -3.5, -10, 0.37, 3.5, -10, 0.37, -3.5, 10, 0.37, -3.5, -10, -0.37, 3.5, 10, -0.37, 3.5, -10, -0.37, -3.5, 10, -0.37, 3.5, 10, -0.37, -3.5, -10, -0.37, -3.5)
 
-[node name="House2" type="StaticBody3D"]
+[node name="House2" type="Node3D"]
 
 [node name="Grass" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37092873, 3.5)
@@ -126,14 +126,14 @@ transform = Transform3D(2.6170175, 0, 0, 0, -4.2636626e-07, 1, 0, -2.6170175, -1
 mesh = SubResource("ArrayMesh_v6ain")
 skeleton = NodePath("")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="House2Collision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
 transform = Transform3D(-4.0037716e-07, -9.159561, -5.7022237e-07, 0, -1.4922819e-06, 3.5, -9.159561, 4.0037716e-07, 2.4925212e-14, 0, 0.738, 3.235)
 shape = SubResource("ConcavePolygonShape3D_25281")
 
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="."]
+[node name="GrassCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37092873, 3.5)
 shape = SubResource("ConcavePolygonShape3D_d77vj")
 
-[node name="CollisionShape3D3" type="CollisionShape3D" parent="."]
+[node name="PavementCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.371, -6.5)
 shape = SubResource("ConcavePolygonShape3D_om2eo")

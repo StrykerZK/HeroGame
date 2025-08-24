@@ -1,8 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://00r46fvffx1y"]
+[gd_scene load_steps=6 format=3 uid="uid://00r46fvffx1y"]
 
 [ext_resource type="Script" uid="uid://d3oclkc0x2gto" path="res://scripts/city_gen.gd" id="1_37kl0"]
 [ext_resource type="PackedScene" uid="uid://c4p7sai8cuiko" path="res://player/player.tscn" id="2_8uh7m"]
-[ext_resource type="PackedScene" uid="uid://bcvsq0c0cvn74" path="res://scenes/buildings/house_1.tscn" id="3_6uqi0"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_37kl0"]
 sky_top_color = Color(0.30904776, 0.65425, 0.87526435, 1)
@@ -38,6 +37,3 @@ size = Vector3(50, 1, 50)
 
 [node name="Player" parent="." instance=ExtResource("2_8uh7m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.384628, 23)
-
-[node name="House_1" parent="." instance=ExtResource("3_6uqi0")]
-transform = Transform3D(3.1, 0, 0, 0, 3.1, 0, 0, 0, 3.1, -14.47432, 12.035453, 23.405289)

@@ -1,7 +1,6 @@
-[gd_scene load_steps=48 format=3 uid="uid://bv6yk7ataw5la"]
+[gd_scene load_steps=46 format=3 uid="uid://bv6yk7ataw5la"]
 
 [ext_resource type="Script" uid="uid://bc8dmb62cwuyw" path="res://scripts/city_generator.gd" id="1_s04yr"]
-[ext_resource type="PackedScene" uid="uid://crwlyd8qousvq" path="res://temp_scenes/business_building.tscn" id="2_gwbpe"]
 [ext_resource type="PackedScene" uid="uid://df2dcboi6a6a2" path="res://temp_scenes/downtown_1.tscn" id="2_wy0y2"]
 [ext_resource type="PackedScene" uid="uid://78r105d8itax" path="res://temp_scenes/house_1.tscn" id="3_oliwm"]
 [ext_resource type="PackedScene" uid="uid://da0515wewwd4l" path="res://temp_scenes/downtown_large_1.tscn" id="3_u0kti"]
@@ -14,7 +13,6 @@
 [ext_resource type="PackedScene" uid="uid://dvbj4sb6pnlgs" path="res://temp_scenes/entertainment_large_1.tscn" id="6_584jt"]
 [ext_resource type="PackedScene" uid="uid://cpb8ihhpqg78y" path="res://temp_scenes/business_large_1.tscn" id="7_ehvgl"]
 [ext_resource type="PackedScene" uid="uid://doy0j5edqikx3" path="res://temp_scenes/government_large_1.tscn" id="7_twqjo"]
-[ext_resource type="PackedScene" uid="uid://deiujb7lvh8gf" path="res://temp_scenes/government_building.tscn" id="8_pantm"]
 [ext_resource type="PackedScene" uid="uid://b1j1d3sru8cpi" path="res://temp_scenes/rock.tscn" id="9_edvgp"]
 [ext_resource type="PackedScene" uid="uid://dkmtyp11ifovy" path="res://temp_scenes/walkway.tscn" id="10_mpuha"]
 [ext_resource type="PackedScene" uid="uid://c4p7sai8cuiko" path="res://player/player.tscn" id="11_mpuha"]
@@ -64,6 +62,7 @@ glow_enabled = true
 script = ExtResource("1_s04yr")
 grid_size = Vector2i(150, 150)
 cell_size = 20.0
+chunk_size = Vector2i(32, 32)
 downtown_cluster_size = Vector2i(70, 110)
 business_cluster_count = 3
 business_cluster_size = Vector2i(50, 80)
@@ -91,18 +90,18 @@ plaza_size = Vector2i(0, 0)
 major_road_count_horizontal = Vector2i(2, 4)
 major_road_count_vertical = Vector2i(2, 4)
 major_road_width = 4
-min_major_road_spacing = 20
+min_major_road_spacing = 15
 minor_road_from_major_chance = 0.4000000000087311
 minor_road_from_edge_count = 20
 minor_road_min_straight_length = 20
 minor_road_max_length = 70
 enforce_variety_in_standard_zones = false
 downtown_buildings = Array[PackedScene]([ExtResource("2_wy0y2"), ExtResource("3_u0kti")])
-business_buildings = Array[PackedScene]([ExtResource("2_gwbpe"), ExtResource("7_ehvgl"), ExtResource("4_edvgp")])
+business_buildings = Array[PackedScene]([ExtResource("7_ehvgl"), ExtResource("4_edvgp")])
 commercial_buildings = Array[PackedScene]([ExtResource("5_twqjo")])
 entertainment_buildings = Array[PackedScene]([ExtResource("6_584jt")])
 food_buildings = Array[PackedScene]([ExtResource("5_2y0xv"), ExtResource("6_03cvu")])
-government_buildings = Array[PackedScene]([ExtResource("7_twqjo"), ExtResource("8_pantm")])
+government_buildings = Array[PackedScene]([ExtResource("7_twqjo")])
 hospital_buildings = Array[PackedScene]([ExtResource("13_gt42s")])
 police_buildings = Array[PackedScene]([ExtResource("14_h53l6")])
 apartment_buildings = Array[PackedScene]([ExtResource("4_ocjyt"), ExtResource("16_0ovt3"), ExtResource("17_jmqnt")])
