@@ -1,6 +1,5 @@
-[gd_scene load_steps=6 format=3 uid="uid://00r46fvffx1y"]
+[gd_scene load_steps=5 format=3 uid="uid://00r46fvffx1y"]
 
-[ext_resource type="Script" uid="uid://d3oclkc0x2gto" path="res://scripts/city_gen.gd" id="1_37kl0"]
 [ext_resource type="PackedScene" uid="uid://c4p7sai8cuiko" path="res://player/player.tscn" id="2_8uh7m"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_37kl0"]
@@ -26,9 +25,6 @@ environment = SubResource("Environment_6uqi0")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.5090413, -0.1361333, 0.84990865, 0, 0.9874138, 0.15815806, -0.8607421, 0.080508985, -0.5026344, 0, 0, 0)
 shadow_enabled = true
-
-[node name="CityGen" type="Node" parent="."]
-script = ExtResource("1_37kl0")
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.801574, 23.353996)

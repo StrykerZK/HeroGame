@@ -15,6 +15,10 @@ run/main_scene="uid://00r46fvffx1y"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+LODManager="*res://scripts/lod_manager.gd"
+
 [display]
 
 window/size/viewport_width=1980

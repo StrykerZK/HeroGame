@@ -24,8 +24,6 @@ var is_running:= false
 var is_crouching:= false
 var is_flying:= false
 var is_boosting:= false
-var is_ascending:= false
-var is_descending:= false
 var is_jumping:= false
 var is_charging_jump := false
 var is_jump_charged:= false
@@ -80,14 +78,12 @@ func _input(event):
 			is_crouching = true
 			speed_mult /= 2
 		elif is_flying:
-			is_descending = true
 			velocity.y = -flying_ascend_descend_speed
 	if event.is_action_released("crouch"):
 		if is_on_floor() and is_crouching:
 			is_crouching = false
 			speed_mult *= 2
 		elif is_flying:
-			is_descending = false
 			velocity.y = 0.0
 	if event.is_action_pressed("jump") and not is_on_floor():
 		if not is_flying:
@@ -104,11 +100,9 @@ func _input(event):
 				fly()
 				double_click_timer.stop()
 				return
-			is_ascending = true
 			velocity.y = flying_ascend_descend_speed
 	if event.is_action_released("jump") and is_flying:
 		if velocity.y > 0.0:
-			is_ascending = false
 			velocity.y = 0.0
 	if event.is_action_pressed("skill_1") and %SpeedTimer.is_stopped():
 		speed_up(15.0)
@@ -216,21 +210,28 @@ func _physics_process(delta):
 	_camera.fov = lerp(_camera.fov, target_fov, delta * 5.0)
 	
 	# Stickman Animations
+	handle_animations()
+	
+	# Stop flying if hit ground
+	if is_flying and is_on_floor():
+		fly()
+
+func handle_animations():
 	if not is_on_floor():
 		if is_flying:
 			%StandardCollision.disabled = true
 			%FlyCollision.disabled = false
-			if is_descending:
-				_stickman.update_animation("fly_down")
-			elif is_ascending:
-				_stickman.update_animation("fly_up")
-			else:
-				if velocity.x > 0.0 or velocity.z > 0.0:
-					_stickman.update_animation("fly")
+			if velocity.x != 0.0 or velocity.z != 0.0:
+				if velocity.y < 0.0:
+					_stickman.update_animation("fly_down")
+				elif velocity.y > 0.0:
+					_stickman.update_animation("fly_up")
 				else:
-					_stickman.update_animation("hover")
-					%StandardCollision.disabled = false
-					%FlyCollision.disabled = true
+					_stickman.update_animation("fly")
+			else:
+				_stickman.update_animation("hover")
+				%StandardCollision.disabled = false
+				%FlyCollision.disabled = true
 		else:
 			%StandardCollision.disabled = false
 			%FlyCollision.disabled = true
@@ -251,10 +252,6 @@ func _physics_process(delta):
 				if not is_running: _stickman.update_animation("walk")
 				else: _stickman.update_animation("run")
 			else: _stickman.update_animation("idle")
-	
-	# Stop flying if hit ground
-	if is_flying and is_on_floor():
-		fly()
 
 func speed_up(new_mult):
 	var temp_mult = speed_mult
@@ -277,8 +274,6 @@ func fly():
 		if is_boosting:
 			is_boosting = false
 			speed_mult /= (speed_mult * 4)
-		is_ascending = false
-		is_descending = false
 		_gravity = -70.0
 		speed_mult /= flying_mult
 		acceleration /= flying_acceleration_mult

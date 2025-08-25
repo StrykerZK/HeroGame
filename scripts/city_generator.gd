@@ -888,6 +888,7 @@ func _place_scene_at_pos(scene: PackedScene, grid_pos: Vector2i, footprint: Vect
 				return null
 
 	var instance = scene.instantiate()
+	LODManager.register_building(instance)
 	instance.set_meta("grid_position", grid_pos)
 	
 	# Get and set movement direction if the scene supports it
