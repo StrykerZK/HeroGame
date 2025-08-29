@@ -169,8 +169,11 @@ data = PackedVector3Array(-10, 0.37, 3.5, 10, 0.37, 3.5, -10, -0.37, 3.5, 10, 0.
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_xityw"]
 data = PackedVector3Array(-10, 0.37, 6.5, 10, 0.37, 6.5, -10, -0.37, 6.5, 10, 0.37, 6.5, 10, -0.37, 6.5, -10, -0.37, 6.5, 10, 0.37, -6.5, -10, 0.37, -6.5, 10, -0.37, -6.5, -10, 0.37, -6.5, -10, -0.37, -6.5, 10, -0.37, -6.5, 10, 0.37, 6.5, 10, 0.37, -6.5, 10, -0.37, 6.5, 10, 0.37, -6.5, 10, -0.37, -6.5, 10, -0.37, 6.5, -10, 0.37, -6.5, -10, 0.37, 6.5, -10, -0.37, -6.5, -10, 0.37, 6.5, -10, -0.37, 6.5, -10, -0.37, -6.5, 10, 0.37, 6.5, -10, 0.37, 6.5, 10, 0.37, -6.5, -10, 0.37, 6.5, -10, 0.37, -6.5, 10, 0.37, -6.5, -10, -0.37, 6.5, 10, -0.37, 6.5, -10, -0.37, -6.5, 10, -0.37, 6.5, 10, -0.37, -6.5, -10, -0.37, -6.5)
 
-[node name="House1" type="Node3D"]
+[node name="House1" type="Node3D" node_paths=PackedStringArray("lod0_node", "lod1_node", "lod2_node")]
 script = ExtResource("1_7yca7")
+lod0_node = NodePath("LOD0")
+lod1_node = NodePath("LOD1")
+lod2_node = NodePath("LOD2")
 
 [node name="Grass" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37092873, 3.5)

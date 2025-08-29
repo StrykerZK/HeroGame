@@ -1087,6 +1087,7 @@ func _clear_city():
 	if is_instance_valid(old_city): remove_child(old_city); old_city.free()
 	grid_data.clear()
 	collision_chunks.clear()
+	LODManager.clear_buildings()
 
 func _find_contiguous_zone_area(start_pos: Vector2i, zone_type: Zone, visited: Dictionary) -> Array[Vector2i]:
 	var area_tiles: Array[Vector2i] = []; var frontier: Array[Vector2i] = [start_pos]

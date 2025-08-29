@@ -46,6 +46,8 @@ var click_count := 0
 @onready var projectile_scene: PackedScene = preload("res://temp_scenes/test_projectile.tscn")
 
 func _ready():
+	LODManager.register_player(self)
+	
 	_camera.fov = base_fov
 	move_speed = base_speed
 	
