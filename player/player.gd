@@ -2,20 +2,24 @@ extends CharacterBody3D
 
 @export_group("Camera")
 @export_range(0.0, 1.0) var mouse_sensitivity := 0.25
+@export var base_fov := 75.0
 
 @export_group("Movement")
+@export_subgroup("Ground")
 @export var base_speed := 8.0
 var move_speed := 8.0
 @export var acceleration := 50.0
+@export var deceleration := 80.0
 @export var sprint_mult := 2.0
-@export var flying_mult := 6.0
-@export var flying_acceleration_mult := 10.0
-@export var flying_ascend_descend_speed := 70.0
 @export var rotation_speed := 12.0
 @export var min_jump_impulse := 12.0
 @export var max_jump_impulse := 50.0
 @export var jump_charge_time := 3.0
-@export var base_fov := 75.0
+@export_subgroup("Flying")
+@export var flying_mult := 6.0
+@export var flying_acceleration_mult := 10.0
+@export var ascend_descend_speed := 70.0
+@export_subgroup("Misc")
 @export var max_step_height := 0.5
 @export var step_check_distance := 0.8
 
@@ -80,7 +84,7 @@ func _input(event):
 			is_crouching = true
 			speed_mult /= 2
 		elif is_flying:
-			velocity.y = -flying_ascend_descend_speed
+			velocity.y = -ascend_descend_speed
 	if event.is_action_released("crouch"):
 		if is_on_floor() and is_crouching:
 			is_crouching = false
@@ -102,7 +106,7 @@ func _input(event):
 				fly()
 				double_click_timer.stop()
 				return
-			velocity.y = flying_ascend_descend_speed
+			velocity.y = ascend_descend_speed
 	if event.is_action_released("jump") and is_flying:
 		if velocity.y > 0.0:
 			velocity.y = 0.0
