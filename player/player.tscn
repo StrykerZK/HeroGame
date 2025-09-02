@@ -1,8 +1,9 @@
-[gd_scene load_steps=20 format=3 uid="uid://c4p7sai8cuiko"]
+[gd_scene load_steps=21 format=3 uid="uid://c4p7sai8cuiko"]
 
 [ext_resource type="Script" uid="uid://dbw3a6d4xctep" path="res://player/player.gd" id="1_oul6g"]
 [ext_resource type="PackedScene" uid="uid://c4gojo1r0wqaq" path="res://assets/3d_models/bob.tscn" id="2_rkbax"]
 [ext_resource type="PackedScene" uid="uid://dip3uv74wkfud" path="res://scenes/fx/sonic_boom_fx.tscn" id="3_g1dw6"]
+[ext_resource type="AudioStream" uid="uid://brr070yplabwo" path="res://assets/sfx/boom1.mp3" id="4_yw30f"]
 
 [sub_resource type="Animation" id="Animation_ryr46"]
 resource_name = "idle"
@@ -2095,21 +2096,21 @@ script = ExtResource("1_oul6g")
 unique_name_in_owner = true
 
 [node name="Skeleton3D" parent="Bob/Armature" index="0"]
-bones/1/rotation = Quaternion(-4.9260707e-05, 0.7039536, 0.71024585, -0.00028011296)
-bones/2/rotation = Quaternion(-0.004449346, 0.00023231469, 0.00016402663, 0.9999901)
-bones/3/rotation = Quaternion(-0.0044493456, 0.00023171236, 0.00016481454, 0.9999901)
-bones/4/rotation = Quaternion(-0.0044493456, 0.00023115112, 0.00016560072, 0.9999901)
-bones/5/rotation = Quaternion(-0.0028117944, 0.00020054939, 0.00019516751, 0.99999607)
-bones/7/position = Vector3(-0.25972053, -0.046063937, 0.00068271207)
-bones/7/rotation = Quaternion(0.3096159, -0.060003556, 0.93356204, 0.17029278)
-bones/10/position = Vector3(0.2597626, -0.046063963, 0.00068283104)
-bones/10/rotation = Quaternion(0.3136255, 0.058825627, -0.9326481, 0.16836329)
-bones/13/rotation = Quaternion(-0.7071836, 0.007930442, 0.70694286, -0.0077664703)
-bones/14/rotation = Quaternion(-1.012827e-08, 1.350804e-07, -0.029653743, 0.99956024)
-bones/16/rotation = Quaternion(0.70693105, 0.0007748411, 0.7072814, 0.0010090334)
-bones/17/rotation = Quaternion(-3.6041305e-09, 1.597695e-08, 0.0105532445, 0.9999443)
-bones/19/position = Vector3(0.4155328, 0.009275124, -0.0030941665)
-bones/21/position = Vector3(-0.4155328, 0.009275255, -0.0030944645)
+bones/1/rotation = Quaternion(-5.2403273e-05, 0.7036713, 0.7105257, -0.00029799814)
+bones/2/rotation = Quaternion(-0.004846739, 0.00024714798, 0.00017450168, 0.99998826)
+bones/3/rotation = Quaternion(-0.004846738, 0.00024651, 0.0001753399, 0.99998826)
+bones/4/rotation = Quaternion(-0.004846738, 0.0002459129, 0.00017617627, 0.99998826)
+bones/5/rotation = Quaternion(-0.0031540792, 0.00022496263, 0.0002189256, 0.99999505)
+bones/7/position = Vector3(-0.25972176, -0.047068097, 0.00064440223)
+bones/7/rotation = Quaternion(0.30926478, -0.059699424, 0.93353003, 0.17121051)
+bones/10/position = Vector3(0.25976136, -0.047068126, 0.0006445231)
+bones/10/rotation = Quaternion(0.31258044, 0.05825144, -0.9326489, 0.17048858)
+bones/13/rotation = Quaternion(-0.7072022, 0.0077671134, 0.7069281, -0.007580489)
+bones/14/rotation = Quaternion(-1.0273462e-08, 1.3508141e-07, -0.030082678, 0.9995474)
+bones/16/rotation = Quaternion(0.7069306, 0.0007421992, 0.707282, 0.0009771258)
+bones/17/rotation = Quaternion(-3.8965773e-09, 1.5968523e-08, 0.011435946, 0.9999346)
+bones/19/position = Vector3(0.41642094, 0.009275124, -0.0030941665)
+bones/21/position = Vector3(-0.41642094, 0.009275246, -0.0030944645)
 
 [node name="AnimationTree" parent="Bob" index="2"]
 libraries = {
@@ -2168,6 +2169,13 @@ target_position = Vector3(0, -0.5, 0)
 [node name="SonicBoomFX" parent="." instance=ExtResource("3_g1dw6")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7487595, 0)
+
+[node name="FXPlayer" type="AudioStreamPlayer3D" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("4_yw30f")
+volume_db = -5.0
+pitch_scale = 0.8
+max_distance = 50.0
 
 [connection signal="timeout" from="DoubleClickTimer" to="." method="_on_double_click_timer_timeout"]
 

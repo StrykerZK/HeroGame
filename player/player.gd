@@ -54,6 +54,7 @@ var click_count := 0
 @onready var double_click_timer := %DoubleClickTimer
 @onready var step_up_cast := %StepUpCast
 @onready var sonic_boom_vfx := %SonicBoomFX
+@onready var fx_player := %FXPlayer
 
 @onready var poof_effect_scene: PackedScene = preload("res://assets/vfx/poof.tscn")
 @onready var projectile_scene: PackedScene = preload("res://temp_scenes/test_projectile.tscn")
@@ -82,6 +83,7 @@ func _input(event):
 				air_brake = false
 				speed_mult *= (sprint_mult * 2)
 				sonic_boom_vfx.emitting = true
+				fx_player.play(0.0)
 			State.GROUNDED:
 				current_state = State.RUNNING
 				speed_mult *= sprint_mult
