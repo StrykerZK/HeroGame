@@ -1,8 +1,7 @@
-[gd_scene load_steps=20 format=3 uid="uid://c4p7sai8cuiko"]
+[gd_scene load_steps=25 format=3 uid="uid://c4p7sai8cuiko"]
 
 [ext_resource type="Script" uid="uid://dbw3a6d4xctep" path="res://player/player.gd" id="1_oul6g"]
 [ext_resource type="PackedScene" uid="uid://c4gojo1r0wqaq" path="res://assets/3d_models/bob.tscn" id="2_rkbax"]
-[ext_resource type="PackedScene" uid="uid://dip3uv74wkfud" path="res://scenes/fx/sonic_boom_fx.tscn" id="3_g1dw6"]
 
 [sub_resource type="Animation" id="Animation_ryr46"]
 resource_name = "idle"
@@ -2085,6 +2084,39 @@ height = 1.6359336
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rkbax"]
 
+[sub_resource type="Gradient" id="Gradient_rkbax"]
+offsets = PackedFloat32Array(0, 0.5065502, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0.5058824, 0.5058824, 0.5058824, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_g1dw6"]
+gradient = SubResource("Gradient_rkbax")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_rkbax"]
+particle_flag_align_y = true
+emission_shape = 3
+emission_box_extents = Vector3(0.6, 1, 0.4)
+direction = Vector3(0, 0, -1)
+spread = 30.0
+initial_velocity_min = 50.0
+initial_velocity_max = 80.0
+gravity = Vector3(0, 0, 0)
+color_ramp = SubResource("GradientTexture1D_g1dw6")
+
+[sub_resource type="Curve" id="Curve_g1dw6"]
+_data = [Vector2(0.007272728, 0), 0.0, 0.0, 0, 0, Vector2(0.9672727, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g1dw6"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+
+[sub_resource type="TubeTrailMesh" id="TubeTrailMesh_yw30f"]
+material = SubResource("StandardMaterial3D_g1dw6")
+radius = 0.005
+section_length = 0.5
+curve = SubResource("Curve_g1dw6")
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_rkbax"]
 
 [node name="Player" type="CharacterBody3D"]
@@ -2095,21 +2127,21 @@ script = ExtResource("1_oul6g")
 unique_name_in_owner = true
 
 [node name="Skeleton3D" parent="Bob/Armature" index="0"]
-bones/1/rotation = Quaternion(-4.9260707e-05, 0.7039536, 0.71024585, -0.00028011296)
-bones/2/rotation = Quaternion(-0.004449346, 0.00023231469, 0.00016402663, 0.9999901)
-bones/3/rotation = Quaternion(-0.0044493456, 0.00023171236, 0.00016481454, 0.9999901)
-bones/4/rotation = Quaternion(-0.0044493456, 0.00023115112, 0.00016560072, 0.9999901)
-bones/5/rotation = Quaternion(-0.0028117944, 0.00020054939, 0.00019516751, 0.99999607)
-bones/7/position = Vector3(-0.25972053, -0.046063937, 0.00068271207)
-bones/7/rotation = Quaternion(0.3096159, -0.060003556, 0.93356204, 0.17029278)
-bones/10/position = Vector3(0.2597626, -0.046063963, 0.00068283104)
-bones/10/rotation = Quaternion(0.3136255, 0.058825627, -0.9326481, 0.16836329)
-bones/13/rotation = Quaternion(-0.7071836, 0.007930442, 0.70694286, -0.0077664703)
-bones/14/rotation = Quaternion(-1.012827e-08, 1.350804e-07, -0.029653743, 0.99956024)
-bones/16/rotation = Quaternion(0.70693105, 0.0007748411, 0.7072814, 0.0010090334)
-bones/17/rotation = Quaternion(-3.6041305e-09, 1.597695e-08, 0.0105532445, 0.9999443)
-bones/19/position = Vector3(0.4155328, 0.009275124, -0.0030941665)
-bones/21/position = Vector3(-0.4155328, 0.009275255, -0.0030944645)
+bones/1/rotation = Quaternion(-4.9808685e-05, 0.7039045, 0.7102947, -0.0002832315)
+bones/2/rotation = Quaternion(-0.004518637, 0.00023490109, 0.0001658531, 0.99998975)
+bones/3/rotation = Quaternion(-0.0045186365, 0.00023429254, 0.0001666498, 0.99998975)
+bones/4/rotation = Quaternion(-0.0045186365, 0.00023372506, 0.00016744471, 0.99998975)
+bones/5/rotation = Quaternion(-0.0028714766, 0.00020480616, 0.00019931007, 0.9999958)
+bones/7/position = Vector3(-0.2597203, -0.04585635, 0.00069063297)
+bones/7/rotation = Quaternion(0.3096691, -0.060049422, 0.9335667, 0.1701542)
+bones/10/position = Vector3(0.25976282, -0.045856375, 0.00069075124)
+bones/10/rotation = Quaternion(0.3137269, 0.05888101, -0.9326476, 0.16815796)
+bones/13/rotation = Quaternion(-0.70718694, 0.007901962, 0.7069401, -0.0077340417)
+bones/14/rotation = Quaternion(-1.0153588e-08, 1.3508058e-07, -0.029728537, 0.99955803)
+bones/16/rotation = Quaternion(0.70692956, 0.0006821106, 0.707283, 0.0009183951)
+bones/17/rotation = Quaternion(-3.5473164e-09, 1.5983543e-08, 0.010376158, 0.99994624)
+bones/19/position = Vector3(0.41536054, 0.009275124, -0.0030941665)
+bones/21/position = Vector3(-0.41536054, 0.009275255, -0.0030944645)
 
 [node name="AnimationTree" parent="Bob" index="2"]
 libraries = {
@@ -2119,11 +2151,13 @@ libraries = {
 [node name="StandardCollision" type="CollisionShape3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8414917, 0)
+visible = false
 shape = SubResource("CapsuleShape3D_g1dw6")
 
 [node name="FlyCollision" type="CollisionShape3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.584647, 0.06824753)
+visible = false
 shape = SubResource("CapsuleShape3D_rkbax")
 disabled = true
 debug_color = Color(0, 0.6470472, 0.22957921, 0.41960785)
@@ -2136,7 +2170,7 @@ transform = Transform3D(1, 0, 0, 0, 0.9702957, -0.2419219, 0, 0.2419219, 0.97029
 unique_name_in_owner = true
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0, 0)
 shape = SubResource("SphereShape3D_rkbax")
-spring_length = 8.0
+spring_length = 6.0
 
 [node name="Camera" type="Camera3D" parent="CameraPivot/CameraSpring"]
 unique_name_in_owner = true
@@ -2160,14 +2194,18 @@ unique_name_in_owner = true
 wait_time = 0.3
 one_shot = true
 
+[node name="SpeedLinesVFX" type="GPUParticles3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0279217, 0)
+visible = false
+lifetime = 0.5
+process_material = SubResource("ParticleProcessMaterial_rkbax")
+draw_pass_1 = SubResource("TubeTrailMesh_yw30f")
+
 [node name="StepUpCast" type="ShapeCast3D" parent="."]
 unique_name_in_owner = true
 shape = SubResource("BoxShape3D_rkbax")
 target_position = Vector3(0, -0.5, 0)
-
-[node name="SonicBoomFX" parent="." instance=ExtResource("3_g1dw6")]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7487595, 0)
 
 [connection signal="timeout" from="DoubleClickTimer" to="." method="_on_double_click_timer_timeout"]
 

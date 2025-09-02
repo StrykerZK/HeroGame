@@ -8,29 +8,36 @@ extends CharacterBody3D
 @export_subgroup("Ground")
 @export var base_speed := 8.0
 var move_speed := 8.0
-@export var acceleration := 50.0
-@export var deceleration := 80.0
+@export var acceleration := 100.0
 @export var sprint_mult := 2.0
+@export var sneak_mult := 2.0
 @export var rotation_speed := 12.0
 @export var min_jump_impulse := 12.0
 @export var max_jump_impulse := 50.0
 @export var jump_charge_time := 3.0
 @export_subgroup("Flying")
 @export var flying_mult := 6.0
-@export var flying_acceleration_mult := 10.0
-@export var ascend_descend_speed := 70.0
+@export var super_mult := 10.0
+@export var flying_acceleration_mult := 0.6
+@export var super_acceleration_mult := 8.0
+@export var ascend_descend_speed := 40.0
+@export var flight_turn_speed := 50.0
+@export var air_brake_deceleration := 400.0
 @export_subgroup("Misc")
 @export var max_step_height := 0.5
 @export var step_check_distance := 0.8
+@export var base_gravity := -70.0
 
-var can_move:= true
-var is_running:= false
-var is_crouching:= false
-var is_flying:= false
-var is_boosting:= false
-var is_jumping:= false
-var is_charging_jump := false
-var is_jump_charged:= false
+# -- States --
+enum State {
+	GROUNDED, RUNNING, SNEAKING, CHARGING_JUMP,
+	IN_AIR, FLIGHT, SUPER_FLIGHT
+	}
+var current_state = State.GROUNDED
+var last_state = State.GROUNDED
+var can_move := true # THIS MEANS CAN PHYSICALLY MOVE
+var can_fly := true
+var air_brake := false
 var speed_mult := 1.0
 var current_jump_charge := 0.0
 
@@ -39,12 +46,14 @@ var _last_movement_direction := Vector3.BACK
 var _gravity := -70.0
 var click_count := 0
 
+# -- Scene assignment --
 @onready var _camera_pivot: Node3D = %CameraPivot
 @onready var _camera: Camera3D = %Camera
+@onready var _camera_spring: SpringArm3D = %CameraSpring
 @onready var _stickman := %Bob
 @onready var double_click_timer := %DoubleClickTimer
-@onready var speed_lines_vfx := %SpeedLinesVFX
 @onready var step_up_cast := %StepUpCast
+@onready var sonic_boom_vfx := %SonicBoomFX
 
 @onready var poof_effect_scene: PackedScene = preload("res://assets/vfx/poof.tscn")
 @onready var projectile_scene: PackedScene = preload("res://temp_scenes/test_projectile.tscn")
@@ -54,64 +63,79 @@ func _ready():
 	
 	_camera.fov = base_fov
 	move_speed = base_speed
+	_gravity = base_gravity
 	
-	speed_lines_vfx.emitting = false
 
 
 func _input(event):
+	# Hide and show cursor
 	if event.is_action_pressed("left_click"):
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	
+	# SHIFT Logic
 	if event.is_action_pressed("sprint"):
-		if is_flying and not is_boosting:
-			is_boosting = true
-			speed_mult *= (sprint_mult * 2)
-			speedlines()
-		elif is_on_floor() and not is_running:
-			is_running = true
-			speed_mult *= sprint_mult
+		match current_state:
+			State.FLIGHT:
+				current_state = State.SUPER_FLIGHT
+				air_brake = false
+				speed_mult *= (sprint_mult * 2)
+				sonic_boom_vfx.emitting = true
+			State.GROUNDED:
+				current_state = State.RUNNING
+				speed_mult *= sprint_mult
 	if event.is_action_released("sprint"):
-		if is_flying and is_boosting:
-			is_boosting = false
-			speed_mult /= (sprint_mult * 2)
-			speedlines()
-		elif is_on_floor() and is_running:
-				is_running = false
+		match current_state:
+			State.SUPER_FLIGHT:
+				current_state = State.FLIGHT
+				speed_mult /= (sprint_mult * 2)
+				air_brake = true
+			State.RUNNING:
+				current_state = State.GROUNDED
 				speed_mult /= sprint_mult
+	
+	# CTRL Logic
 	if event.is_action_pressed("crouch"):
-		if is_on_floor() and not is_crouching:
-			is_crouching = true
-			speed_mult /= 2
-		elif is_flying:
-			velocity.y = -ascend_descend_speed
+		match current_state:
+			State.FLIGHT:
+				velocity.y = -ascend_descend_speed
+			State.GROUNDED:
+				current_state = State.SNEAKING
+				speed_mult /= sneak_mult
 	if event.is_action_released("crouch"):
-		if is_on_floor() and is_crouching:
-			is_crouching = false
-			speed_mult *= 2
-		elif is_flying:
-			velocity.y = 0.0
+		match current_state:
+			State.FLIGHT:
+				velocity.y = 0.0
+			State.SNEAKING:
+				current_state = State.GROUNDED
+				speed_mult *= sneak_mult
+
+	
+	# SPACE logic
 	if event.is_action_pressed("jump") and not is_on_floor():
-		if not is_flying:
-			if is_jumping and not is_jump_charged:
-				pass
-			else:
-				fly()
-				if is_jump_charged: is_jump_charged = false
-				if is_jumping: is_jumping = false
-		else:
-			click_count += 1
-			if click_count == 1: double_click_timer.start()
-			elif click_count == 2:
-				fly()
-				double_click_timer.stop()
-				return
-			velocity.y = ascend_descend_speed
-	if event.is_action_released("jump") and is_flying:
-		if velocity.y > 0.0:
-			velocity.y = 0.0
+		match current_state:
+			State.IN_AIR:
+				if can_fly: fly()
+			State.FLIGHT, State.SUPER_FLIGHT:
+				click_count += 1
+				if click_count == 1: double_click_timer.start()
+				elif click_count == 2:
+					fly()
+					double_click_timer.stop()
+					return
+				if current_state == State.FLIGHT:
+					velocity.y = ascend_descend_speed
+	if event.is_action_released("jump"):
+		if current_state == State.FLIGHT:
+			if velocity.y > 0.0:
+				velocity.y = 0.0
+	
+	# Skill 1 Logic (Default 'Q')
 	if event.is_action_pressed("skill_1") and %SpeedTimer.is_stopped():
 		speed_up(15.0)
+	
+	# Skill 2 Logic (Default 'E')
 	if event.is_action_pressed("skill_2"):
 		spawn_projectile()
 
@@ -124,19 +148,96 @@ func _unhandled_input(event):
 		_camera_input_direction = event.screen_relative * mouse_sensitivity
 
 func _physics_process(delta):
+	# Check state
+	if current_state != last_state:
+		print("State: " + str(current_state))
+		last_state = current_state
+	
 	# Resetting conditions
 	if is_on_floor():
-		if is_jumping: is_jumping = false
-	if velocity.y <= -70:
-		if is_jumping: is_jumping = false
+		match current_state:
+			State.IN_AIR: current_state = State.GROUNDED
+			State.FLIGHT, State.SUPER_FLIGHT:
+				fly()
+				current_state = State.GROUNDED
+		if can_fly == false: can_fly = true
+	elif not is_on_floor():
+		if current_state != State.FLIGHT and current_state != State.SUPER_FLIGHT and current_state != State.IN_AIR:
+			current_state =  State.IN_AIR
 	
 	# Camera control
 	_camera_pivot.rotation.x += _camera_input_direction.y * delta
-	_camera_pivot.rotation.x = clamp(_camera_pivot.rotation.x, -PI / 6.0, PI / 3.0)
+	_camera_pivot.rotation.x = clamp(_camera_pivot.rotation.x, -PI / 3.0, PI / 2.001)
 	_camera_pivot.rotation.y -= _camera_input_direction.x * delta
 	
 	_camera_input_direction = Vector2.ZERO
 	
+	# Ground or Flight state movement
+	match current_state:
+		State.FLIGHT, State.SUPER_FLIGHT:
+			flight_movement(delta)
+		_:
+			ground_movement(delta)
+	
+	if can_move:
+		move_and_slide()
+	
+	# Dynamic FOV
+	var target_fov = base_fov + (move_speed * 0.15)
+	if target_fov > 120.0: target_fov = 120.0
+	_camera.fov = lerp(_camera.fov, target_fov, delta * 5.0)
+	if current_state == State.SUPER_FLIGHT:
+		_camera_spring.spring_length = lerp(_camera_spring.spring_length, 2.5, delta * 5.0)
+	elif _camera_spring.spring_length != 8.0:
+		_camera_spring.spring_length = lerp(_camera_spring.spring_length, 8.0, delta * 10.0)
+
+	
+	# Stickman Animations
+	handle_animations()
+	
+
+func handle_animations():
+	match current_state:
+		State.FLIGHT:
+			%StandardCollision.disabled = false
+			%FlyCollision.disabled = true
+			_stickman.update_animation("hover")
+		State.SUPER_FLIGHT:
+			%StandardCollision.disabled = true
+			%FlyCollision.disabled = false
+			if velocity.y < 0.0:
+				_stickman.update_animation("fly_down")
+			elif velocity.y > 0.0:
+				_stickman.update_animation("fly_up")
+			else:
+				_stickman.update_animation("fly")
+		State.IN_AIR:
+			%StandardCollision.disabled = false
+			%FlyCollision.disabled = true
+			if velocity.y > 0:
+				_stickman.update_animation("rise")
+			elif velocity.y < 0:
+				_stickman.update_animation("fall")
+		State.GROUNDED:
+			%StandardCollision.disabled = false
+			%FlyCollision.disabled = true
+			var ground_speed := velocity.length()
+			if ground_speed > 0.0: _stickman.update_animation("walk")
+			else: _stickman.update_animation("idle")
+		State.RUNNING:
+			_stickman.update_animation("run")
+		State.CHARGING_JUMP:
+			if Input.is_action_just_pressed("jump"):
+				_stickman.update_animation("charge_jump")
+
+func default_state():
+	can_move = true
+	can_fly = true
+	move_speed = base_speed
+	speed_mult = 1.0
+	current_jump_charge = 0.0
+
+func ground_movement(delta):
 	# Movement data
 	var raw_input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var forward := _camera.global_basis.z
@@ -150,20 +251,20 @@ func _physics_process(delta):
 	if speed_mult > 1.0: move_speed = base_speed * speed_mult
 	elif speed_mult == 1.0: move_speed = base_speed
 	elif speed_mult < 1.0:
-		if is_crouching: move_speed = base_speed * speed_mult
+		if current_state == State.SNEAKING: move_speed = base_speed * speed_mult
 		else: speed_mult = 1.0
 	
+	# Handle gravity
 	var y_velocity := velocity.y
 	velocity.y = 0.0
 	velocity = velocity.move_toward(move_direction * move_speed, acceleration * delta)
 	velocity.y = y_velocity + _gravity * delta
-		
+	
+	# Rotate to movement direction
 	if move_direction.length() > 0.2:
 		_last_movement_direction = move_direction
 	var target_angle := Vector3.BACK.signed_angle_to(_last_movement_direction, Vector3.UP)
 	_stickman.global_rotation.y = lerp_angle(_stickman.rotation.y, target_angle, rotation_speed * delta)
-	speed_lines_vfx.global_rotation.y = lerp_angle(speed_lines_vfx.rotation.y, target_angle, rotation_speed * delta)
-	%FlyCollision.global_rotation.y = lerp_angle(%FlyCollision.rotation.y, target_angle, rotation_speed * delta)
 	$SpawnPivot.global_rotation.y = lerp_angle($SpawnPivot.rotation.y, target_angle, rotation_speed * delta)
 	
 	# Handle Step-Up
@@ -173,91 +274,94 @@ func _physics_process(delta):
 			global_position.y += step_height + 0.05
 			velocity.y = 0
 	
-	var is_starting_jump := Input.is_action_just_pressed("jump") and is_on_floor()
-	
-	# Charging Jump
-	if is_starting_jump:
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		current_state = State.CHARGING_JUMP
 		velocity = Vector3.ZERO
 		can_move = false
-		is_charging_jump = true
+		can_fly = false
 		current_jump_charge = 0.0
-		
-	if Input.is_action_pressed("jump") and is_charging_jump:
-		current_jump_charge += delta / jump_charge_time
-		current_jump_charge = min(current_jump_charge, 1.0)
-		move_speed -= current_jump_charge * 60 # FOV effect
-		if current_jump_charge >= 0.5 and not is_jump_charged:
-			is_jump_charged = true
-		
-	if Input.is_action_just_released("jump") and is_charging_jump:
-		is_jumping = true
-		var jump_impulse = lerp(min_jump_impulse, max_jump_impulse, current_jump_charge)
-		velocity.y = jump_impulse
-		
-		# Poof effect
-		var poof = poof_effect_scene.instantiate()
-		get_tree().root.add_child(poof)
-		poof.global_position = %Marker3D.global_position
-		poof.emitting = true
-		poof.finished.connect(poof.queue_free)
-		
-		# Reset Charging
-		is_charging_jump = false
-		current_jump_charge = 0.0
-		can_move = true
 	
-	if not is_charging_jump:
-		move_and_slide()
-	
-	
-	# Dynamic FOV
-	var target_fov = base_fov + (move_speed * 0.15)
-	if target_fov > 120.0: target_fov = 120.0
-	_camera.fov = lerp(_camera.fov, target_fov, delta * 5.0)
-	
-	# Stickman Animations
-	handle_animations()
-	
-	# Stop flying if hit ground
-	if is_flying and is_on_floor():
-		fly()
+	if current_state == State.CHARGING_JUMP:
+		if Input.is_action_pressed("jump"):
+			current_jump_charge += delta / jump_charge_time
+			current_jump_charge = min(current_jump_charge, 1.0)
+			move_speed -= current_jump_charge * 60 # FOV effect
+		if Input.is_action_just_released("jump"):
+			current_state = State.IN_AIR
+			if current_jump_charge >= 0.5: can_fly = true
+			var jump_impulse = lerp(min_jump_impulse, max_jump_impulse, current_jump_charge)
+			velocity.y = jump_impulse
+			
+			# Poof effect
+			var poof = poof_effect_scene.instantiate()
+			get_tree().root.add_child(poof)
+			poof.global_position = %Marker3D.global_position
+			poof.emitting = true
+			poof.finished.connect(poof.queue_free)
+			
+			# Reset Charging
+			current_jump_charge = 0.0
+			can_move = true
 
-func handle_animations():
-	if not is_on_floor():
-		if is_flying:
-			%StandardCollision.disabled = true
-			%FlyCollision.disabled = false
-			if velocity.x != 0.0 or velocity.z != 0.0:
-				if velocity.y < 0.0:
-					_stickman.update_animation("fly_down")
-				elif velocity.y > 0.0:
-					_stickman.update_animation("fly_up")
-				else:
-					_stickman.update_animation("fly")
+
+func flight_movement(delta):
+	var raw_input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	
+	# Check speed mult
+	if speed_mult > 1.0: move_speed = base_speed * speed_mult
+	elif speed_mult == 1.0: move_speed = base_speed
+	elif speed_mult < 1.0:
+		speed_mult = 1.0
+	
+	match current_state:
+		State.FLIGHT:
+			if air_brake:
+				velocity = velocity.move_toward(Vector3.ZERO, air_brake_deceleration * delta)
+				
+				if velocity.length() < 0.1:
+					velocity = Vector3.ZERO
+					air_brake = false
 			else:
-				_stickman.update_animation("hover")
-				%StandardCollision.disabled = false
-				%FlyCollision.disabled = true
-		else:
-			%StandardCollision.disabled = false
-			%FlyCollision.disabled = true
-			if velocity.y > 0:
-				_stickman.update_animation("rise")
-			elif velocity.y < 0:
-				_stickman.update_animation("fall")
-	elif is_on_floor():
-		%StandardCollision.disabled = false
-		%FlyCollision.disabled = true
-		var ground_speed := velocity.length()
-		if is_charging_jump:
-			if Input.is_action_just_pressed("jump"):
-				_stickman.update_animation("charge_jump")
-			else: return
-		else:
-			if ground_speed > 0.0:
-				if not is_running: _stickman.update_animation("walk")
-				else: _stickman.update_animation("run")
-			else: _stickman.update_animation("idle")
+				# Movement data
+				var forward := _camera.global_basis.z
+				var right := _camera.global_basis.x
+				
+				var move_direction := forward * raw_input.y + right * raw_input.x
+				move_direction.y = 0.0
+				move_direction = move_direction.normalized()
+				
+				# Handle gravity
+				var y_velocity := velocity.y
+				velocity.y = 0.0
+				velocity = velocity.move_toward(move_direction * move_speed, acceleration * delta)
+				velocity.y = y_velocity + _gravity * delta
+				
+				# Rotate to movement direction
+				if move_direction.length() > 0.2:
+					_last_movement_direction = move_direction
+				
+				var target_basis = Transform3D().looking_at(-_last_movement_direction, Vector3.UP).basis
+				var turn_speed = rotation_speed
+				_stickman.global_transform.basis = _stickman.global_transform.basis.orthonormalized().slerp(target_basis, turn_speed * delta)
+				
+				# Sync other nodes to the stickman's rotation
+				$SpawnPivot.global_transform.basis = _stickman.global_transform.basis
+
+		State.SUPER_FLIGHT:
+			var direction := -_camera.global_transform.basis.z.normalized()
+			
+			var current_acceleration := acceleration * super_acceleration_mult
+
+			var target_velocity := direction * move_speed
+			
+			velocity = velocity.move_toward(target_velocity, current_acceleration * delta)
+			
+			# Rotate the character model to face the direction of travel.
+			if velocity.length_squared() > 0.01:
+				var target_basis := Transform3D().looking_at(-velocity.normalized(), Vector3.UP).basis
+				_stickman.global_transform.basis = _stickman.global_transform.basis.orthonormalized().slerp(target_basis, flight_turn_speed * delta)
+				%FlyCollision.global_transform.basis = _stickman.global_transform.basis
+				%FlyCollision.rotate_object_local(Vector3.RIGHT, deg_to_rad(-90))
 
 func speed_up(new_mult):
 	var temp_mult = speed_mult
@@ -267,33 +371,27 @@ func speed_up(new_mult):
 	speed_mult = temp_mult
 
 func fly():
-	if not is_flying:
-		is_flying = true
-		_gravity = 0
+	if current_state == State.SUPER_FLIGHT:
+		current_state = State.IN_AIR
+		speed_mult /= (speed_mult * 4)
+		_gravity = base_gravity
+	elif current_state  == State.FLIGHT:
+		current_state = State.IN_AIR
+		speed_mult /= flying_mult
+		acceleration /= flying_acceleration_mult
+		_gravity = base_gravity
+	else:
+		current_state = State.FLIGHT
 		velocity.y = 0.0
+		_gravity = 0.0
 		speed_mult *= flying_mult
 		acceleration *= flying_acceleration_mult
 		can_move = true
-	else:
-		velocity = Vector3.ZERO
-		is_flying = false
-		if is_boosting:
-			is_boosting = false
-			speed_mult /= (speed_mult * 4)
-		_gravity = -70.0
-		speed_mult /= flying_mult
-		acceleration /= flying_acceleration_mult
 
 func spawn_projectile():
 	var ball = projectile_scene.instantiate()
 	ball.global_transform = %BallSpawn.global_transform
 	get_tree().root.add_child(ball)
-
-func speedlines():
-	if not speed_lines_vfx.emitting:
-		speed_lines_vfx.emitting = true
-	else:
-		speed_lines_vfx.emitting = false
 
 func _get_step_height(move_direction: Vector3) -> float:
 	# Position the shapecast slightly in front of the character and at the max step height

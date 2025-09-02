@@ -142,4 +142,4 @@ shadow_enabled = true
 environment = SubResource("Environment_ystin")
 
 [node name="Player" parent="." instance=ExtResource("11_mpuha")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 278.84253, 357.46768, 196.02185)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 278.84253, 357.46768, 196.02185)

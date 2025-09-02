@@ -1,0 +1,48 @@
+[gd_scene load_steps=9 format=3 uid="uid://dip3uv74wkfud"]
+
+[ext_resource type="Texture2D" uid="uid://dxopnvncn83uh" path="res://assets/textures/shockwave.png" id="2_v08aq"]
+
+[sub_resource type="Curve" id="Curve_5adij"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_itequ"]
+curve = SubResource("Curve_5adij")
+
+[sub_resource type="Curve" id="Curve_02em0"]
+_data = [Vector2(0, 0), 0.0, 1.0, 0, 1, Vector2(1, 1), 1.0, 0.0, 1, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_c0wkj"]
+curve = SubResource("Curve_02em0")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_0ctoq"]
+gravity = Vector3(0, 0, 0)
+scale_min = 20.0
+scale_max = 20.0
+scale_curve = SubResource("CurveTexture_c0wkj")
+color = Color(1, 1, 1, 0.41960785)
+alpha_curve = SubResource("CurveTexture_itequ")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v08aq"]
+transparency = 1
+cull_mode = 2
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("2_v08aq")
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_5adij"]
+material = SubResource("StandardMaterial3D_v08aq")
+
+[node name="Shockwave" type="GPUParticles3D"]
+emitting = false
+amount = 1
+lifetime = 0.3
+one_shot = true
+fixed_fps = 60
+process_material = SubResource("ParticleProcessMaterial_0ctoq")
+draw_pass_1 = SubResource("QuadMesh_5adij")
