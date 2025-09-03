@@ -1,10 +1,9 @@
-[gd_scene load_steps=17 format=3 uid="uid://c4p7sai8cuiko"]
+[gd_scene load_steps=16 format=3 uid="uid://c4p7sai8cuiko"]
 
 [ext_resource type="Script" uid="uid://dbw3a6d4xctep" path="res://player/player.gd" id="1_oul6g"]
 [ext_resource type="PackedScene" uid="uid://c4gojo1r0wqaq" path="res://assets/3d_models/bob.tscn" id="2_rkbax"]
 [ext_resource type="PackedScene" uid="uid://dip3uv74wkfud" path="res://scenes/fx/sonic_boom_fx.tscn" id="3_g1dw6"]
 [ext_resource type="AudioStream" uid="uid://brr070yplabwo" path="res://assets/sfx/boom1.mp3" id="4_yw30f"]
-[ext_resource type="AudioStream" uid="uid://cnpsjhnrkviye" path="res://assets/sfx/laser1.mp3" id="5_qjkh3"]
 
 [sub_resource type="Curve" id="Curve_yw30f"]
 _data = [Vector2(1, 1), 0.0, 0.0, 0, 0]
@@ -133,23 +132,23 @@ landing_curve = SubResource("Curve_yw30f")
 unique_name_in_owner = true
 
 [node name="Skeleton3D" parent="Bob/Armature" index="0"]
-bones/1/rotation = Quaternion(-4.09822e-05, 0.7046969, 0.70950854, -0.00023299656)
-bones/2/rotation = Quaternion(-0.0034024634, 0.0001932381, 0.00013643136, 0.9999943)
-bones/3/rotation = Quaternion(-0.0034024627, 0.0001927298, 0.00013708672, 0.9999943)
-bones/4/rotation = Quaternion(-0.0034024634, 0.00019226297, 0.00013774063, 0.9999943)
-bones/5/rotation = Quaternion(-0.0023573379, 0.00016813555, 0.00016362352, 0.99999726)
-bones/7/position = Vector3(-0.2597267, -0.051277157, 0.00048380753)
-bones/7/rotation = Quaternion(0.30653834, -0.057265356, 0.93321794, 0.1784918)
+bones/1/rotation = Quaternion(-1.760084e-05, 0.7067916, 0.70742184, -9.992378e-05)
+bones/2/rotation = Quaternion(-0.00044571928, 8.287246e-05, 5.849275e-05, 0.99999994)
+bones/3/rotation = Quaternion(-0.00044571914, 8.262952e-05, 5.8773778e-05, 0.99999994)
+bones/4/rotation = Quaternion(-0.0004457193, 8.242941e-05, 5.9054135e-05, 0.99999994)
+bones/5/rotation = Quaternion(-0.0010481915, 7.4761556e-05, 7.275524e-05, 0.9999995)
+bones/7/position = Vector3(-0.25973517, -0.05853289, 0.00020696968)
+bones/7/rotation = Quaternion(0.30202755, -0.052938778, 0.932431, 0.19117899)
 bones/8/rotation = Quaternion(0.0018209312, 1.30573685e-08, 1.5530222e-09, 0.99999833)
-bones/10/position = Vector3(0.25975645, -0.05127715, 0.0004839338)
-bones/10/rotation = Quaternion(0.3089941, 0.056216374, -0.93257475, 0.1779514)
+bones/10/position = Vector3(0.2597479, -0.05853288, 0.00020709366)
+bones/10/rotation = Quaternion(0.30303067, 0.052596107, -0.93216527, 0.19098207)
 bones/11/rotation = Quaternion(0.0022337195, -7.122458e-09, 5.419965e-09, 0.9999975)
-bones/13/rotation = Quaternion(-0.70719486, 0.007833814, 0.706934, -0.0076562637)
-bones/14/rotation = Quaternion(-9.685196e-09, 1.3508216e-07, -0.028317412, 0.999599)
-bones/16/rotation = Quaternion(0.7069676, 0.003128617, 0.7072314, 0.0033056408)
-bones/17/rotation = Quaternion(-5.1745235e-09, 1.5981529e-08, 0.015084322, 0.9998863)
-bones/19/position = Vector3(0.42081589, 0.009275124, -0.0030941665)
-bones/21/position = Vector3(-0.42081589, 0.009275216, -0.0030943751)
+bones/13/rotation = Quaternion(-0.7071213, 0.008458798, 0.70699215, -0.008371108)
+bones/14/rotation = Quaternion(-8.532758e-09, 1.3509812e-07, -0.024967551, 0.99968827)
+bones/16/rotation = Quaternion(0.7070175, 0.006786064, 0.70713013, 0.006862034)
+bones/17/rotation = Quaternion(-6.8375265e-09, 1.5969992e-08, 0.020007212, 0.99979985)
+bones/19/position = Vector3(0.42840397, 0.009275124, -0.0030941665)
+bones/21/position = Vector3(-0.42840397, 0.0092751635, -0.003094256)
 bones/23/position = Vector3(0.18097515, 0, -0.28866354)
 bones/25/position = Vector3(-0.18097515, 0, -0.28866354)
 bones/27/position = Vector3(-0.4308709, -0.21568203, 0.39322385)
@@ -157,22 +156,20 @@ bones/29/position = Vector3(0.4308709, -0.21568203, 0.39322385)
 
 [node name="EyeL" type="Node3D" parent="Bob"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16777083, 1.220664, 0.36825442)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16777083, 1.2671311, 0.36825442)
 
 [node name="LaserBeamL" type="MeshInstance3D" parent="Bob/EyeL"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
-visible = false
 mesh = SubResource("CylinderMesh_yw30f")
 
 [node name="EyeR" type="Node3D" parent="Bob"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.168, 1.2205329, 0.368)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.168, 1.267, 0.368)
 
 [node name="LaserBeamR" type="MeshInstance3D" parent="Bob/EyeR"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
-visible = false
 mesh = SubResource("CylinderMesh_yw30f")
 skeleton = NodePath("../../EyeL")
 
@@ -194,7 +191,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1126788, 0)
 
 [node name="CameraPivot" type="Node3D" parent="ShoulderPivot"]
 unique_name_in_owner = true
-transform = Transform3D(0.98572403, 0.009386874, 0.16810706, 2.7257825e-09, 0.9984448, -0.055751786, -0.168369, 0.0549559, 0.9841906, -1.1100012, 0.052850604, -0.108235955)
+transform = Transform3D(0.98572403, 0.009386874, 0.16810708, 2.7257825e-09, 0.9984448, -0.05575179, -0.168369, 0.0549559, 0.98419064, -1.1100012, 0.052850604, -0.108235955)
 
 [node name="CameraSpring" type="SpringArm3D" parent="ShoulderPivot/CameraPivot"]
 unique_name_in_owner = true
@@ -237,21 +234,12 @@ target_position = Vector3(0, -0.5, 0)
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7487595, 0)
 
-[node name="AudioPlayers" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1296434, 0)
-
-[node name="BoomSFX" type="AudioStreamPlayer3D" parent="AudioPlayers"]
+[node name="FXPlayer" type="AudioStreamPlayer3D" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("4_yw30f")
 volume_db = -5.0
 pitch_scale = 0.8
 max_distance = 50.0
-
-[node name="LaserSFX" type="AudioStreamPlayer3D" parent="AudioPlayers"]
-unique_name_in_owner = true
-stream = ExtResource("5_qjkh3")
-volume_db = -5.093
-parameters/looping = true
 
 [connection signal="timeout" from="DoubleClickTimer" to="." method="_on_double_click_timer_timeout"]
 
