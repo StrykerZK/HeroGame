@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3 uid="uid://78r105d8itax"]
+
+[ext_resource type="Script" uid="uid://bftln882qe6pw" path="res://scripts/building_data.gd" id="1_7yca7"]
+[ext_resource type="Material" uid="uid://jhqx62uer4m8" path="res://assets/materials/walkway.tres" id="2_cwhdv"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_xityw"]
+size = Vector3(20, 0.74, 20)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_cwhdv"]
+data = PackedVector3Array(-10, 0.37, 3.5, 10, 0.37, 3.5, -10, -0.37, 3.5, 10, 0.37, 3.5, 10, -0.37, 3.5, -10, -0.37, 3.5, 10, 0.37, -3.5, -10, 0.37, -3.5, 10, -0.37, -3.5, -10, 0.37, -3.5, -10, -0.37, -3.5, 10, -0.37, -3.5, 10, 0.37, 3.5, 10, 0.37, -3.5, 10, -0.37, 3.5, 10, 0.37, -3.5, 10, -0.37, -3.5, 10, -0.37, 3.5, -10, 0.37, -3.5, -10, 0.37, 3.5, -10, -0.37, -3.5, -10, 0.37, 3.5, -10, -0.37, 3.5, -10, -0.37, -3.5, 10, 0.37, 3.5, -10, 0.37, 3.5, 10, 0.37, -3.5, -10, 0.37, 3.5, -10, 0.37, -3.5, 10, 0.37, -3.5, -10, -0.37, 3.5, 10, -0.37, 3.5, -10, -0.37, -3.5, 10, -0.37, 3.5, 10, -0.37, -3.5, -10, -0.37, -3.5)
+
+[node name="House" type="Node3D" node_paths=PackedStringArray("lod1_node", "lod2_node")]
+script = ExtResource("1_7yca7")
+building_type = 1
+lod1_node = NodePath("LOD1")
+lod2_node = NodePath("LOD2")
+
+[node name="Pavement" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.371, 0)
+material_override = ExtResource("2_cwhdv")
+mesh = SubResource("BoxMesh_xityw")
+
+[node name="LOD1" type="Node3D" parent="."]
+transform = Transform3D(-1.5298986e-07, 0, 3.5, 0, 3.5, 0, -3.5, 0, -1.5298986e-07, 0, 0.509, 5)
+visible = false
+
+[node name="LOD2" type="Node3D" parent="."]
+transform = Transform3D(-1.5298986e-07, 0, 3.5, 0, 3.5, 0, -3.5, 0, -1.5298986e-07, 0, 0.509, 5)
+visible = false
+
+[node name="PavementCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.371, -6.5)
+shape = SubResource("ConcavePolygonShape3D_cwhdv")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-1, 0, -8.742278e-08, -4.0226524e-08, 0.8878475, 0.4601378, 7.761809e-08, 0.4601378, -0.8878475, 0, 9.140183, -15.83617)

@@ -899,6 +899,15 @@ func _place_scene_at_pos(scene: PackedScene, grid_pos: Vector2i, footprint: Vect
 	var offset = Vector3((footprint.x * cell_size) / 2.0, 0, (footprint.y * cell_size) / 2.0)
 	var world_pos = Vector3(grid_pos.x * cell_size, 0, grid_pos.y * cell_size) + offset
 		
+	
+	var building_type = ""
+	if instance.has_method("get_building_type"): building_type = instance.get_building_type()
+	match building_type:
+		"Housing":
+			BuildingManager.add_number("Housing")
+			instance.name = "Housing " + str(BuildingManager.housing_number)
+		_: pass
+	
 	instance.position = world_pos
 	instance.rotate_y(deg_to_rad(rotation_y))
 	

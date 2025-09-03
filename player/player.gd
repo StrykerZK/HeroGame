@@ -118,11 +118,13 @@ func _input(event):
 	
 	# Aiming Logic (Right Click)
 	if event.is_action_pressed("aim"):
-		is_aiming = true
-		mouse_sensitivity = base_mouse_sensitivity * aim_mouse_sensitivity_mult
+		if !is_aiming and current_state != State.SUPER_FLIGHT:
+			is_aiming = true
+			mouse_sensitivity = base_mouse_sensitivity * aim_mouse_sensitivity_mult
 	if event.is_action_released("aim"):
-		is_aiming = false
-		mouse_sensitivity = base_mouse_sensitivity
+		if is_aiming:
+			is_aiming = false
+			mouse_sensitivity = base_mouse_sensitivity
 
 	# SHIFT Logic
 	if event.is_action_pressed("sprint"):

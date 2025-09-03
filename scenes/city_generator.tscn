@@ -1,8 +1,8 @@
-[gd_scene load_steps=46 format=3 uid="uid://bv6yk7ataw5la"]
+[gd_scene load_steps=42 format=3 uid="uid://bv6yk7ataw5la"]
 
 [ext_resource type="Script" uid="uid://bc8dmb62cwuyw" path="res://scripts/city_generator.gd" id="1_s04yr"]
 [ext_resource type="PackedScene" uid="uid://df2dcboi6a6a2" path="res://temp_scenes/downtown_1.tscn" id="2_wy0y2"]
-[ext_resource type="PackedScene" uid="uid://78r105d8itax" path="res://temp_scenes/house_1.tscn" id="3_oliwm"]
+[ext_resource type="PackedScene" uid="uid://78r105d8itax" path="res://scenes/buildings/house.tscn" id="3_oliwm"]
 [ext_resource type="PackedScene" uid="uid://da0515wewwd4l" path="res://temp_scenes/downtown_large_1.tscn" id="3_u0kti"]
 [ext_resource type="PackedScene" uid="uid://b20pp22tbgv4" path="res://temp_scenes/business_landmark_1.tscn" id="4_edvgp"]
 [ext_resource type="PackedScene" uid="uid://bibor25njjlg2" path="res://temp_scenes/apartment_1.tscn" id="4_ocjyt"]
@@ -20,12 +20,8 @@
 [ext_resource type="PackedScene" uid="uid://rhrytv8m5wam" path="res://temp_scenes/gate.tscn" id="12_ehvgl"]
 [ext_resource type="PackedScene" uid="uid://d2x2gl03flxq1" path="res://scenes/buildings/hospital_1.tscn" id="13_gt42s"]
 [ext_resource type="PackedScene" uid="uid://d1rp721mf7mj7" path="res://scenes/buildings/police_1.tscn" id="14_h53l6"]
-[ext_resource type="PackedScene" uid="uid://bjwu74big7iva" path="res://temp_scenes/house_2.tscn" id="15_w3fuv"]
 [ext_resource type="PackedScene" uid="uid://cii71twrrfet2" path="res://scenes/buildings/apartment_2.tscn" id="16_0ovt3"]
-[ext_resource type="PackedScene" uid="uid://bulyj8f4hm8u5" path="res://temp_scenes/house_3.tscn" id="16_opje5"]
 [ext_resource type="PackedScene" uid="uid://ckggaid6lca6n" path="res://scenes/buildings/apartment_3.tscn" id="17_jmqnt"]
-[ext_resource type="PackedScene" uid="uid://b6a2qoqmucdm1" path="res://temp_scenes/house_4.tscn" id="17_uxkew"]
-[ext_resource type="PackedScene" uid="uid://j874vbnr7bcl" path="res://temp_scenes/house_5.tscn" id="18_f30l1"]
 [ext_resource type="PackedScene" uid="uid://bxukkn6lrj007" path="res://scenes/roads/road_straight.tscn" id="22_ryj47"]
 [ext_resource type="PackedScene" uid="uid://6c4dnrgpdddh" path="res://scenes/roads/road_corner.tscn" id="23_rdvkw"]
 [ext_resource type="PackedScene" uid="uid://1r1qaam0jfrt" path="res://scenes/roads/road_t_shape.tscn" id="24_wctwy"]
@@ -57,7 +53,6 @@ background_mode = 2
 sky = SubResource("Sky_w3j7k")
 tonemap_mode = 2
 glow_enabled = true
-fog_enabled = true
 fog_light_color = Color(0.7951723, 0.8844309, 0.90352285, 1)
 fog_sun_scatter = 0.1
 fog_density = 0.006
@@ -94,7 +89,6 @@ single_buildings_per_zone = 6
 plaza_size = Vector2i(0, 0)
 major_road_count_horizontal = Vector2i(2, 4)
 major_road_count_vertical = Vector2i(2, 4)
-major_road_width = 4
 min_major_road_spacing = 15
 minor_road_from_major_chance = 0.4000000000087311
 minor_road_from_edge_count = 20
@@ -110,7 +104,7 @@ government_buildings = Array[PackedScene]([ExtResource("7_twqjo")])
 hospital_buildings = Array[PackedScene]([ExtResource("13_gt42s")])
 police_buildings = Array[PackedScene]([ExtResource("14_h53l6")])
 apartment_buildings = Array[PackedScene]([ExtResource("4_ocjyt"), ExtResource("16_0ovt3"), ExtResource("17_jmqnt")])
-housing_buildings = Array[PackedScene]([ExtResource("3_oliwm"), ExtResource("15_w3fuv"), ExtResource("16_opje5"), ExtResource("17_uxkew"), ExtResource("18_f30l1")])
+housing_buildings = Array[PackedScene]([ExtResource("3_oliwm")])
 outskirt_objects = Array[PackedScene]([ExtResource("9_edvgp")])
 dead_zone_objects = Array[PackedScene]([ExtResource("11_ocjyt")])
 walkway_objects = Array[PackedScene]([ExtResource("10_mpuha")])
