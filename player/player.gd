@@ -1,36 +1,47 @@
 extends CharacterBody3D
 
 @export_group("Camera")
-@export_range(0.0, 1.0) var mouse_sensitivity := 0.25
+@export_range(0.0, 1.0) var base_mouse_sensitivity := 0.20
+var mouse_sensitivity := base_mouse_sensitivity
 @export var base_fov := 75.0
 
 @export_group("Movement")
 @export_subgroup("Ground")
 @export var base_speed := 8.0
-var move_speed := 8.0
+var move_speed := base_speed
+var speed_mult := 1.0
 @export var acceleration := 100.0
 @export var sprint_mult := 2.0
-@export var sneak_mult := 2.0
+@export var sneak_mult := 0.4
 @export var rotation_speed := 12.0
 @export var min_jump_impulse := 12.0
 @export var max_jump_impulse := 50.0
 @export var jump_charge_time := 3.0
 @export_subgroup("Flying")
 @export var flying_mult := 6.0
-@export var super_mult := 10.0
-@export var flying_acceleration_mult := 0.6
-@export var super_acceleration_mult := 8.0
+@export var super_mult := 20.0
+@export var flying_acceleration_mult := 0.8
+@export var super_acceleration_mult := 30.0
 @export var ascend_descend_speed := 40.0
-@export var flight_turn_speed := 50.0
-@export var air_brake_deceleration := 400.0
+@export var flight_turn_speed := 20.0
+@export var air_brake_deceleration := 1800.0
+@export var max_landing_deceleration := 2000.0
+@export var landing_curve: Curve # The curve for the slide deceleration.
 @export_subgroup("Misc")
 @export var max_step_height := 0.5
 @export var step_check_distance := 0.8
 @export var base_gravity := -70.0
 
+@export_group("Stats")
+@export var base_health := 100.0
+var current_health := base_health
+@export var global_dmg_scale := 1.0
+@export var defense := 4.0
+@export var global_speed_scale := 1.0
+
 # -- States --
 enum State {
-	GROUNDED, RUNNING, SNEAKING, CHARGING_JUMP,
+	GROUNDED, RUNNING, SNEAKING, CHARGING_JUMP, LANDING,
 	IN_AIR, FLIGHT, SUPER_FLIGHT
 	}
 var current_state = State.GROUNDED
@@ -38,8 +49,10 @@ var last_state = State.GROUNDED
 var can_move := true # THIS MEANS CAN PHYSICALLY MOVE
 var can_fly := true
 var air_brake := false
-var speed_mult := 1.0
+var shoulder_side := 1
 var current_jump_charge := 0.0
+var landing_initial_velocity := Vector3.ZERO
+var landing_initial_speed := 0.0
 
 var _camera_input_direction := Vector2.ZERO
 var _last_movement_direction := Vector3.BACK
@@ -50,6 +63,8 @@ var click_count := 0
 @onready var _camera_pivot: Node3D = %CameraPivot
 @onready var _camera: Camera3D = %Camera
 @onready var _camera_spring: SpringArm3D = %CameraSpring
+@onready var _shoulder_pivot: Node3D = %ShoulderPivot
+@onready var _camera_animation: AnimationPlayer = %CameraPivotAnimation
 @onready var _stickman := %Bob
 @onready var double_click_timer := %DoubleClickTimer
 @onready var step_up_cast := %StepUpCast
@@ -63,7 +78,6 @@ func _ready():
 	LODManager.register_player(self)
 	
 	_camera.fov = base_fov
-	move_speed = base_speed
 	_gravity = base_gravity
 	
 
@@ -79,23 +93,24 @@ func _input(event):
 	if event.is_action_pressed("sprint"):
 		match current_state:
 			State.FLIGHT:
+				if air_brake == true: return
 				current_state = State.SUPER_FLIGHT
 				air_brake = false
-				speed_mult *= (sprint_mult * 2)
-				sonic_boom_vfx.emitting = true
-				fx_player.play(0.0)
+				mouse_sensitivity *= 0.4
+				make_sonic_boom()
 			State.GROUNDED:
 				current_state = State.RUNNING
-				speed_mult *= sprint_mult
+				global_speed_scale *= sprint_mult
 	if event.is_action_released("sprint"):
 		match current_state:
 			State.SUPER_FLIGHT:
 				current_state = State.FLIGHT
-				speed_mult /= (sprint_mult * 2)
+				mouse_sensitivity /= 0.4
+				make_sonic_boom()
 				air_brake = true
 			State.RUNNING:
 				current_state = State.GROUNDED
-				speed_mult /= sprint_mult
+				global_speed_scale /= sprint_mult
 	
 	# CTRL Logic
 	if event.is_action_pressed("crouch"):
@@ -104,15 +119,14 @@ func _input(event):
 				velocity.y = -ascend_descend_speed
 			State.GROUNDED:
 				current_state = State.SNEAKING
-				speed_mult /= sneak_mult
+				global_speed_scale *= sneak_mult
 	if event.is_action_released("crouch"):
 		match current_state:
 			State.FLIGHT:
 				velocity.y = 0.0
 			State.SNEAKING:
 				current_state = State.GROUNDED
-				speed_mult *= sneak_mult
-
+				global_speed_scale /= sneak_mult
 	
 	# SPACE logic
 	if event.is_action_pressed("jump") and not is_on_floor():
@@ -125,6 +139,7 @@ func _input(event):
 				elif click_count == 2:
 					fly()
 					double_click_timer.stop()
+					click_count = 0
 					return
 				if current_state == State.FLIGHT:
 					velocity.y = ascend_descend_speed
@@ -140,6 +155,10 @@ func _input(event):
 	# Skill 2 Logic (Default 'E')
 	if event.is_action_pressed("skill_2"):
 		spawn_projectile()
+	
+	# Shoulder Switch Logic (Default 'Middle Mouse')
+	if event.is_action_pressed("switch_shoulders"):
+		switch_shoulders()
 
 func _unhandled_input(event):
 	var is_camera_motion := (
@@ -155,14 +174,21 @@ func _physics_process(delta):
 		print("State: " + str(current_state))
 		last_state = current_state
 	
-	# Resetting conditions
+	# State transition logic
 	if is_on_floor():
 		match current_state:
-			State.IN_AIR: current_state = State.GROUNDED
+			State.IN_AIR: 
+				current_state = State.LANDING
+				landing_initial_velocity = velocity
+				landing_initial_velocity.y = 0
+				landing_initial_speed = landing_initial_velocity.length()
 			State.FLIGHT, State.SUPER_FLIGHT:
 				fly()
-				current_state = State.GROUNDED
-		if can_fly == false: can_fly = true
+				current_state = State.LANDING
+				landing_initial_velocity = velocity
+				landing_initial_velocity.y = 0
+				landing_initial_speed = landing_initial_velocity.length()
+		if can_fly == false and current_state != State.CHARGING_JUMP: can_fly = true
 	elif not is_on_floor():
 		if current_state != State.FLIGHT and current_state != State.SUPER_FLIGHT and current_state != State.IN_AIR:
 			current_state =  State.IN_AIR
@@ -170,7 +196,7 @@ func _physics_process(delta):
 	# Camera control
 	_camera_pivot.rotation.x += _camera_input_direction.y * delta
 	_camera_pivot.rotation.x = clamp(_camera_pivot.rotation.x, -PI / 3.0, PI / 2.001)
-	_camera_pivot.rotation.y -= _camera_input_direction.x * delta
+	_shoulder_pivot.rotation.y -= _camera_input_direction.x * delta
 	
 	_camera_input_direction = Vector2.ZERO
 	
@@ -178,6 +204,8 @@ func _physics_process(delta):
 	match current_state:
 		State.FLIGHT, State.SUPER_FLIGHT:
 			flight_movement(delta)
+		State.LANDING:
+			landing_movement(delta)
 		_:
 			ground_movement(delta)
 	
@@ -189,9 +217,9 @@ func _physics_process(delta):
 	if target_fov > 120.0: target_fov = 120.0
 	_camera.fov = lerp(_camera.fov, target_fov, delta * 5.0)
 	if current_state == State.SUPER_FLIGHT:
-		_camera_spring.spring_length = lerp(_camera_spring.spring_length, 2.5, delta * 5.0)
-	elif _camera_spring.spring_length != 8.0:
-		_camera_spring.spring_length = lerp(_camera_spring.spring_length, 8.0, delta * 10.0)
+		_camera_spring.spring_length = lerp(_camera_spring.spring_length, 2.0, delta * 5.0)
+	elif _camera_spring.spring_length != 4.0:
+		_camera_spring.spring_length = lerp(_camera_spring.spring_length, 4.0, delta * 10.0)
 
 	
 	# Stickman Animations
@@ -200,6 +228,8 @@ func _physics_process(delta):
 
 func handle_animations():
 	match current_state:
+		State.LANDING:
+			_stickman.update_animation("hover")
 		State.FLIGHT:
 			%StandardCollision.disabled = false
 			%FlyCollision.disabled = true
@@ -259,15 +289,19 @@ func ground_movement(delta):
 	# Handle gravity
 	var y_velocity := velocity.y
 	velocity.y = 0.0
-	velocity = velocity.move_toward(move_direction * move_speed, acceleration * delta)
+	velocity = velocity.move_toward(move_direction * move_speed * global_speed_scale, acceleration * delta)
 	velocity.y = y_velocity + _gravity * delta
 	
 	# Rotate to movement direction
 	if move_direction.length() > 0.2:
 		_last_movement_direction = move_direction
-	var target_angle := Vector3.BACK.signed_angle_to(_last_movement_direction, Vector3.UP)
-	_stickman.global_rotation.y = lerp_angle(_stickman.rotation.y, target_angle, rotation_speed * delta)
-	$SpawnPivot.global_rotation.y = lerp_angle($SpawnPivot.rotation.y, target_angle, rotation_speed * delta)
+	
+	var target_basis = Transform3D().looking_at(-_last_movement_direction, Vector3.UP).basis
+	var turn_speed = rotation_speed
+	_stickman.global_transform.basis = _stickman.global_transform.basis.orthonormalized().slerp(target_basis, turn_speed * delta)
+	
+	# Sync other nodes to the stickman's rotation
+	$SpawnPivot.global_transform.basis = _stickman.global_transform.basis
 	
 	# Handle Step-Up
 	if is_on_floor() and move_direction.length() > 0:
@@ -335,7 +369,7 @@ func flight_movement(delta):
 				# Handle gravity
 				var y_velocity := velocity.y
 				velocity.y = 0.0
-				velocity = velocity.move_toward(move_direction * move_speed, acceleration * delta)
+				velocity = velocity.move_toward(move_direction * move_speed * global_speed_scale, acceleration * delta)
 				velocity.y = y_velocity + _gravity * delta
 				
 				# Rotate to movement direction
@@ -353,8 +387,8 @@ func flight_movement(delta):
 			var direction := -_camera.global_transform.basis.z.normalized()
 			
 			var current_acceleration := acceleration * super_acceleration_mult
-
-			var target_velocity := direction * move_speed
+			var current_move_speed := move_speed * super_mult
+			var target_velocity := direction * current_move_speed * global_speed_scale
 			
 			velocity = velocity.move_toward(target_velocity, current_acceleration * delta)
 			
@@ -365,6 +399,43 @@ func flight_movement(delta):
 				%FlyCollision.global_transform.basis = _stickman.global_transform.basis
 				%FlyCollision.rotate_object_local(Vector3.RIGHT, deg_to_rad(-90))
 
+func landing_movement(delta):
+	# Apply gravity to stick to the floor
+	velocity.y = _gravity * delta
+
+	# Separate horizontal velocity to apply deceleration
+	var horizontal_velocity = velocity
+	horizontal_velocity.y = 0
+	
+	var current_speed = horizontal_velocity.length()
+	
+	# If we are already stopped, or if there was no initial speed, transition out.
+	if current_speed < 0.5 or is_zero_approx(landing_initial_speed):
+		velocity.x = 0.0
+		velocity.z = 0.0
+		current_state = State.GROUNDED
+		return
+
+	# Calculate current speed as a fraction of the initial speed (0.0 to 1.0)
+	var speed_fraction = current_speed / landing_initial_speed
+	
+	# The curve now controls deceleration amount based on current speed.
+	# X-axis (time) is speed percentage (1.0 = initial landing speed, 0.0 = stopped).
+	# Y-axis (value) is the deceleration multiplier.
+	var deceleration_multiplier = 1.0
+	if landing_curve:
+		deceleration_multiplier = landing_curve.sample(speed_fraction)
+		
+	var current_deceleration = max_landing_deceleration * deceleration_multiplier
+	
+	# Apply deceleration
+	horizontal_velocity = horizontal_velocity.move_toward(Vector3.ZERO, current_deceleration * delta)
+	
+	# Re-combine velocities
+	velocity.x = horizontal_velocity.x
+	velocity.z = horizontal_velocity.z
+
+
 func speed_up(new_mult):
 	var temp_mult = speed_mult
 	speed_mult = new_mult
@@ -373,11 +444,9 @@ func speed_up(new_mult):
 	speed_mult = temp_mult
 
 func fly():
-	if current_state == State.SUPER_FLIGHT:
-		current_state = State.IN_AIR
-		speed_mult /= (speed_mult * 4)
-		_gravity = base_gravity
-	elif current_state  == State.FLIGHT:
+	if current_state == State.FLIGHT or \
+	   current_state == State.SUPER_FLIGHT:
+		if current_state == State.SUPER_FLIGHT: mouse_sensitivity /= 0.4
 		current_state = State.IN_AIR
 		speed_mult /= flying_mult
 		acceleration /= flying_acceleration_mult
@@ -416,6 +485,19 @@ func _get_step_height(move_direction: Vector3) -> float:
 	
 	# If no valid step is found, return 0.0
 	return 0.0
+
+func switch_shoulders():
+	match shoulder_side:
+		1:
+			_camera_animation.play("right_to_left")
+			shoulder_side = 2
+		2:
+			_camera_animation.play("left_to_right")
+			shoulder_side = 1
+
+func make_sonic_boom():
+	sonic_boom_vfx.emitting = true
+	fx_player.play(0.0)
 
 func _on_double_click_timer_timeout() -> void:
 	click_count = 0
