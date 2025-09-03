@@ -2,7 +2,7 @@ class_name BuildingData
 extends Node3D
 
 enum BuildingType {
-	UNASSIGNED, HOUSING, APARTMENT, DOWNTOWN, INDUSTRIAL,
+	UNASSIGNED, HOUSING, APARTMENT, DOWNTOWN, INDUSTRIAL, OFFICE
 }
 
 @export_group("Settings")
@@ -25,14 +25,42 @@ var grid_position: Vector2i
 var current_lod_level: int = -1
 
 func _ready():
-	match building_type:
-		BuildingType.HOUSING:
-			var number = count_files_in_dir("res://assets/3d_models/city_buildings/housing/")
-			var random = randi_range(1, number)
-			var glb_path: String = "res://assets/3d_models/city_buildings/housing/building-type-" + str(random) +".glb"
-			process_glb(glb_path)
-		_: pass
-	set_lod_level(2)
+	assign_scene()
+	set_lod_level(0)
+
+func assign_scene():
+	match size:
+		Vector2i(1,1): # Small Buildings
+			match building_type:
+				BuildingType.HOUSING:
+					var number = count_files_in_dir("res://assets/3d_models/city_buildings/housing/")
+					var random = randi_range(1, number)
+					var glb_path: String = "res://assets/3d_models/city_buildings/housing/building-" + str(random) + ".glb"
+					process_glb(glb_path)
+				BuildingType.APARTMENT:
+					var number = count_files_in_dir("res://assets/3d_models/city_buildings/apartment/")
+					var random = randi_range(1, number)
+					var glb_path: String = "res://assets/3d_models/city_buildings/apartment/building-" + str(random) + ".glb"
+					process_glb(glb_path)
+				BuildingType.OFFICE:
+					var number = count_files_in_dir("res://assets/3d_models/city_buildings/office/")
+					var random = randi_range(1, number)
+					var glb_path: String = "res://assets/3d_models/city_buildings/office/building-" + str(random) + ".glb"
+					process_glb(glb_path)
+				BuildingType.DOWNTOWN:
+					var number = count_files_in_dir("res://assets/3d_models/city_buildings/downtown/")
+					var random = randi_range(1, number)
+					var glb_path: String = "res://assets/3d_models/city_buildings/downtown/building-" + str(random) + ".glb"
+					process_glb(glb_path)
+				_: pass
+		Vector2i(2,1): # 2x1 Buildings
+			match building_type:
+				BuildingType.OFFICE:
+					var number = count_files_in_dir("res://assets/3d_models/city_buildings/office/2x1/")
+					var random = randi_range(1, number)
+					var glb_path: String = "res://assets/3d_models/city_buildings/office/2x1/building-" + str(random) + ".glb"
+					process_glb(glb_path)
+				_: pass
 
 func set_lod_level(level: int):
 	if level == current_lod_level: # Return if same level
@@ -64,7 +92,7 @@ func process_glb(glb_path: String):
 	container.owner = self
 	container.name = "LOD0"
 	lod0_node = container
-	container.scale = Vector3.ONE * 12
+	container.scale = Vector3.ONE * 10
 	container.position.y = 0.74
 	
 	var mesh_instance = container.get_child(0)

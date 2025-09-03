@@ -986,7 +986,9 @@ func _find_placement_at_anchor(anchor_pos: Vector2i, scene: PackedScene, area_ti
 					break
 			if not can_place: break
 		
-		if can_place and (is_priority_zone or enforce_variety_in_standard_zones):
+		if can_place and \
+		(zone_type != Zone.DOWNTOWN) and \
+		(is_priority_zone or enforce_variety_in_standard_zones):
 			for x in range(-min_variety_distance, current_footprint.x + min_variety_distance):
 				for y in range(-min_variety_distance, current_footprint.y + min_variety_distance):
 					if x >= 0 and x < current_footprint.x and y >= 0 and y < current_footprint.y:

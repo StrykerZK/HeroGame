@@ -27,7 +27,7 @@ var speed_mult := 1.0
 @export var flying_mult := 6.0
 @export var super_mult := 30.0
 @export var flying_acceleration_mult := 0.8
-@export var super_acceleration_mult := 10.0
+@export var super_acceleration_mult := 5.0
 @export var ascend_descend_speed := 40.0
 @export var flight_turn_speed := 20.0
 @export var air_brake_deceleration := 600.0
@@ -98,8 +98,8 @@ func _ready():
 	if is_instance_valid(LODManager):
 		LODManager.register_player(self)
 	
-	if is_multiplayer_authority():
-		_setup_local_player_fog()
+	#if is_multiplayer_authority():
+	#	_setup_local_player_fog()
 	
 	_laser_l.visible = false
 	_laser_r.visible = false
@@ -174,8 +174,16 @@ func _input(event):
 					double_click_timer.stop()
 					click_count = 0
 					return
-				if current_state == State.FLIGHT:
-					velocity.y = ascend_descend_speed * speed_modifier
+				match current_state:
+					State.FLIGHT:
+						velocity.y = ascend_descend_speed * speed_modifier
+					State.SUPER_FLIGHT:
+						# Give a little boost
+						if %BoostTimer.time_left == 0:
+							%BoostTimer.start()
+							var direction := -_camera.global_transform.basis.z.normalized()
+							velocity = direction * base_speed * super_mult * speed_modifier * 3.0
+							make_sonic_boom()
 	if event.is_action_released("jump"):
 		if current_state == State.FLIGHT:
 			if velocity.y > 0.0:

@@ -1,0 +1,38 @@
+[gd_scene load_steps=5 format=3 uid="uid://bxus4yubmjeh6"]
+
+[ext_resource type="Material" uid="uid://jhqx62uer4m8" path="res://assets/materials/walkway.tres" id="1_1r213"]
+[ext_resource type="Script" uid="uid://bftln882qe6pw" path="res://scripts/building_data.gd" id="1_mty1g"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_mty1g"]
+size = Vector3(40, 0.74, 20)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_1alb1"]
+data = PackedVector3Array(-20, 0.37, 10, 20, 0.37, 10, -20, -0.37, 10, 20, 0.37, 10, 20, -0.37, 10, -20, -0.37, 10, 20, 0.37, -10, -20, 0.37, -10, 20, -0.37, -10, -20, 0.37, -10, -20, -0.37, -10, 20, -0.37, -10, 20, 0.37, 10, 20, 0.37, -10, 20, -0.37, 10, 20, 0.37, -10, 20, -0.37, -10, 20, -0.37, 10, -20, 0.37, -10, -20, 0.37, 10, -20, -0.37, -10, -20, 0.37, 10, -20, -0.37, 10, -20, -0.37, -10, 20, 0.37, 10, -20, 0.37, 10, 20, 0.37, -10, -20, 0.37, 10, -20, 0.37, -10, 20, 0.37, -10, -20, -0.37, 10, 20, -0.37, 10, -20, -0.37, -10, 20, -0.37, 10, 20, -0.37, -10, -20, -0.37, -10)
+
+[node name="Office2x1" type="Node3D" node_paths=PackedStringArray("lod1_node", "lod2_node")]
+script = ExtResource("1_mty1g")
+size = Vector2i(2, 1)
+building_type = 5
+lod1_node = NodePath("LOD1")
+lod2_node = NodePath("LOD2")
+local_limit = 3
+
+[node name="Pavement" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.371, 0)
+material_override = ExtResource("1_1r213")
+mesh = SubResource("BoxMesh_mty1g")
+
+[node name="PavementCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.371, 0)
+shape = SubResource("ConcavePolygonShape3D_1alb1")
+
+[node name="LOD1" type="Node3D" parent="."]
+transform = Transform3D(-1.5298986e-07, 0, 3.5, 0, 3.5, 0, -3.5, 0, -1.5298986e-07, 0, 0.509, 5)
+visible = false
+
+[node name="LOD2" type="Node3D" parent="."]
+transform = Transform3D(-1.5298986e-07, 0, 3.5, 0, 3.5, 0, -3.5, 0, -1.5298986e-07, 0, 0.509, 5)
+visible = false
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-1, 0, -8.742277e-08, -4.9685173e-08, 0.8227992, 0.56833214, 7.1931396e-08, 0.56833214, -0.8227992, 0, 15.191026, -21.612144)

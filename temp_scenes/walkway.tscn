@@ -1,20 +1,29 @@
-[gd_scene load_steps=4 format=3 uid="uid://dkmtyp11ifovy"]
+[gd_scene load_steps=5 format=3 uid="uid://dkmtyp11ifovy"]
 
 [ext_resource type="Material" uid="uid://jhqx62uer4m8" path="res://assets/materials/walkway.tres" id="1_7hlla"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_7hlla"]
-size = Vector3(20, 0.74, 20)
+[ext_resource type="Script" uid="uid://bftln882qe6pw" path="res://scripts/building_data.gd" id="1_vxqm1"]
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_vxqm1"]
 data = PackedVector3Array(-10, 0.37, 10, 10, 0.37, 10, -10, -0.37, 10, 10, 0.37, 10, 10, -0.37, 10, -10, -0.37, 10, 10, 0.37, -10, -10, 0.37, -10, 10, -0.37, -10, -10, 0.37, -10, -10, -0.37, -10, 10, -0.37, -10, 10, 0.37, 10, 10, 0.37, -10, 10, -0.37, 10, 10, 0.37, -10, 10, -0.37, -10, 10, -0.37, 10, -10, 0.37, -10, -10, 0.37, 10, -10, -0.37, -10, -10, 0.37, 10, -10, -0.37, 10, -10, -0.37, -10, 10, 0.37, 10, -10, 0.37, 10, 10, 0.37, -10, -10, 0.37, 10, -10, 0.37, -10, 10, 0.37, -10, -10, -0.37, 10, 10, -0.37, 10, -10, -0.37, -10, 10, -0.37, 10, 10, -0.37, -10, -10, -0.37, -10)
 
-[node name="Walkway" type="Node3D"]
+[sub_resource type="BoxMesh" id="BoxMesh_7hlla"]
+size = Vector3(20, 0.74, 20)
 
-[node name="Pavement" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37371293, 0)
-material_override = ExtResource("1_7hlla")
-mesh = SubResource("BoxMesh_7hlla")
+[node name="Walkway" type="Node3D"]
+script = ExtResource("1_vxqm1")
 
 [node name="PavementCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37371293, 0)
 shape = SubResource("ConcavePolygonShape3D_vxqm1")
+
+[node name="LOD0" type="Node3D" parent="."]
+
+[node name="Pavement" type="MeshInstance3D" parent="LOD0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37371293, 0)
+material_override = ExtResource("1_7hlla")
+mesh = SubResource("BoxMesh_7hlla")
+skeleton = NodePath("../..")
+
+[node name="LOD1" type="Node3D" parent="."]
+
+[node name="LOD2" type="Node3D" parent="."]

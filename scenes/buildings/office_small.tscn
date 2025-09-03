@@ -1,28 +1,29 @@
-[gd_scene load_steps=5 format=3 uid="uid://78r105d8itax"]
+[gd_scene load_steps=5 format=3 uid="uid://bwuyb26fcd3r5"]
 
-[ext_resource type="Script" uid="uid://bftln882qe6pw" path="res://scripts/building_data.gd" id="1_7yca7"]
-[ext_resource type="Material" uid="uid://jhqx62uer4m8" path="res://assets/materials/walkway.tres" id="2_cwhdv"]
+[ext_resource type="Script" uid="uid://bftln882qe6pw" path="res://scripts/building_data.gd" id="1_up5au"]
+[ext_resource type="Material" uid="uid://jhqx62uer4m8" path="res://assets/materials/walkway.tres" id="2_mmga2"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_xityw"]
+[sub_resource type="BoxMesh" id="BoxMesh_xeh0q"]
 size = Vector3(20, 0.74, 20)
 
-[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_sr1lu"]
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_xksak"]
 data = PackedVector3Array(-10, 0.37, 10, 10, 0.37, 10, -10, -0.37, 10, 10, 0.37, 10, 10, -0.37, 10, -10, -0.37, 10, 10, 0.37, -10, -10, 0.37, -10, 10, -0.37, -10, -10, 0.37, -10, -10, -0.37, -10, 10, -0.37, -10, 10, 0.37, 10, 10, 0.37, -10, 10, -0.37, 10, 10, 0.37, -10, 10, -0.37, -10, 10, -0.37, 10, -10, 0.37, -10, -10, 0.37, 10, -10, -0.37, -10, -10, 0.37, 10, -10, -0.37, 10, -10, -0.37, -10, 10, 0.37, 10, -10, 0.37, 10, 10, 0.37, -10, -10, 0.37, 10, -10, 0.37, -10, 10, 0.37, -10, -10, -0.37, 10, 10, -0.37, 10, -10, -0.37, -10, 10, -0.37, 10, 10, -0.37, -10, -10, -0.37, -10)
 
-[node name="House" type="Node3D" node_paths=PackedStringArray("lod1_node", "lod2_node")]
-script = ExtResource("1_7yca7")
-building_type = 1
+[node name="OfficeSmall" type="Node3D" node_paths=PackedStringArray("lod1_node", "lod2_node")]
+script = ExtResource("1_up5au")
+building_type = 5
 lod1_node = NodePath("LOD1")
 lod2_node = NodePath("LOD2")
+local_limit = 6
 
 [node name="Pavement" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.371, 0)
-material_override = ExtResource("2_cwhdv")
-mesh = SubResource("BoxMesh_xityw")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37371293, 0)
+material_override = ExtResource("2_mmga2")
+mesh = SubResource("BoxMesh_xeh0q")
 
 [node name="PavementCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.371, 0)
-shape = SubResource("ConcavePolygonShape3D_sr1lu")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.37371293, 0)
+shape = SubResource("ConcavePolygonShape3D_xksak")
 
 [node name="LOD1" type="Node3D" parent="."]
 transform = Transform3D(-1.5298986e-07, 0, 3.5, 0, 3.5, 0, -3.5, 0, -1.5298986e-07, 0, 0.509, 5)
@@ -33,4 +34,4 @@ transform = Transform3D(-1.5298986e-07, 0, 3.5, 0, 3.5, 0, -3.5, 0, -1.5298986e-
 visible = false
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-1, 0, -8.742278e-08, -4.0226524e-08, 0.8878475, 0.4601378, 7.761809e-08, 0.4601378, -0.8878475, 0, 9.140183, -15.83617)
+transform = Transform3D(-1, 0, -8.742277e-08, -3.6410462e-08, 0.9091416, 0.4164871, 7.947969e-08, 0.4164871, -0.9091416, 0, 13.982799, -18.52966)
