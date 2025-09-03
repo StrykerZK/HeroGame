@@ -57,6 +57,11 @@ background_mode = 2
 sky = SubResource("Sky_w3j7k")
 tonemap_mode = 2
 glow_enabled = true
+fog_enabled = true
+fog_light_color = Color(0.7951723, 0.8844309, 0.90352285, 1)
+fog_sun_scatter = 0.1
+fog_density = 0.006
+fog_aerial_perspective = 0.716
 
 [node name="CityGenerator" type="Node3D"]
 script = ExtResource("1_s04yr")
@@ -141,5 +146,6 @@ shadow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_ystin")
 
-[node name="Player" parent="." instance=ExtResource("11_mpuha")]
+[node name="Player" parent="." node_paths=PackedStringArray("world_environment_node") instance=ExtResource("11_mpuha")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 278.84253, 357.46768, 196.02185)
+world_environment_node = NodePath("../WorldEnvironment")

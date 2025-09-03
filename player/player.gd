@@ -5,6 +5,12 @@ extends CharacterBody3D
 var mouse_sensitivity := base_mouse_sensitivity
 @export var base_fov := 75.0
 
+@export_group("Aiming")
+@export var aim_fov := 40.0
+@export var aim_speed := 10.0
+@export var aim_mouse_sensitivity_mult := 0.5
+var is_aiming := false
+
 @export_group("Movement")
 @export_subgroup("Ground")
 @export var base_speed := 8.0
@@ -14,18 +20,18 @@ var speed_mult := 1.0
 @export var sprint_mult := 2.0
 @export var sneak_mult := 0.4
 @export var rotation_speed := 12.0
-@export var min_jump_impulse := 12.0
-@export var max_jump_impulse := 50.0
+@export var min_jump_impulse := 15.0
+@export var max_jump_impulse := 150.0
 @export var jump_charge_time := 3.0
 @export_subgroup("Flying")
 @export var flying_mult := 6.0
-@export var super_mult := 20.0
+@export var super_mult := 30.0
 @export var flying_acceleration_mult := 0.8
-@export var super_acceleration_mult := 30.0
+@export var super_acceleration_mult := 10.0
 @export var ascend_descend_speed := 40.0
 @export var flight_turn_speed := 20.0
-@export var air_brake_deceleration := 1800.0
-@export var max_landing_deceleration := 2000.0
+@export var air_brake_deceleration := 600.0
+@export var max_landing_deceleration := 300.0
 @export var landing_curve: Curve # The curve for the slide deceleration.
 @export_subgroup("Misc")
 @export var max_step_height := 0.5
@@ -37,7 +43,7 @@ var speed_mult := 1.0
 var current_health := base_health
 @export var global_dmg_scale := 1.0
 @export var defense := 4.0
-@export var global_speed_scale := 1.0
+@export var speed_modifier := 1.0 # Multiplier for external effects (buffs/debuffs)
 
 # -- States --
 enum State {
@@ -59,7 +65,7 @@ var _last_movement_direction := Vector3.BACK
 var _gravity := -70.0
 var click_count := 0
 
-# -- Scene assignment --
+# -- Node assignment --
 @onready var _camera_pivot: Node3D = %CameraPivot
 @onready var _camera: Camera3D = %Camera
 @onready var _camera_spring: SpringArm3D = %CameraSpring
@@ -71,11 +77,18 @@ var click_count := 0
 @onready var sonic_boom_vfx := %SonicBoomFX
 @onready var fx_player := %FXPlayer
 
+# -- Scene assignment --
+@export_group("Scenes")
+@export var world_environment_node: WorldEnvironment
 @onready var poof_effect_scene: PackedScene = preload("res://assets/vfx/poof.tscn")
 @onready var projectile_scene: PackedScene = preload("res://temp_scenes/test_projectile.tscn")
 
 func _ready():
-	LODManager.register_player(self)
+	if is_instance_valid(LODManager):
+		LODManager.register_player(self)
+	
+	if is_multiplayer_authority():
+		_setup_local_player_fog()
 	
 	_camera.fov = base_fov
 	_gravity = base_gravity
@@ -89,6 +102,14 @@ func _input(event):
 	if event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	
+	# Aiming Logic (Right Click)
+	if event.is_action_pressed("aim"):
+		is_aiming = true
+		mouse_sensitivity = base_mouse_sensitivity * aim_mouse_sensitivity_mult
+	if event.is_action_released("aim"):
+		is_aiming = false
+		mouse_sensitivity = base_mouse_sensitivity
+
 	# SHIFT Logic
 	if event.is_action_pressed("sprint"):
 		match current_state:
@@ -100,7 +121,6 @@ func _input(event):
 				make_sonic_boom()
 			State.GROUNDED:
 				current_state = State.RUNNING
-				global_speed_scale *= sprint_mult
 	if event.is_action_released("sprint"):
 		match current_state:
 			State.SUPER_FLIGHT:
@@ -110,7 +130,6 @@ func _input(event):
 				air_brake = true
 			State.RUNNING:
 				current_state = State.GROUNDED
-				global_speed_scale /= sprint_mult
 	
 	# CTRL Logic
 	if event.is_action_pressed("crouch"):
@@ -119,14 +138,12 @@ func _input(event):
 				velocity.y = -ascend_descend_speed
 			State.GROUNDED:
 				current_state = State.SNEAKING
-				global_speed_scale *= sneak_mult
 	if event.is_action_released("crouch"):
 		match current_state:
 			State.FLIGHT:
 				velocity.y = 0.0
 			State.SNEAKING:
 				current_state = State.GROUNDED
-				global_speed_scale /= sneak_mult
 	
 	# SPACE logic
 	if event.is_action_pressed("jump") and not is_on_floor():
@@ -212,10 +229,10 @@ func _physics_process(delta):
 	if can_move:
 		move_and_slide()
 	
-	# Dynamic FOV
-	var target_fov = base_fov + (move_speed * 0.15)
-	if target_fov > 120.0: target_fov = 120.0
-	_camera.fov = lerp(_camera.fov, target_fov, delta * 5.0)
+	handle_rotation(delta)
+	handle_camera_zoom(delta)
+	
+	# Spring Arm length logic
 	if current_state == State.SUPER_FLIGHT:
 		_camera_spring.spring_length = lerp(_camera_spring.spring_length, 2.0, delta * 5.0)
 	elif _camera_spring.spring_length != 4.0:
@@ -257,7 +274,7 @@ func handle_animations():
 			if ground_speed > 0.0: _stickman.update_animation("walk")
 			else: _stickman.update_animation("idle")
 		State.RUNNING:
-			_stickman.update_animation("run")
+			if velocity.length() > 0.0: _stickman.update_animation("run")
 		State.CHARGING_JUMP:
 			if Input.is_action_just_pressed("jump"):
 				_stickman.update_animation("charge_jump")
@@ -279,29 +296,22 @@ func ground_movement(delta):
 	move_direction.y = 0.0
 	move_direction = move_direction.normalized()
 	
-	# Check speed mult
-	if speed_mult > 1.0: move_speed = base_speed * speed_mult
-	elif speed_mult == 1.0: move_speed = base_speed
-	elif speed_mult < 1.0:
-		if current_state == State.SNEAKING: move_speed = base_speed * speed_mult
-		else: speed_mult = 1.0
+	# Determine current target speed based on state
+	var target_speed = base_speed
+	if current_state == State.RUNNING:
+		target_speed *= sprint_mult
+	elif current_state == State.SNEAKING:
+		target_speed *= sneak_mult
 	
 	# Handle gravity
 	var y_velocity := velocity.y
 	velocity.y = 0.0
-	velocity = velocity.move_toward(move_direction * move_speed * global_speed_scale, acceleration * delta)
+	velocity = velocity.move_toward(move_direction * target_speed * speed_modifier, acceleration * delta)
 	velocity.y = y_velocity + _gravity * delta
 	
-	# Rotate to movement direction
+	# Store last movement direction for rotation
 	if move_direction.length() > 0.2:
 		_last_movement_direction = move_direction
-	
-	var target_basis = Transform3D().looking_at(-_last_movement_direction, Vector3.UP).basis
-	var turn_speed = rotation_speed
-	_stickman.global_transform.basis = _stickman.global_transform.basis.orthonormalized().slerp(target_basis, turn_speed * delta)
-	
-	# Sync other nodes to the stickman's rotation
-	$SpawnPivot.global_transform.basis = _stickman.global_transform.basis
 	
 	# Handle Step-Up
 	if is_on_floor() and move_direction.length() > 0:
@@ -321,7 +331,6 @@ func ground_movement(delta):
 		if Input.is_action_pressed("jump"):
 			current_jump_charge += delta / jump_charge_time
 			current_jump_charge = min(current_jump_charge, 1.0)
-			move_speed -= current_jump_charge * 60 # FOV effect
 		if Input.is_action_just_released("jump"):
 			current_state = State.IN_AIR
 			if current_jump_charge >= 0.5: can_fly = true
@@ -343,12 +352,6 @@ func ground_movement(delta):
 func flight_movement(delta):
 	var raw_input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	
-	# Check speed mult
-	if speed_mult > 1.0: move_speed = base_speed * speed_mult
-	elif speed_mult == 1.0: move_speed = base_speed
-	elif speed_mult < 1.0:
-		speed_mult = 1.0
-	
 	match current_state:
 		State.FLIGHT:
 			if air_brake:
@@ -366,29 +369,24 @@ func flight_movement(delta):
 				move_direction.y = 0.0
 				move_direction = move_direction.normalized()
 				
+				var target_speed = base_speed * flying_mult
+				
 				# Handle gravity
 				var y_velocity := velocity.y
 				velocity.y = 0.0
-				velocity = velocity.move_toward(move_direction * move_speed * global_speed_scale, acceleration * delta)
+				velocity = velocity.move_toward(move_direction * target_speed * speed_modifier, acceleration * flying_acceleration_mult * delta)
 				velocity.y = y_velocity + _gravity * delta
 				
-				# Rotate to movement direction
+				# Store last movement direction for rotation
 				if move_direction.length() > 0.2:
 					_last_movement_direction = move_direction
-				
-				var target_basis = Transform3D().looking_at(-_last_movement_direction, Vector3.UP).basis
-				var turn_speed = rotation_speed
-				_stickman.global_transform.basis = _stickman.global_transform.basis.orthonormalized().slerp(target_basis, turn_speed * delta)
-				
-				# Sync other nodes to the stickman's rotation
-				$SpawnPivot.global_transform.basis = _stickman.global_transform.basis
 
 		State.SUPER_FLIGHT:
 			var direction := -_camera.global_transform.basis.z.normalized()
 			
 			var current_acceleration := acceleration * super_acceleration_mult
-			var current_move_speed := move_speed * super_mult
-			var target_velocity := direction * current_move_speed * global_speed_scale
+			var target_speed := base_speed * super_mult
+			var target_velocity := direction * target_speed * speed_modifier
 			
 			velocity = velocity.move_toward(target_velocity, current_acceleration * delta)
 			
@@ -419,9 +417,6 @@ func landing_movement(delta):
 	# Calculate current speed as a fraction of the initial speed (0.0 to 1.0)
 	var speed_fraction = current_speed / landing_initial_speed
 	
-	# The curve now controls deceleration amount based on current speed.
-	# X-axis (time) is speed percentage (1.0 = initial landing speed, 0.0 = stopped).
-	# Y-axis (value) is the deceleration multiplier.
 	var deceleration_multiplier = 1.0
 	if landing_curve:
 		deceleration_multiplier = landing_curve.sample(speed_fraction)
@@ -435,6 +430,37 @@ func landing_movement(delta):
 	velocity.x = horizontal_velocity.x
 	velocity.z = horizontal_velocity.z
 
+func handle_rotation(delta):
+	var target_basis: Basis
+
+	if is_aiming:
+		# If aiming, align the character with the camera's horizontal rotation
+		var cam_y_rotation = _shoulder_pivot.global_rotation.y
+		var target_quat = Quaternion(Vector3.UP, cam_y_rotation)
+		var current_quat = _stickman.global_transform.basis.get_rotation_quaternion()
+		var new_quat = current_quat.slerp(target_quat, rotation_speed * delta)
+		_stickman.global_transform.basis = Basis(new_quat)
+	
+	elif current_state != State.SUPER_FLIGHT:
+		# For grounded and normal flight, rotate towards movement direction
+		if _last_movement_direction.length_squared() > 0.01:
+			target_basis = Transform3D().looking_at(-_last_movement_direction, Vector3.UP).basis
+			_stickman.global_transform.basis = _stickman.global_transform.basis.orthonormalized().slerp(target_basis, rotation_speed * delta)
+
+	# Sync spawn pivot to the stickman's rotation
+	$SpawnPivot.global_transform.basis = _stickman.global_transform.basis
+
+func handle_camera_zoom(delta):
+	var target_fov: float
+	if is_aiming:
+		target_fov = aim_fov
+	else:
+		# Dynamic FOV based on speed when not aiming
+		target_fov = base_fov + (velocity.length() * 0.15)
+		if target_fov > 120.0: target_fov = 120.0
+	
+	# Smoothly interpolate to the target FOV
+	_camera.fov = lerp(_camera.fov, target_fov, aim_speed * delta)
 
 func speed_up(new_mult):
 	var temp_mult = speed_mult
@@ -448,21 +474,34 @@ func fly():
 	   current_state == State.SUPER_FLIGHT:
 		if current_state == State.SUPER_FLIGHT: mouse_sensitivity /= 0.4
 		current_state = State.IN_AIR
-		speed_mult /= flying_mult
-		acceleration /= flying_acceleration_mult
 		_gravity = base_gravity
 	else:
 		current_state = State.FLIGHT
 		velocity.y = 0.0
 		_gravity = 0.0
-		speed_mult *= flying_mult
-		acceleration *= flying_acceleration_mult
 		can_move = true
 
 func spawn_projectile():
 	var ball = projectile_scene.instantiate()
 	ball.global_transform = %BallSpawn.global_transform
 	get_tree().root.add_child(ball)
+
+func _setup_local_player_fog():
+	# Safety check
+	if not world_environment_node or not world_environment_node.environment:
+		push_error("Player Fog: WorldEnvironment node is not assigned in the Inspector!")
+		return
+
+	# Get the Environment resource from the node.
+	var env = world_environment_node.environment
+	
+	# --- SYNC FOG WITH LOD2 ---
+	var lod2_distance = sqrt(LODManager.LOD2_DISTANCE_SQ)
+
+	# Enable the fog for the local player.
+	env.fog_enabled = true
+	if lod2_distance > 0:
+		env.fog_density = 3.0 / lod2_distance
 
 func _get_step_height(move_direction: Vector3) -> float:
 	# Position the shapecast slightly in front of the character and at the max step height
@@ -498,6 +537,23 @@ func switch_shoulders():
 func make_sonic_boom():
 	sonic_boom_vfx.emitting = true
 	fx_player.play(0.0)
+
+# --- Public Functions for Modifiers ---
+
+# Call this from other scripts to set a new persistent speed modifier.
+func set_speed_modifier(value: float):
+	speed_modifier = value
+
+# Call this to reset the speed modifier to its default state.
+func reset_speed_modifier():
+	speed_modifier = 1.0
+
+# Call this to apply a temporary speed modifier (e.g., a 5-second slow debuff).
+func apply_timed_speed_modifier(value: float, duration: float):
+	set_speed_modifier(value)
+	await get_tree().create_timer(duration).timeout
+	reset_speed_modifier()
+
 
 func _on_double_click_timer_timeout() -> void:
 	click_count = 0
