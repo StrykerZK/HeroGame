@@ -289,18 +289,18 @@ transform = Transform3D(3.244413e-09, 0, -0.08676827, 0, 0.006858711, 0, 0.01814
 mesh = SubResource("ArrayMesh_llyxk")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="." groups=["road_collision"]]
 transform = Transform3D(-4.371139e-07, 0, -10, 0, 0.20000003, 0, 10, 0, -4.371139e-07, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_08yp3")
 
-[node name="SidewalkCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+[node name="SidewalkCollision" type="CollisionShape3D" parent="." groups=["road_collision"]]
 transform = Transform3D(1.05318225e-08, 0, -0.48000002, 0, 0.1714682, 0, -0.24094, 0, -2.0981467e-08, -9.758624, 0.57000005, 9.761)
 shape = SubResource("ConcavePolygonShape3D_qpg7m")
 
-[node name="SidewalkCollision2" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+[node name="SidewalkCollision2" type="CollisionShape3D" parent="." groups=["road_collision"]]
 transform = Transform3D(1.0531732e-08, 0, -1.0000057, 0, 0.1714682, 0, -0.24093793, 0, -4.371164e-08, -9, 0.57000005, -9.759001)
 shape = SubResource("ConcavePolygonShape3D_n1v7u")
 
-[node name="SidewalkCollision3" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+[node name="SidewalkCollision3" type="CollisionShape3D" parent="." groups=["road_collision"]]
 transform = Transform3D(1.05318225e-08, 0, -0.48000002, 0, 0.1714682, 0, -0.24094, 0, -2.0981467e-08, 9.761375, 0.57000005, 9.761)
 shape = SubResource("ConcavePolygonShape3D_11n7p")

@@ -109,21 +109,7 @@ extends Node3D
 @export var dead_zone_objects: Array[PackedScene]
 @export var walkway_objects: Array[PackedScene]
 @export_subgroup("Infrastructure")
-# Minor Roads
-@export var road_straight_scene: PackedScene
-@export var road_corner_scene: PackedScene
-@export var road_t_intersection_scene: PackedScene
-@export var road_4way_intersection_scene: PackedScene
-@export var road_end_scene: PackedScene
-# Major Roads (NEW SYSTEM)
-@export var major_road_2_width_edge_scene: PackedScene
-@export var major_road_edge_scene: PackedScene
-@export var major_road_odd_center_scene: PackedScene
-@export var major_road_even_center_scene: PackedScene
-@export var major_road_middle_scene: PackedScene
-@export var major_road_t_intersection_scene: PackedScene
-@export var major_road_2_width_t_intersection_scene: PackedScene
-@export var major_road_intersection_scene: PackedScene
+@export var road_scene: PackedScene
 # Generic
 @export var out_of_bounds_road_scene: PackedScene
 @export var park_scene: PackedScene
@@ -196,6 +182,7 @@ func generate_city():
 	
 	road_network_body = StaticBody3D.new()
 	road_network_body.name = "RoadNetworkCollision"
+	_apply_world_collision_detection(road_network_body)
 	generated_city_node.add_child(road_network_body)
 	
 	if Engine.is_editor_hint() and get_tree() and get_tree().edited_scene_root:
@@ -916,7 +903,14 @@ func _place_scene_at_pos(scene: PackedScene, grid_pos: Vector2i, footprint: Vect
 	generated_city_node.add_child(instance)
 	
 	# Extract scene's collision and add it to correct chunk.
-	_add_collision_to_chunk(instance)
+	var has_road_collision = false
+	for shape_node in instance.find_children("*", "CollisionShape3D"):
+		if shape_node.is_in_group("road_collision"):
+			has_road_collision = true
+			break
+		
+	if not has_road_collision:
+		_add_collision_to_chunk(instance)
 	
 	for x in range(footprint.x):
 		for y in range(footprint.y):
@@ -1201,80 +1195,10 @@ func _place_road_network(occupied_cells: Dictionary):
 			Zone.MAJOR_ROAD: major_road_tiles.append(pos)
 			Zone.MINOR_ROAD: minor_road_tiles.append(pos)
 
-	# --- PASS 1: Place all other Major Road pieces ---
-	for pos in major_road_tiles:
-		if occupied_cells.has(pos): continue
-		# This section is simplified from your original script to place T-junctions and straight roads.
-		# (The full complex logic for different straight pieces can be re-added here if needed)
-		var minor_up = grid_data.get(pos + Vector2i.UP) == Zone.MINOR_ROAD
-		var minor_down = grid_data.get(pos + Vector2i.DOWN) == Zone.MINOR_ROAD
-		var minor_left = grid_data.get(pos + Vector2i.LEFT) == Zone.MINOR_ROAD
-		var minor_right = grid_data.get(pos + Vector2i.RIGHT) == Zone.MINOR_ROAD
-		
-		var scene_to_place = null
-		var scene_rotation = 0
-		var is_horizontal = _is_major_road(pos + Vector2i.LEFT) or _is_major_road(pos + Vector2i.RIGHT)
-
-		if minor_up or minor_down or minor_left or minor_right:
-			scene_to_place = major_road_2_width_t_intersection_scene if major_road_width == 2 else major_road_t_intersection_scene
-			if is_horizontal:
-				scene_rotation = 180 if minor_up else 0
-			else:
-				scene_rotation = 270 if minor_left else 90
-		else:
-			scene_to_place = major_road_middle_scene # Fallback to a generic straight piece
-			scene_rotation = 90 if is_horizontal else 0
-		
-		if scene_to_place:
-			var instance = _place_scene_at_pos(scene_to_place, pos, Vector2i.ONE, scene_rotation, occupied_cells)
-			_extract_and_reparent_road_collision(instance)
-
-	# --- PASS 2: Place all Minor Road pieces (Autotiling) ---
-	for pos in minor_road_tiles:
-		if occupied_cells.has(pos): continue
-		
-		var mask = 0
-		if _is_road(pos + Vector2i.UP): mask += 1
-		if _is_road(pos + Vector2i.RIGHT): mask += 2
-		if _is_road(pos + Vector2i.DOWN): mask += 4
-		if _is_road(pos + Vector2i.LEFT): mask += 8
-		
-		var scene_to_place = null
-		var scene_rotation = 0
-		
-		match mask:
-			0, 1, 2, 4, 8:
-				scene_to_place = road_end_scene
-				if mask == 1: scene_rotation = 0
-				elif mask == 2: scene_rotation = 270
-				elif mask == 4: scene_rotation = 180
-				elif mask == 8: scene_rotation = 90
-			3, 6, 9, 12:
-				scene_to_place = road_corner_scene
-				if mask == 3: scene_rotation = 180
-				elif mask == 6: scene_rotation = 90
-				elif mask == 9: scene_rotation = 270
-				elif mask == 12: scene_rotation = 0
-			5, 10:
-				scene_to_place = road_straight_scene
-				if mask == 5: scene_rotation = 0
-				elif mask == 10: scene_rotation = 90
-			7, 11, 13, 14:
-				scene_to_place = road_t_intersection_scene
-				if mask == 14: scene_rotation = 0
-				elif mask == 11: scene_rotation = 180
-				elif mask == 13: scene_rotation = 270
-				elif mask == 7: scene_rotation = 90
-			15:
-				scene_to_place = road_4way_intersection_scene
-		
-		if scene_to_place:
-			var instance = _place_scene_at_pos(scene_to_place, pos, Vector2i.ONE, scene_rotation, occupied_cells)
-			_extract_and_reparent_road_collision(instance)
 
 func _place_major_intersections(occupied_cells: Dictionary):
-	if not major_road_intersection_scene:
-		print("No major intersection scene assigned. Skipping intersection placement.")
+	if not road_scene:
+		print("No scene assigned. Skipping intersection placement.")
 		return
 
 	var intersection_tiles: Array[Vector2i] = []
@@ -1308,7 +1232,7 @@ func _place_major_intersections(occupied_cells: Dictionary):
 		var size = Vector2i(major_road_width, major_road_width)
 		
 		# The anchor position for the scene is the top-left
-		var instance = _place_scene_at_pos(major_road_intersection_scene, top_left, size, 0, {}) # Use empty dict to avoid self-collision
+		var instance = _place_scene_at_pos(road_scene, top_left, size, 0, {}) # Use empty dict to avoid self-collision
 		if is_instance_valid(instance):
 			if instance.has_method("generate_intersection"):
 				instance.generate_intersection(size)
@@ -1324,13 +1248,20 @@ func _extract_and_reparent_road_collision(instance: Node3D):
 
 	# Find all CollisionShape3D nodes in the instance that are in our designated group.
 	# We process the array in reverse because reparenting modifies the array we are looping over.
-	var shapes_to_reparent = instance.find_children("*", "CollisionShape3D")
-	for shape_node in shapes_to_reparent:
+	for shape_node in instance.find_children("*", "CollisionShape3D",true, false):
 		if shape_node.is_in_group("road_collision"):
 			
 			# The reparent method safely moves the node to a new parent.
 			# It automatically handles removing it from the old parent and preserving its global transform.
 			shape_node.reparent(road_network_body)
+
+func _apply_world_collision_detection(instance):
+	instance.set_collision_layer_value(1, true)
+	instance.set_collision_mask_value(1, false)
+	instance.set_collision_mask_value(2, true)
+	instance.set_collision_mask_value(3, true)
+	instance.set_collision_mask_value(4, true)
+	instance.set_collision_mask_value(6, true)
 
 func _check_road_intersection_neighbors(pos, width) -> bool:
 	if grid_data.get(pos + Vector2i.RIGHT) == Zone.MAJOR_INTERSECTION and \

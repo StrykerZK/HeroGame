@@ -110,10 +110,12 @@ aim={
 
 [layer_names]
 
-3d_physics/layer_1="Environment"
+3d_physics/layer_1="World_Static"
 3d_physics/layer_2="Player"
 3d_physics/layer_3="Projectiles"
 3d_physics/layer_4="Entity"
+3d_physics/layer_5="Destructible_Static"
+3d_physics/layer_6="Interactables"
 
 [physics]
 

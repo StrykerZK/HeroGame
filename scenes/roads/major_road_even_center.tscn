@@ -172,6 +172,6 @@ transform = Transform3D(0.009072001, 0, 0, 0, 1, 0, 0, 0, 1, 0.970928, 0.0400152
 mesh = SubResource("ArrayMesh_xnkof")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="." groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_83ryc")

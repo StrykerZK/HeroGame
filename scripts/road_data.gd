@@ -9,7 +9,8 @@ enum RoadType {
 
 @onready var type: RoadType = RoadType.UNASSIGNED
 @onready var size: Vector2i = Vector2i(1, 1)
-@onready var grid_position: Vector2i
+@onready var grid_position: Vector2i = Vector2i.ZERO
+@onready var direction: Vector2i = Vector2i.UP
 @onready var current_lod_level: int = -1
 @onready var lod0_node: Node3D
 @onready var lod1_node: Node3D
@@ -74,15 +75,15 @@ func generate_intersection(incoming_size: Vector2i):
 				row = 1
 				column += 1
 
-func generate_road_segment():
+func generate_major_road():
 	pass
 
 func generate_minor_road():
 	pass
 
 func extract_collision_shapes(instance):
-	for shape_node in instance.find_children("*", "CollisionShape3D"):
-		if shape_node.is_in_group("collision_for_chunking"):
+	for shape_node in instance.find_children("*", "CollisionShape3D", true, false):
+		if shape_node.is_in_group("road_collision"):
 			shape_node.reparent(self)
 
 func set_lod_level(level: int):
