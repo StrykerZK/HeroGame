@@ -156,6 +156,7 @@ enum Zone {
 }
 enum Direction { NONE, UP, DOWN, LEFT, RIGHT }
 var road_direction_data: Dictionary = {}
+var road_info_data: Dictionary = {}
 var grid_data: Dictionary = {}
 var collision_chunks: Dictionary = {}
 var generated_city_node: Node3D
@@ -196,8 +197,6 @@ func generate_city():
 
 # --- LAYOUT GENERATION ---
 func _generate_layout():
-	grid_data.clear()
-	road_direction_data.clear() # Clear the new direction data
 	_generate_roads()
 	_generate_main_priority_zones()
 	_generate_essential_service_zones()
@@ -786,12 +785,11 @@ func _populate_standard_zone(zone_type: Zone, available_tiles: Array[Vector2i], 
 				var grid_center = Vector2(grid_size) / 2.0
 				var dir_from_center = (Vector2(grid_pos) - grid_center).normalized()
 				var angle = rad_to_deg(dir_from_center.angle())
-				var rotation = 0
 				# UPDATED: Rotations now match Godot's counter-clockwise system.
-				if angle > -45 and angle <= 45: rotation = 270 # face right (+X)
-				elif angle > 45 and angle <= 135: rotation = 180 # face down (+Z)
-				elif angle > 135 or angle <= -135: rotation = 90 # face left (-X)
-				else: rotation = 0 # face up (-Z)
+				if angle > -45 and angle <= 45: rotation_degrees.y = 270 # face right (+X)
+				elif angle > 45 and angle <= 135: rotation_degrees.y = 180 # face down (+Z)
+				elif angle > 135 or angle <= -135: rotation_degrees.y = 90 # face left (-X)
+				else: rotation_degrees.y = 0 # face up (-Z)
 				
 				var can_place = true
 				for x in range(data.size.x):
@@ -1093,6 +1091,8 @@ func _clear_city():
 	var old_city = find_child("GeneratedCity", false, false)
 	if is_instance_valid(old_city): remove_child(old_city); old_city.free()
 	if is_instance_valid(road_network_body): road_network_body.free()
+	road_info_data.clear()
+	road_direction_data.clear()
 	grid_data.clear()
 	collision_chunks.clear()
 	LODManager.clear_buildings()
@@ -1179,81 +1179,163 @@ func _generate_floor_collision():
 
 # --- UPDATED ROAD PLACEMENT LOGIC ---
 func _place_road_network(occupied_cells: Dictionary):
-	# --- NEW: Call the dedicated intersection placement function first ---
-	_place_major_intersections(occupied_cells)
+	# ===================================================================
+	# PASS 1: ANALYSIS - Build the road_info_data dictionary
+	# ===================================================================
+	for x in range(grid_size.x):
+		for y in range(grid_size.y):
+			var pos = Vector2i(x, y)
+			var zone = grid_data.get(pos)
 
-	# The rest of this function now only places straight/T-junction major roads and all minor roads.
-	var major_road_tiles: Array[Vector2i] = []
-	var minor_road_tiles: Array[Vector2i] = []
-
-	# Categorize all remaining, un-occupied road tiles.
-	for pos in grid_data:
-		if occupied_cells.has(pos): continue # Skip tiles already handled by the intersection placer
-		
-		var zone = grid_data.get(pos)
-		match zone:
-			Zone.MAJOR_ROAD: major_road_tiles.append(pos)
-			Zone.MINOR_ROAD: minor_road_tiles.append(pos)
-
-
-func _place_major_intersections(occupied_cells: Dictionary):
-	if not road_scene:
-		print("No scene assigned. Skipping intersection placement.")
-		return
-
-	var intersection_tiles: Array[Vector2i] = []
-	for pos in grid_data:
-		if grid_data.get(pos) == Zone.MAJOR_INTERSECTION:
-			intersection_tiles.append(pos)
-	
-	var visited_intersections: Dictionary = {}
-	
-	for start_pos in intersection_tiles:
-		if visited_intersections.has(start_pos):
-			continue
-
-		# 1. Find the entire contiguous intersection area using a flood-fill.
-		var area = _find_contiguous_zone_area(start_pos, Zone.MAJOR_INTERSECTION, visited_intersections)
-		
-		if area.is_empty():
-			continue
-
-		# 2. Calculate the bounding box and center of the intersection area.
-		var min_x = 9999; var max_x = -9999
-		var min_y = 9999; var max_y = -9999
-		
-		for tile in area:
-			min_x = min(min_x, tile.x)
-			max_x = max(max_x, tile.x)
-			min_y = min(min_y, tile.y)
-			max_y = max(max_y, tile.y)
+			if not (zone in [Zone.MAJOR_ROAD, Zone.MINOR_ROAD, Zone.MAJOR_INTERSECTION]):
+				continue
 			
-		var top_left = Vector2i(min_x, min_y)
-		var size = Vector2i(major_road_width, major_road_width)
-		
-		# The anchor position for the scene is the top-left
-		var instance = _place_scene_at_pos(road_scene, top_left, size, 0, {}) # Use empty dict to avoid self-collision
-		if is_instance_valid(instance):
-			if instance.has_method("generate_intersection"):
-				instance.generate_intersection(size)
-				_extract_and_reparent_road_collision(instance)
-		
-		# 4. Mark ALL tiles in this intersection area as occupied so they are skipped later.
-		for tile in area:
-			occupied_cells[tile] = true
+			var info = {}
+			info["grid_pos"] = pos
+			var connections: Array[Vector2i] = []
+			var is_major = (zone == Zone.MAJOR_ROAD or zone == Zone.MAJOR_INTERSECTION)
+			info["is_major"] = is_major
 
-func _extract_and_reparent_road_collision(instance: Node3D):
-	if not is_instance_valid(instance) or not is_instance_valid(road_network_body):
-		return
+			# --- Neighbor Analysis ---
+			if _is_road(pos + Vector2i.UP): connections.append(Vector2i.UP)
+			if _is_road(pos + Vector2i.RIGHT): connections.append(Vector2i.RIGHT)
+			if _is_road(pos + Vector2i.DOWN): connections.append(Vector2i.DOWN)
+			if _is_road(pos + Vector2i.LEFT): connections.append(Vector2i.LEFT)
+			info["connections"] = connections
 
-	# Find all CollisionShape3D nodes in the instance that are in our designated group.
-	# We process the array in reverse because reparenting modifies the array we are looping over.
-	for shape_node in instance.find_children("*", "CollisionShape3D",true, false):
-		if shape_node.is_in_group("road_collision"):
-			
-			# The reparent method safely moves the node to a new parent.
-			# It automatically handles removing it from the old parent and preserving its global transform.
-			shape_node.reparent(road_network_body)
+			if is_major:
+				# --- Major Road and Intersection Logic ---
+				var major_road_type = Enums.MajorRoadType.UNKNOWN
+				var scene_rotation = 0
+				var lane_index = 0
+				var flow_dir = road_direction_data.get(pos, Direction.NONE)
+				var traffic_flow_vector = Vector2i.ZERO
+
+				# Check for T-junction with a minor road
+				var is_t_junction = false
+				var is_horizontal = (flow_dir == Direction.LEFT or flow_dir == Direction.RIGHT)
+				if is_horizontal:
+					if grid_data.get(pos + Vector2i.UP) == Zone.MINOR_ROAD or grid_data.get(pos + Vector2i.DOWN) == Zone.MINOR_ROAD:
+						is_t_junction = true
+						scene_rotation = 180 if grid_data.get(pos + Vector2i.UP) == Zone.MINOR_ROAD else 0
+				else: # Vertical
+					if grid_data.get(pos + Vector2i.LEFT) == Zone.MINOR_ROAD or grid_data.get(pos + Vector2i.RIGHT) == Zone.MINOR_ROAD:
+						is_t_junction = true
+						scene_rotation = 90 if grid_data.get(pos + Vector2i.LEFT) == Zone.MINOR_ROAD else 270
+
+				if is_t_junction:
+					major_road_type = Enums.MajorRoadType.T_JUNCTION
+				elif zone == Zone.MAJOR_INTERSECTION:
+					major_road_type = Enums.MajorRoadType.INTERSECTION_PIECE
+				else:
+					major_road_type = Enums.MajorRoadType.STRAIGHT
+
+				# Determine visual rotation and lane index for STRAIGHT pieces
+				if major_road_type == Enums.MajorRoadType.STRAIGHT:
+					if is_horizontal:
+						scene_rotation = 90
+						var check_pos = pos + Vector2i.UP
+						while _is_major_road(check_pos):
+							lane_index += 1
+							check_pos += Vector2i.UP
+					else: # Vertical
+						scene_rotation = 0
+						var check_pos = pos + Vector2i.LEFT
+						while _is_major_road(check_pos):
+							lane_index += 1
+							check_pos += Vector2i.LEFT
+				
+				if major_road_type == Enums.MajorRoadType.STRAIGHT:
+					var lane_type = Enums.MajorRoadLaneType.MIDDLE # Default to middle
+					var total_width = major_road_width
+		
+					# Rule 1: Check if the lane is an outer edge
+					if lane_index == 0 or lane_index == total_width - 1:
+						lane_type = Enums.MajorRoadLaneType.EDGE
+					else:
+						var is_odd_width = total_width % 2 != 0
+						# Rule 2: Handle odd-width roads
+						if is_odd_width:
+							var center_index = int(total_width / 2)
+							if lane_index == center_index:
+								lane_type = Enums.MajorRoadLaneType.ODD_CENTER
+						# Rule 3: Handle even-width roads
+						else: # is_even_width
+							var center_index1 = int(total_width / 2)
+							var center_index2 = center_index1 - 1
+							if lane_index == center_index1 or lane_index == center_index2:
+								lane_type = Enums.MajorRoadLaneType.EVEN_CENTER
+					
+					# Add the new information to the data package
+					info["major_road_lane_type"] = lane_type
+				
+				# Determine traffic flow vector
+				match flow_dir:
+					Direction.UP: traffic_flow_vector = Vector2i.UP
+					Direction.DOWN: traffic_flow_vector = Vector2i.DOWN
+					Direction.LEFT: traffic_flow_vector = Vector2i.LEFT
+					Direction.RIGHT: traffic_flow_vector = Vector2i.RIGHT
+
+				info["major_road_type"] = major_road_type
+				info["rotation"] = scene_rotation
+				info["lane_index"] = lane_index
+				info["traffic_flow"] = traffic_flow_vector
+				info["major_road_width"] = major_road_width # Pass the global width for context
+			else:
+				# --- Minor Road Logic (using bitmask) ---
+				var mask = 0
+				if connections.has(Vector2i.UP): mask += 1
+				if connections.has(Vector2i.RIGHT): mask += 2
+				if connections.has(Vector2i.DOWN): mask += 4
+				if connections.has(Vector2i.LEFT): mask += 8
+
+				var road_type = Enums.RoadType.UNKNOWN
+				var scene_rotation = 0
+				match mask:
+					0, 1, 2, 4, 8: road_type = Enums.RoadType.END
+					3, 6, 9, 12: road_type = Enums.RoadType.CORNER
+					5, 10: road_type = Enums.RoadType.STRAIGHT
+					7, 11, 13, 14: road_type = Enums.RoadType.T_JUNCTION
+					15: road_type = Enums.RoadType.CROSSROADS
+				
+				match mask:
+					1: scene_rotation = 180
+					2: scene_rotation = 270
+					4: scene_rotation = 0
+					8: scene_rotation = 90;
+					3: scene_rotation = 270
+					6: scene_rotation = 0
+					9: scene_rotation = 180
+					12: scene_rotation = 90;
+					5: scene_rotation = 0
+					10: scene_rotation = 270;
+					7: scene_rotation = 0
+					11: scene_rotation = 270
+					13: scene_rotation = 90
+					14: scene_rotation = 180;
+					15: scene_rotation = 0;
+				
+				info["type"] = road_type
+				info["rotation"] = scene_rotation
+
+			road_info_data[pos] = info
+
+	# ===================================================================
+	# PASS 2: INSTANTIATION - Place the dynamic scenes
+	# ===================================================================
+	for pos in road_info_data:
+		var data = road_info_data[pos]
+		var instance = road_scene.instantiate()
+		
+		instance.position = Vector3(pos.x * cell_size, 0, pos.y * cell_size)
+		generated_city_node.add_child(instance)
+		occupied_cells[pos] = instance
+		
+		if instance.has_method("generate_scene"):
+			instance.generate_scene(data, road_network_body)
+		else:
+			push_warning("The assigned road_scene does not have a 'generate_scene(data)' function.")
+		
 
 func _apply_world_collision_detection(instance):
 	instance.set_collision_layer_value(1, true)

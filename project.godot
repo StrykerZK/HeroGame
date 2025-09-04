@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 LODManager="*res://scripts/lod_manager.gd"
 BuildingManager="*res://scripts/building_manager.gd"
+Enums="*res://scripts/enums.gd"
 
 [display]
 
