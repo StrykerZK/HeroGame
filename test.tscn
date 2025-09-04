@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://00r46fvffx1y"]
+[gd_scene load_steps=8 format=3 uid="uid://00r46fvffx1y"]
 
 [ext_resource type="Texture2D" uid="uid://cg1ysfawy4uu8" path="res://assets/textures/everytexture.com-stock-nature-dirt-texture-00048.jpg" id="1_8uh7m"]
 [ext_resource type="PackedScene" uid="uid://c4p7sai8cuiko" path="res://player/player.tscn" id="2_8uh7m"]
@@ -23,6 +23,8 @@ albedo_texture = ExtResource("1_8uh7m")
 uv1_scale = Vector3(0.1, 0.1, 0.1)
 uv1_triplanar = true
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8uh7m"]
+
 [node name="Test" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -40,3 +42,12 @@ material = SubResource("StandardMaterial3D_6uqi0")
 
 [node name="Player" parent="." instance=ExtResource("2_8uh7m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.621313, 23)
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 13.944027, 17.963493)
+use_collision = true
+collision_mask = 15
+radius = 1.133
+radial_segments = 24
+rings = 10
+material = SubResource("StandardMaterial3D_8uh7m")

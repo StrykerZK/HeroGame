@@ -68,7 +68,7 @@ var landing_initial_velocity := Vector3.ZERO
 var landing_initial_speed := 0.0
 
 var _camera_input_direction := Vector2.ZERO
-var _last_movement_direction := Vector3.BACK
+var _last_movement_direction := Vector3.FORWARD
 var _gravity := -70.0
 var click_count := 0
 
@@ -82,6 +82,7 @@ var click_count := 0
 @onready var _laser_l: Node3D = %LaserBeamL
 @onready var _laser_r: Node3D = %LaserBeamR
 @onready var _aim_raycast: RayCast3D = %AimRayCast
+@onready var _laser_hit_raycast: RayCast3D = %LaserHitRaycast
 @onready var _camera_animation: AnimationPlayer = %CameraPivotAnimation
 @onready var _stickman := %Bob
 @onready var double_click_timer := %DoubleClickTimer
@@ -243,8 +244,8 @@ func _physics_process(delta):
 			current_state =  State.IN_AIR
 	
 	# Camera control
-	_camera_pivot.rotation.x += _camera_input_direction.y * delta
-	_camera_pivot.rotation.x = clamp(_camera_pivot.rotation.x, -PI / 3.0, PI / 2.001)
+	_camera_pivot.rotation.x -= _camera_input_direction.y * delta
+	_camera_pivot.rotation.x = clamp(_camera_pivot.rotation.x, -PI / 2.001, PI / 6.0)
 	_shoulder_pivot.rotation.y -= _camera_input_direction.x * delta
 	
 	_camera_input_direction = Vector2.ZERO
@@ -277,6 +278,7 @@ func _physics_process(delta):
 	if _laser_l.visible != firing_laser: _laser_l.visible = firing_laser
 	if _laser_r.visible != firing_laser: _laser_r.visible = firing_laser
 	if _aim_raycast.enabled != firing_laser: _aim_raycast.enabled = firing_laser
+	if _laser_hit_raycast.enabled != firing_laser: _laser_hit_raycast.enabled = firing_laser
 	if laser_sfx.playing != firing_laser: laser_sfx.playing = firing_laser
 
 	
@@ -428,7 +430,7 @@ func flight_movement(delta):
 			
 			# Rotate the character model to face the direction of travel.
 			if velocity.length_squared() > 0.01:
-				var target_basis := Transform3D().looking_at(-velocity.normalized(), Vector3.UP).basis
+				var target_basis := Transform3D().looking_at(velocity.normalized(), Vector3.UP).basis
 				_stickman.global_transform.basis = _stickman.global_transform.basis.orthonormalized().slerp(target_basis, flight_turn_speed * delta)
 				%FlyCollision.global_transform.basis = _stickman.global_transform.basis
 				%FlyCollision.rotate_object_local(Vector3.RIGHT, deg_to_rad(-90))
@@ -480,7 +482,7 @@ func handle_rotation(delta):
 	elif current_state != State.SUPER_FLIGHT:
 		# For grounded and normal flight, rotate towards movement direction
 		if _last_movement_direction.length_squared() > 0.01:
-			target_basis = Transform3D().looking_at(-_last_movement_direction, Vector3.UP).basis
+			target_basis = Transform3D().looking_at(_last_movement_direction, Vector3.UP).basis
 			_stickman.global_transform.basis = _stickman.global_transform.basis.orthonormalized().slerp(target_basis, rotation_speed * delta)
 
 func handle_camera_zoom(delta):
@@ -497,36 +499,46 @@ func handle_camera_zoom(delta):
 
 func laser_eyes(delta):
 	set_speed_modifier(laser_slow_modifier) # Slow down player
+	
 	# Targeting Logic
 	var target_pos = _aim_raycast.get_collision_point()
 	# If the raycast doesn't hit anything, project a point far in front of the camera
 	if not _aim_raycast.is_colliding():
 		target_pos = _aim_raycast.global_transform.origin + -_camera.global_transform.basis.z * laser_range
 	
+	# Laser Raycast Logic
+	_laser_hit_raycast.global_transform.origin = _eye_l.global_position.lerp(_eye_r.global_position, 0.5)
+	_laser_hit_raycast.target_position = _laser_hit_raycast.to_local(target_pos)
+	_laser_hit_raycast.force_raycast_update()
+	var final_hit_pos: Vector3
+	var final_collider = null
+	
+	if _laser_hit_raycast.is_colliding():
+		final_hit_pos = _laser_hit_raycast.get_collision_point()
+		final_collider = _laser_hit_raycast.get_collider()
+	else:
+		final_hit_pos = target_pos
+	
 	# Laser Logic
 	var eye_pos_l = _eye_l.global_position
-	var dist_l = eye_pos_l.distance_to(target_pos)
-	var direction_l = (target_pos - eye_pos_l).normalized()
-	_laser_l.global_position = eye_pos_l.lerp(target_pos, 0.5)
+	var dist_l = eye_pos_l.distance_to(final_hit_pos)
+	var direction_l = (final_hit_pos - eye_pos_l).normalized()
+	_laser_l.global_position = eye_pos_l.lerp(final_hit_pos, 0.5)
 	var rotation_l = Quaternion(Vector3.UP, direction_l)
 	_laser_l.global_transform.basis = Basis(rotation_l)
 	_laser_l.scale = Vector3(1, dist_l, 1)
 
 	var eye_pos_r = _eye_r.global_position
-	var dist_r = eye_pos_r.distance_to(target_pos)
-	var direction_r = (target_pos - eye_pos_r).normalized()
-	_laser_r.global_position = eye_pos_r.lerp(target_pos, 0.5)
+	var dist_r = eye_pos_r.distance_to(final_hit_pos)
+	var direction_r = (final_hit_pos - eye_pos_r).normalized()
+	_laser_r.global_position = eye_pos_r.lerp(final_hit_pos, 0.5)
 	var rotation_r = Quaternion(Vector3.UP, direction_r)
 	_laser_r.global_transform.basis = Basis(rotation_r)
 	_laser_r.scale = Vector3(1, dist_r, 1)
 	
 	# --- Damage Logic ---
-	if _aim_raycast.is_colliding():
-		var collider = _aim_raycast.get_collider()
-		# Check if the object we hit has a method to take damage
-		if collider and collider.has_method("take_damage"):
-			# Deal damage over time (damage value * delta)
-			collider.take_damage(laser_damage * delta)
+	if final_collider and final_collider.has_method("take_damage"):
+		final_collider.take_damage(laser_damage * delta)
 
 func fly():
 	if current_state == State.FLIGHT or \
