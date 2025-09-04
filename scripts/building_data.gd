@@ -26,7 +26,7 @@ var current_lod_level: int = -1
 
 func _ready():
 	assign_scene()
-	set_lod_level(0)
+	set_lod_level(2)
 
 func assign_scene():
 	match size:

@@ -98,10 +98,10 @@ transform = Transform3D(-4.3083435e-09, 0, 0.048, 0, 0.01714682, 0, 0.024094, 0,
 mesh = SubResource("ArrayMesh_wcgja")
 skeleton = NodePath("")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_ps852")
 
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="." groups=["collision_for_chunking"]]
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." groups=["road_collision"]]
 transform = Transform3D(-4.3083435e-08, 0, 0.48000002, 0, 0.1714682, 0, 0.24094, 0, 8.583069e-08, -9.76, 0.57000005, -9.759085)
 shape = SubResource("ConcavePolygonShape3D_y2e6g")

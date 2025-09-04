@@ -33,6 +33,7 @@ version_control/autoload_on_startup=true
 [global_group]
 
 collision_for_chunking=""
+road_collision=""
 
 [input]
 
