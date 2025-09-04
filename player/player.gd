@@ -27,11 +27,11 @@ var speed_mult := 1.0
 @export var flying_mult := 6.0
 @export var super_mult := 30.0
 @export var flying_acceleration_mult := 0.8
-@export var super_acceleration_mult := 5.0
+@export var super_acceleration_mult := 8.0
 @export var ascend_descend_speed := 40.0
 @export var flight_turn_speed := 20.0
-@export var air_brake_deceleration := 600.0
-@export var max_landing_deceleration := 300.0
+@export var air_brake_deceleration := 1000.0
+@export var max_landing_deceleration := 2000.0
 @export var landing_curve: Curve # The curve for the slide deceleration.
 @export_subgroup("Misc")
 @export var max_step_height := 0.5
@@ -62,6 +62,7 @@ var last_state = State.GROUNDED
 var can_move := true # THIS MEANS CAN PHYSICALLY MOVE
 var can_fly := true
 var air_brake := false
+var boosting := false
 var shoulder_side := 1
 var current_jump_charge := 0.0
 var landing_initial_velocity := Vector3.ZERO
@@ -161,13 +162,15 @@ func _input(event):
 				velocity.y = 0.0
 			State.SNEAKING:
 				current_state = State.GROUNDED
+			State.SUPER_FLIGHT:
+				fly()
 	
 	# SPACE logic
 	if event.is_action_pressed("jump") and not is_on_floor():
 		match current_state:
 			State.IN_AIR:
 				if can_fly: fly()
-			State.FLIGHT, State.SUPER_FLIGHT:
+			State.FLIGHT:
 				click_count += 1
 				if click_count == 1: double_click_timer.start()
 				elif click_count == 2:
@@ -175,20 +178,18 @@ func _input(event):
 					double_click_timer.stop()
 					click_count = 0
 					return
-				match current_state:
-					State.FLIGHT:
-						velocity.y = ascend_descend_speed * speed_modifier
-					State.SUPER_FLIGHT:
-						# Give a little boost
-						if %BoostTimer.time_left == 0:
-							%BoostTimer.start()
-							var direction := -_camera.global_transform.basis.z.normalized()
-							velocity = direction * base_speed * super_mult * speed_modifier * 3.0
-							make_sonic_boom()
+				velocity.y = ascend_descend_speed * speed_modifier
+			State.SUPER_FLIGHT:
+				# Give a little boost
+				boosting = true
+				make_sonic_boom()
 	if event.is_action_released("jump"):
-		if current_state == State.FLIGHT:
-			if velocity.y > 0.0:
-				velocity.y = 0.0
+		match current_state:
+			State.FLIGHT:
+				if velocity.y > 0.0:
+					velocity.y = 0.0
+			State.SUPER_FLIGHT:
+				boosting = false
 	
 	# Skill 1 Logic (Default 'Q')
 	if event.is_action_pressed("skill_1"):
@@ -426,7 +427,8 @@ func flight_movement(delta):
 			var target_speed := base_speed * super_mult
 			var target_velocity := direction * target_speed * speed_modifier
 			
-			velocity = velocity.move_toward(target_velocity, current_acceleration * delta)
+			if boosting: velocity = velocity.move_toward(target_velocity * 10.0, current_acceleration * delta)
+			else: velocity = velocity.move_toward(target_velocity, current_acceleration * delta)
 			
 			# Rotate the character model to face the direction of travel.
 			if velocity.length_squared() > 0.01:
@@ -491,7 +493,8 @@ func handle_camera_zoom(delta):
 		target_fov = aim_fov
 	else:
 		# Dynamic FOV based on speed when not aiming
-		target_fov = base_fov + (velocity.length() * 0.15)
+		var horizontal_velocity = Vector3(velocity.x, 0.0, velocity.z)
+		target_fov = base_fov + (horizontal_velocity.length() * 0.15)
 		if target_fov > 120.0: target_fov = 120.0
 	
 	# Smoothly interpolate to the target FOV

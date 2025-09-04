@@ -7,8 +7,8 @@
 [ext_resource type="AudioStream" uid="uid://cnpsjhnrkviye" path="res://assets/sfx/laser1.mp3" id="5_qjkh3"]
 
 [sub_resource type="Curve" id="Curve_yw30f"]
-_data = [Vector2(1, 1), 0.0, 0.0, 0, 0]
-point_count = 1
+_data = [Vector2(0, 0.5015337), 0.0, 0.4984663, 0, 1, Vector2(1, 1), 0.4984663, 0.0, 1, 0]
+point_count = 2
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n45qo"]
 albedo_color = Color(1, 0, 0, 1)
@@ -133,21 +133,21 @@ landing_curve = SubResource("Curve_yw30f")
 unique_name_in_owner = true
 
 [node name="Skeleton3D" parent="Bob/Armature" index="0"]
-bones/0/position = Vector3(0, 0.25477028, 0.00021789921)
-bones/7/rotation = Quaternion(0.10588165, -0.5785287, 0.80376107, 0.089787394)
-bones/8/rotation = Quaternion(0.34940028, 5.1223816e-09, 1.2321189e-07, 0.93697363)
-bones/10/rotation = Quaternion(0.060656846, -0.4439775, -0.85483193, 0.26166245)
-bones/11/rotation = Quaternion(0.344428, -1.575121e-08, -1.0107023e-07, 0.9388128)
-bones/13/rotation = Quaternion(-0.66245013, 0.24730526, 0.6624501, -0.24730518)
-bones/14/rotation = Quaternion(-1.0381948e-08, 1.3507277e-07, -0.030377708, 0.99953854)
-bones/16/rotation = Quaternion(0.69024223, -0.15351103, 0.69024235, -0.15351114)
-bones/17/rotation = Quaternion(-1.4069334e-07, 1.4550384e-08, 0.41170454, 0.9113174)
-bones/19/position = Vector3(0.33199933, -0.24002002, 0.22479524)
-bones/21/position = Vector3(-0.341067, 0.31486645, 0.29384398)
-bones/23/position = Vector3(0.18097517, 0.19668779, -0.22629707)
-bones/25/position = Vector3(-0.18097517, -0.22480969, -0.15186726)
-bones/27/position = Vector3(-0.39203572, 0.07901661, 0.17885084)
-bones/29/position = Vector3(0.32836497, -0.21775441, 0.43553942)
+bones/0/position = Vector3(0, 0.28727445, 0)
+bones/7/rotation = Quaternion(0.17891301, -0.21691902, 0.9524451, 0.11740892)
+bones/8/rotation = Quaternion(0.2559858, -4.8755344e-10, 8.297542e-08, 0.9666805)
+bones/10/rotation = Quaternion(0.66944, 0.09002715, -0.68823546, 0.26472113)
+bones/11/rotation = Quaternion(0.2429581, -2.1768907e-09, -7.7834144e-08, 0.9700368)
+bones/13/rotation = Quaternion(-0.62798196, 0.32502133, 0.62798184, -0.32502103)
+bones/14/rotation = Quaternion(-1.6477173e-07, 1.18386744e-07, -0.4821057, 0.87611306)
+bones/16/rotation = Quaternion(0.7004412, -0.096860975, 0.7004413, -0.096861064)
+bones/17/rotation = Quaternion(-8.4429445e-08, 1.5476251e-08, 0.2470421, 0.96900475)
+bones/19/position = Vector3(0.33199933, -0.066478096, 0.083521366)
+bones/21/position = Vector3(-0.34344113, 0.060050122, 0.07730907)
+bones/23/position = Vector3(0.18097517, 0.114876315, -0.21962947)
+bones/25/position = Vector3(-0.18097517, -0.15936336, -0.22831649)
+bones/27/position = Vector3(-0.3830761, 0.032641694, 0.3507189)
+bones/29/position = Vector3(0.38020575, -0.21744688, 0.25635156)
 
 [node name="EyeL" type="Node3D" parent="Bob"]
 unique_name_in_owner = true
@@ -253,11 +253,6 @@ one_shot = true
 [node name="DoubleClickTimer" type="Timer" parent="Timers"]
 unique_name_in_owner = true
 wait_time = 0.3
-one_shot = true
-
-[node name="BoostTimer" type="Timer" parent="Timers"]
-unique_name_in_owner = true
-wait_time = 4.0
 one_shot = true
 
 [connection signal="timeout" from="Timers/DoubleClickTimer" to="." method="_on_double_click_timer_timeout"]
