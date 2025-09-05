@@ -11,7 +11,7 @@ const LOD2_DISTANCE_SQ := 640000.0  # 80 units (80*80*100)
 const UPDATE_INTERVAL := 0.25
 
 # --- INTERNAL VARIABLES ---
-var lod_buildings: Array[Node3D] = []
+var lod_structures: Array[Node3D] = []
 var player_node: Node3D = null
 var update_timer: float = 0.0
 
@@ -26,8 +26,8 @@ func _process(delta: float):
 # --- PUBLIC FUNCTIONS ---
 
 # The CityGenerator will call this to add a new building to the manager's list.
-func register_building(building: Node3D):
-	lod_buildings.append(building)
+func register_structure(structure: Node3D):
+	lod_structures.append(structure)
 
 # The player's script should call this in its _ready() function.
 func register_player(player: Node3D):
@@ -35,30 +35,30 @@ func register_player(player: Node3D):
 		player_node = player
 
 # Call this if you ever clear the city, to prevent errors.
-func clear_buildings():
-	lod_buildings.clear()
+func clear_structures():
+	lod_structures.clear()
 
 # --- PRIVATE LOGIC ---
 
 func _update_lods():
-	# If there's no player or no buildings, there's nothing to do.
-	if not is_instance_valid(player_node) or lod_buildings.is_empty():
+	# If there's no player or no structures, there's nothing to do.
+	if not is_instance_valid(player_node) or lod_structures.is_empty():
 		return
 
 	var player_pos = player_node.global_position
 
-	# Create a temporary array to hold buildings that might need to be removed.
-	var buildings_to_remove = []
+	# Create a temporary array to hold structures that might need to be removed.
+	var structures_to_remove = []
 
-	for building in lod_buildings:
-		# First, check if the building is still valid (it might have been destroyed).
-		if not is_instance_valid(building):
-			buildings_to_remove.append(building)
+	for structure in lod_structures:
+		# First, check if the structure is still valid (it might have been destroyed).
+		if not is_instance_valid(structure):
+			structures_to_remove.append(structure)
 			continue
 
 		# Calculate the squared distance. This is much faster than a regular
 		# distance check because it avoids a costly square root calculation.
-		var dist_sq = player_pos.distance_squared_to(building.global_position)
+		var dist_sq = player_pos.distance_squared_to(structure.global_position)
 		
 		var new_lod_level = 0 # Default to highest detail
 		if dist_sq > LOD2_DISTANCE_SQ:
@@ -66,10 +66,10 @@ func _update_lods():
 		elif dist_sq > LOD1_DISTANCE_SQ:
 			new_lod_level = 1 # Medium detail
 		
-		# Command the building to update its appearance.
-		if building.has_method("set_lod_level"):
-			building.set_lod_level(new_lod_level)
+		# Command the structure to update its appearance.
+		if structure.has_method("set_lod_level"):
+			structure.set_lod_level(new_lod_level)
 
-	# Clean up any invalid buildings from the main list.
-	for building in buildings_to_remove:
-		lod_buildings.erase(building)
+	# Clean up any invalid structures from the main list.
+	for structure in structures_to_remove:
+		lod_structures.erase(structure)

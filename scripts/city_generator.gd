@@ -270,9 +270,9 @@ func _build_horizontal_major_road(y_coord: int, used_y: Array):
 				grid_data[pos] = Zone.MAJOR_ROAD
 			# Assign direction
 			if lane < major_road_width / 2.0:
-				road_direction_data[pos] = Direction.RIGHT
-			else:
 				road_direction_data[pos] = Direction.LEFT
+			else:
+				road_direction_data[pos] = Direction.RIGHT
 			
 			road_lane_index_data[pos] = lane
 
@@ -291,9 +291,9 @@ func _build_vertical_major_road(x_coord: int, used_x: Array):
 				grid_data[pos] = Zone.MAJOR_ROAD
 			# Assign direction
 			if lane < major_road_width / 2.0:
-				road_direction_data[pos] = Direction.UP
-			else:
 				road_direction_data[pos] = Direction.DOWN
+			else:
+				road_direction_data[pos] = Direction.UP
 			
 			road_lane_index_data[pos] = lane
 
@@ -882,7 +882,7 @@ func _place_scene_at_pos(scene: PackedScene, grid_pos: Vector2i, footprint: Vect
 				return null
 
 	var instance = scene.instantiate()
-	LODManager.register_building(instance)
+	LODManager.register_structure(instance)
 	instance.set_meta("grid_position", grid_pos)
 	
 	# Get and set movement direction if the scene supports it
@@ -1103,7 +1103,7 @@ func _clear_city():
 	road_lane_index_data.clear()
 	grid_data.clear()
 	collision_chunks.clear()
-	LODManager.clear_buildings()
+	LODManager.clear_structures()
 
 func _find_contiguous_zone_area(start_pos: Vector2i, zone_type: Zone, visited: Dictionary) -> Array[Vector2i]:
 	var area_tiles: Array[Vector2i] = []; var frontier: Array[Vector2i] = [start_pos]
@@ -1190,7 +1190,6 @@ func _place_road_network(occupied_cells: Dictionary):
 	# ===================================================================
 	# PASS 1: ANALYSIS - Build the road_info_data dictionary
 	# ===================================================================
-	var data_count = 0
 	for pos in grid_data.keys():
 		var zone = int(grid_data.get(pos))
 		
@@ -1211,16 +1210,12 @@ func _place_road_network(occupied_cells: Dictionary):
 		if _is_road(pos + Vector2i.LEFT): connections.append(Vector2i.LEFT)
 		info["connections"] = connections
 		
-				# --- NEW LOGIC BLOCK TO INSERT ---
-		# We add the neighbor analysis here. We check _is_road (which uses grid_data)
-		# because road_info_data is not yet complete.
 		var neighbor_positions = {}
 		for dir in [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]:
 			var check_pos = pos + dir
 			if _is_road(check_pos):
 				neighbor_positions[dir] = check_pos
 		info["neighbor_grid_positions"] = neighbor_positions
-		# --- END OF NEW LOGIC BLOCK ---
 		
 		if is_major:
 			# --- Major Road and Intersection Logic ---
@@ -1236,11 +1231,11 @@ func _place_road_network(occupied_cells: Dictionary):
 			if is_horizontal:
 				if grid_data.get(pos + Vector2i.UP) == Zone.MINOR_ROAD or grid_data.get(pos + Vector2i.DOWN) == Zone.MINOR_ROAD:
 					is_t_junction = true
-					scene_rotation = 180 if grid_data.get(pos + Vector2i.UP) == Zone.MINOR_ROAD else 0
+					scene_rotation = 270 if grid_data.get(pos + Vector2i.UP) == Zone.MINOR_ROAD else 90
 			else: # Vertical
 				if grid_data.get(pos + Vector2i.LEFT) == Zone.MINOR_ROAD or grid_data.get(pos + Vector2i.RIGHT) == Zone.MINOR_ROAD:
 					is_t_junction = true
-					scene_rotation = 90 if grid_data.get(pos + Vector2i.LEFT) == Zone.MINOR_ROAD else 270
+					scene_rotation = 0 if grid_data.get(pos + Vector2i.LEFT) == Zone.MINOR_ROAD else 180
 			
 			if is_t_junction:
 				major_road_type = Enums.MajorRoadType.T_JUNCTION
@@ -1276,7 +1271,7 @@ func _place_road_network(occupied_cells: Dictionary):
 				lane_index = road_lane_index_data.get(pos, 0)
 				
 				if is_horizontal:
-					scene_rotation = 90 if flow_dir == Direction.LEFT else 270
+					scene_rotation = 270 if flow_dir == Direction.LEFT else 90
 				else:
 					scene_rotation = 0 if flow_dir == Direction.DOWN else 180
 				
@@ -1330,16 +1325,15 @@ func _place_road_network(occupied_cells: Dictionary):
 				15: road_type = Enums.RoadType.INTERSECTION
 			
 			match mask:
-				4, 5, 6, 7, 15: scene_rotation = 0
-				8, 12, 13: scene_rotation = 90
-				1, 9, 14: scene_rotation = 180
-				2, 3, 10, 11: scene_rotation = 270
+				0, 4, 5, 7, 12, 15: scene_rotation = 0
+				2, 6, 11: scene_rotation = 90
+				1, 3, 13: scene_rotation = 180
+				8, 9, 10, 14: scene_rotation = 270
 				
 			info["type"] = road_type
 			info["rotation"] = scene_rotation
 
 		road_info_data[pos] = info
-		data_count += 1
 	
 	var worker_callable = Callable(self, "_road_instantiation_worker")
 	var thread = Thread.new()
@@ -1403,10 +1397,10 @@ func _trigger_road_neighbor_config(occupied_road_cells: Dictionary):
 							match road_info.rotation:
 								0, 180:
 									if road_direction_data.get(neighbor_pos) == Direction.LEFT or \
-									road_direction_data.get(neighbor_pos == Direction.RIGHT): has_traffic = true
+									road_direction_data.get(neighbor_pos) == Direction.RIGHT: has_traffic = true
 								90, 270:
 									if road_direction_data.get(neighbor_pos) == Direction.UP or \
-									road_direction_data.get(neighbor_pos == Direction.DOWN): has_traffic = true
+									road_direction_data.get(neighbor_pos) == Direction.DOWN: has_traffic = true
 					
 					if (!neighbor_info.is_major and neighbor_info.type == Enums.RoadType.STRAIGHT) or \
 					(neighbor_info.is_major and neighbor_info.major_road_type == Enums.MajorRoadType.STRAIGHT):
@@ -1424,9 +1418,11 @@ func _road_instantiation_worker() -> Dictionary:
 		if not road_scene: continue
 			
 		var instance = road_scene.instantiate()
+		LODManager.register_structure(instance)
 		
 		# We set the position but DO NOT add it to the main tree here.
-		instance.position = Vector3(pos.x * cell_size, 0, pos.y * cell_size)
+		var offset = Vector3(cell_size / 2.0, 0, cell_size / 2.0)
+		instance.position = Vector3(pos.x * cell_size, 0, pos.y * cell_size) + offset
 		
 		if instance.has_method("generate_scene"):
 			# We pass 'null' for the body because we can't access it from the thread.
