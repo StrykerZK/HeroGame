@@ -4,6 +4,9 @@
 @tool
 extends Node3D
 
+## --- SIGNALS ---
+signal progress_updated(percentage, message)
+
 ## --- EXPORT VARIABLES ---
 @export_group("Grid Settings")
 @export var grid_size := Vector2i(50, 50)
@@ -169,39 +172,64 @@ var road_network_body: StaticBody3D
 func _ready():
 	# Don't auto-generate in the editor on load, only on checkbox click.
 	if not Engine.is_editor_hint():
-		generate_city()
+		# We now call it like this so it doesn't block the _ready function.
+		generate_city.call_deferred()
 
-func generate_city():
+func generate_city(): # <-- 'async' keyword removed
+	emit_signal("progress_updated", 0.0, "Starting Generation...")
+	await get_tree().process_frame # Allow UI to show up
+
 	print("Starting procedural city generation...")
 	_clear_city()
 	global_placement_counts.clear()
-	
+
 	_cache_all_building_data()
-	
+
 	generated_city_node = Node3D.new()
 	generated_city_node.name = "GeneratedCity"
 	add_child(generated_city_node)
-	
+
 	road_network_body = StaticBody3D.new()
 	road_network_body.name = "RoadNetworkCollision"
 	_apply_world_collision_detection(road_network_body)
 	generated_city_node.add_child(road_network_body)
-	
+
 	if Engine.is_editor_hint() and get_tree() and get_tree().edited_scene_root:
 		generated_city_node.owner = get_tree().edited_scene_root
 
+	# --- Progress Updates Added ---
+	emit_signal("progress_updated", 10.0, "Generating Road Layout...")
+	await get_tree().process_frame
 	_generate_layout()
+
+	emit_signal("progress_updated", 50.0, "Placing Objects and Buildings...")
+	await get_tree().process_frame
 	_place_objects()
+
+	emit_signal("progress_updated", 95.0, "Finalizing...")
+	await get_tree().process_frame
 	_generate_floor_collision()
+
+	emit_signal("progress_updated", 100.0, "Complete!")
+	await get_tree().process_frame
+
 	print("City generation complete.")
+
 
 
 # --- LAYOUT GENERATION ---
 func _generate_layout():
 	_generate_roads()
-	_generate_main_priority_zones()
-	_generate_essential_service_zones()
-	_generate_secondary_priority_zones()
+	
+	# --- NEW: Pre-calculate potential starting points ---
+	var road_adjacent_empties = _get_all_road_adjacent_empty_cells()
+	road_adjacent_empties.shuffle() # Shuffle once here
+
+	# Pass the pre-calculated list to the zone generation functions
+	_generate_main_priority_zones(road_adjacent_empties)
+	_generate_essential_service_zones(road_adjacent_empties)
+	_generate_secondary_priority_zones(road_adjacent_empties)
+	
 	_fill_remaining_space()
 
 func _generate_roads():
@@ -351,26 +379,26 @@ func _is_major_road(pos: Vector2i) -> bool:
 func _is_walkway(pos: Vector2i) -> bool:
 	return grid_data.get(pos) == Zone.WALKWAY
 
-func _generate_main_priority_zones():
-	_place_area_clusters(Zone.DOWNTOWN, downtown_cluster_count, downtown_cluster_size.x, downtown_cluster_size.y)
-	_place_area_clusters(Zone.BUSINESS, business_cluster_count, business_cluster_size.x, business_cluster_size.y)
-	_place_area_clusters(Zone.WEALTHY_RESIDENTIAL, wealthy_cluster_count, wealthy_cluster_size.x, wealthy_cluster_size.y)
+func _generate_main_priority_zones(road_adjacent_empties: Array[Vector2i]):
+	_place_area_clusters(Zone.DOWNTOWN, downtown_cluster_count, downtown_cluster_size.x, downtown_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.BUSINESS, business_cluster_count, business_cluster_size.x, business_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.WEALTHY_RESIDENTIAL, wealthy_cluster_count, wealthy_cluster_size.x, wealthy_cluster_size.y, road_adjacent_empties)
 
-func _generate_essential_service_zones():
-	_place_area_clusters(Zone.HOSPITAL, hospital_cluster_count, hospital_cluster_size.x, hospital_cluster_size.y)
-	_place_area_clusters(Zone.POLICE, police_cluster_count, police_cluster_size.x, police_cluster_size.y)
-	_place_area_clusters(Zone.FIRE, fire_cluster_count, fire_cluster_size.x, fire_cluster_size.y)
-	_place_area_clusters(Zone.GOVERNMENT, government_cluster_count, government_cluster_size.x, government_cluster_size.y)
-	_place_area_clusters(Zone.UNIVERSITY, university_cluster_count, university_cluster_size.x, university_cluster_size.y)
+func _generate_essential_service_zones(road_adjacent_empties: Array[Vector2i]):
+	_place_area_clusters(Zone.HOSPITAL, hospital_cluster_count, hospital_cluster_size.x, hospital_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.POLICE, police_cluster_count, police_cluster_size.x, police_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.FIRE, fire_cluster_count, fire_cluster_size.x, fire_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.GOVERNMENT, government_cluster_count, government_cluster_size.x, government_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.UNIVERSITY, university_cluster_count, university_cluster_size.x, university_cluster_size.y, road_adjacent_empties)
 
-func _generate_secondary_priority_zones():
-	_place_area_clusters(Zone.SPORTS, sports_cluster_count, sports_cluster_size.x, sports_cluster_size.y)
-	_place_area_clusters(Zone.ENTERTAINMENT, entertainment_cluster_count, entertainment_cluster_size.x, entertainment_cluster_size.y)
-	_place_area_clusters(Zone.TECHNOLOGY, technology_cluster_count, technology_cluster_size.x, technology_cluster_size.y)
-	_place_area_clusters(Zone.COMMERCIAL, commercial_cluster_count, commercial_cluster_size.x, commercial_cluster_size.y)
-	_place_area_clusters(Zone.FOOD, food_cluster_count, food_cluster_size.x, food_cluster_size.y)
-	_place_area_clusters(Zone.INDUSTRIAL, industrial_cluster_count, industrial_cluster_size.x, industrial_cluster_size.y)
-	_place_area_clusters(Zone.PARK, park_cluster_count, park_cluster_size.x, park_cluster_size.y)
+func _generate_secondary_priority_zones(road_adjacent_empties: Array[Vector2i]):
+	_place_area_clusters(Zone.SPORTS, sports_cluster_count, sports_cluster_size.x, sports_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.ENTERTAINMENT, entertainment_cluster_count, entertainment_cluster_size.x, entertainment_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.TECHNOLOGY, technology_cluster_count, technology_cluster_size.x, technology_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.COMMERCIAL, commercial_cluster_count, commercial_cluster_size.x, commercial_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.FOOD, food_cluster_count, food_cluster_size.x, food_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.INDUSTRIAL, industrial_cluster_count, industrial_cluster_size.x, industrial_cluster_size.y, road_adjacent_empties)
+	_place_area_clusters(Zone.PARK, park_cluster_count, park_cluster_size.x, park_cluster_size.y, road_adjacent_empties)
 
 func _add_collision_to_chunk(instance: Node3D):
 	# 1. Validate the incoming instance and its metadata
@@ -427,13 +455,12 @@ func _add_collision_to_chunk(instance: Node3D):
 			shape_node.queue_free()
 
 # --- MODIFIED FUNCTION ---
-func _place_area_clusters(zone_type: Zone, count: int, min_size: int, max_size: int):
-	if count <= 0:
-		return
+func _place_area_clusters(zone_type: Zone, count: int, min_size: int, max_size: int, road_adjacent_empties: Array[Vector2i]):
+	if count <= 0: return
 
 	var clusters_placed = 0
 	
-	# --- PASS 1: Organic Placement (Original Method) ---
+	# --- PASS 1: Organic Placement (No changes needed here) ---
 	var available_starts: Array[Vector2i] = []
 	for x in range(grid_size.x):
 		for y in range(grid_size.y):
@@ -444,8 +471,7 @@ func _place_area_clusters(zone_type: Zone, count: int, min_size: int, max_size: 
 	available_starts.shuffle()
 
 	for start_pos in available_starts:
-		if clusters_placed >= count:
-			break 
+		if clusters_placed >= count: break 
 
 		if not grid_data.has(start_pos):
 			var cluster_tiles = _grow_area(start_pos, min_size, max_size)
@@ -465,58 +491,39 @@ func _place_area_clusters(zone_type: Zone, count: int, min_size: int, max_size: 
 							break
 					
 					if can_place:
-						for t in cluster_tiles:
-							grid_data[t] = zone_type
+						for t in cluster_tiles: grid_data[t] = zone_type
 						clusters_placed += 1
-						print("Successfully placed an organic ", Zone.keys()[zone_type], " district. (", clusters_placed, "/", count, ")")
+						#print("Successfully placed an organic ", Zone.keys()[zone_type], " district. (", clusters_placed, "/", count, ")")
 
 
-	# --- PASS 2: Forced Placement (New Fallback) ---
+	# --- PASS 2: Forced Placement (Now uses the pre-compiled list) ---
 	if clusters_placed < count:
-		print("Warning: Organic placement failed for ", Zone.keys()[zone_type], ". Attempting forced placement for remaining ", count - clusters_placed, " clusters.")
+		#print("Warning: Organic placement failed for ", Zone.keys()[zone_type], ". Attempting forced placement for remaining ", count - clusters_placed, " clusters.")
 		var forced_placements = 0
 		for i in range(count - clusters_placed):
-			if _force_place_cluster(zone_type, min_size, max_size):
+			if _force_place_cluster(zone_type, min_size, max_size, road_adjacent_empties):
 				forced_placements += 1
 			else:
-				# If even the force placement fails, we're out of options.
 				print("Error: Could not force place a ", Zone.keys()[zone_type], " district. The map may be too full or fragmented.")
-				break # Stop trying for this zone type
+				break 
 		clusters_placed += forced_placements
 
-	print("Finished placing ", Zone.keys()[zone_type], " districts. Total placed: ", clusters_placed, " out of ", count, " requested.")
+	#print("Finished placing ", Zone.keys()[zone_type], " districts. Total placed: ", clusters_placed, " out of ", count, " requested.")
 
 
 # --- NEW HELPER FUNCTION ---
 # This function is more aggressive. It specifically finds empty cells next to roads
 # and tries to grow a zone from there, guaranteeing road adjacency.
-func _force_place_cluster(zone_type: Zone, min_size: int, max_size: int) -> bool:
-	# Find all empty cells that are adjacent to a road.
-	var road_adjacent_empties: Array[Vector2i] = []
-	for x in range(grid_size.x):
-		for y in range(grid_size.y):
-			var pos = Vector2i(x, y)
-			if not grid_data.has(pos): # Is it empty?
-				# Check neighbors for a road
-				if _is_road(pos + Vector2i.UP) or \
-				   _is_road(pos + Vector2i.DOWN) or \
-				   _is_road(pos + Vector2i.LEFT) or \
-				   _is_road(pos + Vector2i.RIGHT):
-					road_adjacent_empties.append(pos)
+func _force_place_cluster(zone_type: Zone, min_size: int, max_size: int, road_adjacent_empties: Array[Vector2i]) -> bool:
+	# This function is now much more efficient.
+	# It iterates backwards so we can safely remove items from the list without messing up the loop index.
+	for i in range(road_adjacent_empties.size() - 1, -1, -1):
+		var start_pos = road_adjacent_empties[i]
 
-	if road_adjacent_empties.is_empty():
-		return false # No possible place to start from.
-
-	road_adjacent_empties.shuffle()
-
-	for start_pos in road_adjacent_empties:
-		# Check if the start_pos is still available (it might have been taken by a previous forced placement)
 		if not grid_data.has(start_pos):
-			# Use the existing _grow_area function. It works by expanding into any empty cell.
 			var cluster_tiles = _grow_area(start_pos, min_size, max_size)
 
 			if cluster_tiles.size() >= min_size:
-				# We need to double-check that all the tiles in the grown area are still empty.
 				var can_place = true
 				for tile in cluster_tiles:
 					if grid_data.has(tile):
@@ -526,8 +533,15 @@ func _force_place_cluster(zone_type: Zone, min_size: int, max_size: int) -> bool
 				if can_place:
 					for t in cluster_tiles:
 						grid_data[t] = zone_type
-					print("Successfully force-placed a ", Zone.keys()[zone_type], " district.")
-					return true # Success! We placed the cluster.
+					
+					# --- IMPORTANT: Remove used tiles from the master list ---
+					for tile_to_remove in cluster_tiles:
+						var index = road_adjacent_empties.find(tile_to_remove)
+						if index != -1:
+							road_adjacent_empties.remove_at(index)
+					
+					#print("Successfully force-placed a ", Zone.keys()[zone_type], " district.")
+					return true # Success!
 
 	return false # We looped through all candidates and couldn't find a large enough spot.
 
@@ -690,10 +704,12 @@ func _find_contiguous_area_from_list(start_pos: Vector2i, candidate_list: Array[
 func _place_objects():
 	var occupied_cells: Dictionary = {}
 	var visited_priority_tiles: Dictionary = {}
-
+	
 	print("Placing entire road network...")
 	_place_road_network(occupied_cells)
 	print("...Road network placement complete.")
+
+	var placements_to_make: Array[Dictionary] = []
 
 	var priority_order = [
 		Zone.DOWNTOWN, Zone.BUSINESS, Zone.WEALTHY_RESIDENTIAL,
@@ -705,7 +721,7 @@ func _place_objects():
 		for grid_pos in grid_data:
 			if grid_data.get(grid_pos) == zone_type and not visited_priority_tiles.has(grid_pos):
 				var district_tiles = _find_contiguous_zone_area(grid_pos, zone_type, visited_priority_tiles)
-				_populate_priority_zone(zone_type, district_tiles, occupied_cells)
+				_populate_priority_zone(zone_type, district_tiles, occupied_cells, placements_to_make)
 
 	var zone_pools: Dictionary = {}
 	for zone_id in Zone.values():
@@ -715,11 +731,48 @@ func _place_objects():
 		if grid_data.has(pos):
 			zone_pools[grid_data[pos]].append(pos)
 
-	_populate_standard_zone(Zone.APARTMENTS, zone_pools[Zone.APARTMENTS], occupied_cells)
-	_populate_standard_zone(Zone.HOUSING, zone_pools[Zone.HOUSING], occupied_cells)
-	_populate_standard_zone(Zone.OUTSKIRT, zone_pools[Zone.OUTSKIRT], occupied_cells)
-	_populate_standard_zone(Zone.PARK, zone_pools[Zone.PARK], occupied_cells)
-	_populate_standard_zone(Zone.EMPTY, zone_pools[Zone.EMPTY], occupied_cells)
+	_populate_standard_zone(Zone.APARTMENTS, zone_pools[Zone.APARTMENTS], occupied_cells, placements_to_make)
+	_populate_standard_zone(Zone.HOUSING, zone_pools[Zone.HOUSING], occupied_cells, placements_to_make)
+	_populate_standard_zone(Zone.OUTSKIRT, zone_pools[Zone.OUTSKIRT], occupied_cells, placements_to_make)
+	_populate_standard_zone(Zone.PARK, zone_pools[Zone.PARK], occupied_cells, placements_to_make)
+	_populate_standard_zone(Zone.EMPTY, zone_pools[Zone.EMPTY], occupied_cells, placements_to_make)
+
+	var worker_callable = Callable(self, "_building_instantiation_worker").bind(placements_to_make)
+	var thread = Thread.new()
+	thread.start(worker_callable)
+	var all_instances = thread.wait_to_finish()
+	
+	var object_parent_node = Node3D.new()
+	object_parent_node.name = "BuildingsAndObjects"
+	
+	# --- FIX: Add the parent to the scene tree BEFORE the loop ---
+	generated_city_node.add_child(object_parent_node)
+
+	for item in all_instances:
+		var instance: Node3D = item["instance"]
+		var grid_pos: Vector2i = item["grid_pos"]
+		var footprint: Vector2i = item["footprint"]
+		
+		LODManager.register_structure(instance)
+		
+		# Now that the parent is in the tree, adding the instance here
+		# also adds it to the tree immediately.
+		object_parent_node.add_child(instance)
+		
+		# This call is now safe because the instance is in the tree.
+		var has_road_collision = false
+		for shape_node in instance.find_children("*", "CollisionShape3D"):
+			if shape_node.is_in_group("road_collision"):
+				has_road_collision = true
+				break
+		if not has_road_collision:
+			_add_collision_to_chunk(instance)
+		
+		for x in range(footprint.x):
+			for y in range(footprint.y):
+				occupied_cells[grid_pos + Vector2i(x,y)] = instance
+
+	# --- The parent is already added, so this line is removed from the end ---
 
 	if show_zone_colors:
 		for grid_pos in grid_data:
@@ -727,12 +780,11 @@ func _place_objects():
 			_create_zone_plane(world_pos, _get_zone_color(grid_data.get(grid_pos, Zone.EMPTY)))
 
 
-func _populate_priority_zone(zone_type: Zone, available_tiles: Array[Vector2i], occupied_cells: Dictionary):
+func _populate_priority_zone(zone_type: Zone, available_tiles: Array[Vector2i], occupied_cells: Dictionary, placements_to_make: Array):
 	if available_tiles.is_empty(): return
 	var local_counts: Dictionary = {}
 	var building_scene_list = _get_building_scenes_for_zone(zone_type)
 	if building_scene_list.is_empty(): return
-
 	var border_tiles: Array[Vector2i] = []; var inner_tiles: Array[Vector2i] = []
 	for grid_pos in available_tiles:
 		var is_border = false
@@ -740,66 +792,60 @@ func _populate_priority_zone(zone_type: Zone, available_tiles: Array[Vector2i], 
 			if not available_tiles.has(grid_pos + n_dir): is_border = true; break
 		if is_border: border_tiles.append(grid_pos)
 		else: inner_tiles.append(grid_pos)
-
 	var district_center := Vector2.ZERO
 	if not available_tiles.is_empty():
-		for tile in available_tiles:
-			district_center += Vector2(tile)
+		for tile in available_tiles: district_center += Vector2(tile)
 		district_center /= available_tiles.size()
-
 	for grid_pos in border_tiles: 
 		if not occupied_cells.has(grid_pos):
-			_place_walkway(grid_pos, occupied_cells, local_counts)
-	
+			_place_walkway(grid_pos, occupied_cells, local_counts, placements_to_make)
 	var landmark_scenes = building_scene_list.filter(func(s): return building_data_cache.get(s.resource_path, {"is_landmark": false}).is_landmark)
 	landmark_scenes.shuffle()
-
 	for landmark_scene in landmark_scenes:
 		var data = building_data_cache[landmark_scene.resource_path]
 		var path = landmark_scene.resource_path
 		var max_placements = data.local_limit if data.local_limit > 0 else 999
-		
 		for i in range(max_placements):
 			if data.global_limit != -1 and global_placement_counts.get(path, 0) >= data.global_limit: break 
-
 			var placement = _find_best_fit_for_building(landmark_scene, inner_tiles, occupied_cells, district_center, zone_type, true)
-			
 			if placement.is_valid:
-				var landmark_instance = _place_scene_at_pos(landmark_scene, placement.position, placement.size, placement.rotation_y, occupied_cells)
+				placements_to_make.append({ "scene": landmark_scene, "grid_pos": placement.position, "footprint": placement.size, "rotation_y": placement.rotation_y })
+				for x in range(placement.size.x):
+					for y in range(placement.size.y):
+						occupied_cells[placement.position + Vector2i(x,y)] = path
 				_increment_counts(path, local_counts)
-				_create_plaza(landmark_instance, placement.size, plaza_size, placement.rotation_y, occupied_cells, local_counts)
-			else:
-				break
-
+				_create_plaza(placement.position, placement.size, plaza_size, placement.rotation_y, occupied_cells, local_counts, placements_to_make)
+			else: break
 	var support_scenes = building_scene_list.filter(func(s): return not building_data_cache.get(s.resource_path, {"is_landmark": false}).is_landmark)
-	_place_support_buildings(support_scenes, inner_tiles, occupied_cells, district_center, zone_type, local_counts)
-	
+	_place_support_buildings(support_scenes, inner_tiles, occupied_cells, district_center, zone_type, local_counts, placements_to_make)
 	for grid_pos in inner_tiles:
-		if not occupied_cells.has(grid_pos): _place_walkway(grid_pos, occupied_cells, local_counts)
+		if not occupied_cells.has(grid_pos): _place_walkway(grid_pos, occupied_cells, local_counts, placements_to_make)
 
-func _place_support_buildings(scene_list: Array[PackedScene], available_tiles: Array[Vector2i], occupied_cells: Dictionary, district_center: Vector2, zone_type: Zone, local_counts: Dictionary):
+
+
+func _place_support_buildings(scene_list: Array[PackedScene], available_tiles: Array[Vector2i], occupied_cells: Dictionary, district_center: Vector2, zone_type: Zone, local_counts: Dictionary, placements_to_make: Array):
 	for scene in scene_list:
 		var data = building_data_cache[scene.resource_path]
 		var path = scene.resource_path
-		
 		var max_placements = data.local_limit
 		if max_placements <= 0: max_placements = single_buildings_per_zone if data.size == Vector2i.ONE else max_large_buildings_per_zone
 		if data.local_limit == -1: max_placements = 999
-
 		for i in range(max_placements):
 			if data.global_limit != -1 and global_placement_counts.get(path, 0) >= data.global_limit: break
-
 			var placement = _find_best_fit_for_building(scene, available_tiles, occupied_cells, district_center, zone_type)
 			if placement.is_valid:
-				_place_scene_at_pos(scene, placement.position, placement.size, placement.rotation_y, occupied_cells)
+				placements_to_make.append({ "scene": scene, "grid_pos": placement.position, "footprint": placement.size, "rotation_y": placement.rotation_y })
+				for x in range(placement.size.x):
+					for y in range(placement.size.y):
+						occupied_cells[placement.position + Vector2i(x,y)] = path
 				_increment_counts(path, local_counts)
-			else:
-				break
+			else: break
 
-func _populate_standard_zone(zone_type: Zone, available_tiles: Array[Vector2i], occupied_cells: Dictionary):
+
+
+func _populate_standard_zone(zone_type: Zone, available_tiles: Array[Vector2i], occupied_cells: Dictionary, placements_to_make: Array):
 	if available_tiles.is_empty(): return
 	var scene_list: Array[PackedScene] = []
-	
 	match zone_type:
 		Zone.APARTMENTS: scene_list = apartment_buildings
 		Zone.HOUSING: scene_list = housing_buildings
@@ -807,49 +853,41 @@ func _populate_standard_zone(zone_type: Zone, available_tiles: Array[Vector2i], 
 		Zone.EMPTY: scene_list = dead_zone_objects
 		Zone.PARK: 
 			for grid_pos in available_tiles: 
-				if not occupied_cells.has(grid_pos): _place_scene_at_pos(park_scene, grid_pos, Vector2i.ONE, 0, occupied_cells)
+				if not occupied_cells.has(grid_pos):
+					placements_to_make.append({ "scene": park_scene, "grid_pos": grid_pos, "footprint": Vector2i.ONE, "rotation_y": 0.0 })
+					occupied_cells[grid_pos] = park_scene.resource_path
 			return
-
 	var tiles_to_check = available_tiles.duplicate()
 	tiles_to_check.shuffle()
-	
 	for grid_pos in tiles_to_check:
-		if occupied_cells.has(grid_pos):
-			continue
-		
+		if occupied_cells.has(grid_pos): continue
 		var scene = _get_random_scene(scene_list, {})
 		if scene:
 			var data = building_data_cache.get(scene.resource_path, {"size": Vector2i.ONE})
-			var placement
-
+			var placement; var rotation = 0.0
 			if zone_type == Zone.OUTSKIRT:
 				var grid_center = Vector2(grid_size) / 2.0
 				var dir_from_center = (Vector2(grid_pos) - grid_center).normalized()
 				var angle = rad_to_deg(dir_from_center.angle())
-				# UPDATED: Rotations now match Godot's counter-clockwise system.
-				if angle > -45 and angle <= 45: rotation_degrees.y = 270 # face right (+X)
-				elif angle > 45 and angle <= 135: rotation_degrees.y = 180 # face down (+Z)
-				elif angle > 135 or angle <= -135: rotation_degrees.y = 90 # face left (-X)
-				else: rotation_degrees.y = 0 # face up (-Z)
-				
+				if angle > -45 and angle <= 45: rotation = 270 
+				elif angle > 45 and angle <= 135: rotation = 180
+				elif angle > 135 or angle <= -135: rotation = 90
+				else: rotation = 0
 				var can_place = true
 				for x in range(data.size.x):
 					for y in range(data.size.y):
-						if occupied_cells.has(grid_pos + Vector2i(x,y)):
-							can_place = false
-							break
+						if occupied_cells.has(grid_pos + Vector2i(x,y)): can_place = false; break
 					if not can_place: break
-				
-				if can_place:
-					placement = {"is_valid": true, "position": grid_pos, "size": data.size, "rotation_y": rotation}
-				else:
-					placement = {"is_valid": false}
-			else: # RESIDENTIAL and EMPTY zones
+				if can_place: placement = {"is_valid": true, "position": grid_pos, "size": data.size, "rotation_y": rotation}
+				else: placement = {"is_valid": false}
+			else: 
 				placement = _find_placement_at_anchor(grid_pos, scene, available_tiles, occupied_cells, Vector2(grid_size)/2.0, zone_type)
-
 			if placement.is_valid:
 				if not occupied_cells.has(placement.position):
-					_place_scene_at_pos(scene, placement.position, placement.size, placement.rotation_y, occupied_cells)
+					placements_to_make.append({ "scene": scene, "grid_pos": placement.position, "footprint": placement.size, "rotation_y": placement.rotation_y })
+					for x in range(placement.size.x):
+						for y in range(placement.size.y):
+							occupied_cells[placement.position + Vector2i(x,y)] = scene.resource_path
 					_increment_counts(scene.resource_path, {})
 
 
@@ -877,85 +915,30 @@ func _increment_counts(path: String, local_counts: Dictionary):
 	if local_counts.has(path):
 		local_counts[path] = local_counts.get(path, 0) + 1
 
-func _create_plaza(landmark_instance: Node3D, landmark_size: Vector2i, plaza_dims: Vector2i, rotation_y: float, occupied_cells: Dictionary, local_counts: Dictionary):
-	if not is_instance_valid(landmark_instance): return
-	
+func _create_plaza(start_pos: Vector2i, landmark_size: Vector2i, plaza_dims: Vector2i, rotation_y: float, occupied_cells: Dictionary, local_counts: Dictionary, placements_to_make: Array):
 	var forward_vector = Vector3.FORWARD.rotated(Vector3.UP, deg_to_rad(rotation_y))
-	var start_pos = landmark_instance.get_meta("grid_position")
 	var plaza_origin = start_pos
-	
-	var plaza_width = plaza_dims.x
-	var plaza_depth = plaza_dims.y
-	
-	# Adjust plaza based on building's front face
-	if abs(forward_vector.x) > abs(forward_vector.z): # Facing left/right
+	var plaza_width = plaza_dims.x; var plaza_depth = plaza_dims.y
+	if abs(forward_vector.x) > abs(forward_vector.z): 
 		var offset_x = landmark_size.x if forward_vector.x > 0 else -plaza_width
 		plaza_origin += Vector2i(offset_x, -int(plaza_width / 2.0))
-	else: # Facing up/down
+	else: 
 		var offset_y = landmark_size.y if forward_vector.z > 0 else -plaza_depth
 		plaza_origin += Vector2i(-int(plaza_width / 2.0), offset_y)
-
 	for x in range(plaza_width):
 		for y in range(plaza_depth):
 			var plaza_tile = plaza_origin + Vector2i(x,y)
 			if not occupied_cells.has(plaza_tile):
-				_place_walkway(plaza_tile, occupied_cells, local_counts)
+				_place_walkway(plaza_tile, occupied_cells, local_counts, placements_to_make)
 
-func _place_walkway(grid_pos: Vector2i, occupied_cells: Dictionary, local_counts: Dictionary):
+func _place_walkway(grid_pos: Vector2i, occupied_cells: Dictionary, local_counts: Dictionary, placements_to_make: Array):
 	var scene = _get_random_scene(walkway_objects, local_counts)
 	if scene:
-		_place_scene_at_pos(scene, grid_pos, Vector2i.ONE, 0, occupied_cells)
+		placements_to_make.append({ "scene": scene, "grid_pos": grid_pos, "footprint": Vector2i.ONE, "rotation_y": 0.0 })
+		# --- FIX: Update both dictionaries for correct scoring and variety checks ---
+		occupied_cells[grid_pos] = scene.resource_path
+		grid_data[grid_pos] = Zone.WALKWAY
 		_increment_counts(scene.resource_path, local_counts)
-
-func _place_scene_at_pos(scene: PackedScene, grid_pos: Vector2i, footprint: Vector2i, rotation_y: float, occupied_cells: Dictionary) -> Node3D:
-	if not scene: return null
-	
-	for x in range(footprint.x):
-		for y in range(footprint.y):
-			if occupied_cells.has(grid_pos + Vector2i(x,y)):
-				return null
-
-	var instance = scene.instantiate()
-	LODManager.register_structure(instance)
-	instance.set_meta("grid_position", grid_pos)
-	
-	# Get and set movement direction if the scene supports it
-	var direction = road_direction_data.get(grid_pos, Direction.NONE)
-	if instance.has_method("set_movement_direction"):
-		instance.set_movement_direction(direction)
-	
-	var offset = Vector3((footprint.x * cell_size) / 2.0, 0, (footprint.y * cell_size) / 2.0)
-	var world_pos = Vector3(grid_pos.x * cell_size, 0, grid_pos.y * cell_size) + offset
-		
-	
-	var building_type = ""
-	if instance.has_method("get_building_type"): building_type = instance.get_building_type()
-	match building_type:
-		"Housing":
-			BuildingManager.add_number("Housing")
-			instance.name = "Housing " + str(BuildingManager.housing_number)
-		_: pass
-	
-	instance.position = world_pos
-	instance.rotate_y(deg_to_rad(rotation_y))
-	
-	generated_city_node.add_child(instance)
-	
-	# Extract scene's collision and add it to correct chunk.
-	var has_road_collision = false
-	for shape_node in instance.find_children("*", "CollisionShape3D"):
-		if shape_node.is_in_group("road_collision"):
-			has_road_collision = true
-			break
-		
-	if not has_road_collision:
-		_add_collision_to_chunk(instance)
-	
-	for x in range(footprint.x):
-		for y in range(footprint.y):
-			occupied_cells[grid_pos + Vector2i(x,y)] = instance
-			
-	return instance
 
 func _get_building_scenes_for_zone(zone_type: Zone) -> Array[PackedScene]:
 	match zone_type:
@@ -974,6 +957,20 @@ func _get_building_scenes_for_zone(zone_type: Zone) -> Array[PackedScene]:
 		Zone.UNIVERSITY: return university_buildings
 		Zone.INDUSTRIAL: return industrial_buildings
 		_: return []
+
+func _get_all_road_adjacent_empty_cells() -> Array[Vector2i]:
+	var candidates: Array[Vector2i] = []
+	for x in range(grid_size.x):
+		for y in range(grid_size.y):
+			var pos = Vector2i(x, y)
+			if not grid_data.has(pos): # Is it empty?
+				# Check neighbors for a road
+				if _is_road(pos + Vector2i.UP) or \
+				   _is_road(pos + Vector2i.DOWN) or \
+				   _is_road(pos + Vector2i.LEFT) or \
+				   _is_road(pos + Vector2i.RIGHT):
+					candidates.append(pos)
+	return candidates
 
 func _find_best_fit_for_building(scene: PackedScene, area_tiles: Array[Vector2i], occupied_cells: Dictionary, district_center: Vector2, zone_type: Zone, from_center := false) -> Dictionary:
 	var valid_placements = []
@@ -1001,40 +998,28 @@ func _find_best_fit_for_building(scene: PackedScene, area_tiles: Array[Vector2i]
 func _find_placement_at_anchor(anchor_pos: Vector2i, scene: PackedScene, area_tiles: Array[Vector2i], occupied_cells: Dictionary, district_center: Vector2, zone_type: Zone) -> Dictionary:
 	var valid_placements = []
 	var building_size = building_data_cache[scene.resource_path].size
-	var is_priority_zone = [
-		Zone.DOWNTOWN, Zone.BUSINESS, Zone.WEALTHY_RESIDENTIAL,
-		Zone.HOSPITAL, Zone.POLICE, Zone.FIRE, Zone.GOVERNMENT, Zone.UNIVERSITY,
-		Zone.SPORTS, Zone.ENTERTAINMENT, Zone.TECHNOLOGY, Zone.COMMERCIAL, Zone.FOOD, Zone.INDUSTRIAL
-	].has(zone_type)
-
+	var path = scene.resource_path
+	var is_priority_zone = [Zone.DOWNTOWN, Zone.BUSINESS, Zone.WEALTHY_RESIDENTIAL, Zone.HOSPITAL, Zone.POLICE, Zone.FIRE, Zone.GOVERNMENT, Zone.UNIVERSITY, Zone.SPORTS, Zone.ENTERTAINMENT, Zone.TECHNOLOGY, Zone.COMMERCIAL, Zone.FOOD, Zone.INDUSTRIAL].has(zone_type)
 	for i in range(4):
 		var rot = i * 90
 		var current_footprint = building_size if i % 2 == 0 else Vector2i(building_size.y, building_size.x)
-		
 		var can_place = true
-		# Check if footprint is empty
 		for x in range(current_footprint.x):
 			for y in range(current_footprint.y):
 				var check_pos = anchor_pos + Vector2i(x, y)
 				if not area_tiles.has(check_pos) or occupied_cells.has(check_pos):
-					can_place = false
-					break
+					can_place = false; break
 			if not can_place: break
-		
-		if can_place and \
-		(zone_type != Zone.DOWNTOWN) and \
-		(is_priority_zone or enforce_variety_in_standard_zones):
+		if can_place and (is_priority_zone or enforce_variety_in_standard_zones):
 			for x in range(-min_variety_distance, current_footprint.x + min_variety_distance):
 				for y in range(-min_variety_distance, current_footprint.y + min_variety_distance):
-					if x >= 0 and x < current_footprint.x and y >= 0 and y < current_footprint.y:
-						continue
-					
+					if x >= 0 and x < current_footprint.x and y >= 0 and y < current_footprint.y: continue
 					var neighbor_pos = anchor_pos + Vector2i(x, y)
 					if occupied_cells.has(neighbor_pos):
-						var neighbor_instance = occupied_cells[neighbor_pos]
-						if is_instance_valid(neighbor_instance) and neighbor_instance.scene_file_path == scene.resource_path:
-							can_place = false
-							break
+						var neighbor_data = occupied_cells[neighbor_pos]
+						# --- FIX: Add type check to prevent crash with road instances ---
+						if neighbor_data is String and neighbor_data == path:
+							can_place = false; break
 				if not can_place: break
 
 		if can_place:
@@ -1378,9 +1363,17 @@ func _place_road_network(occupied_cells: Dictionary):
 	
 	var start_time = Time.get_ticks_msec()
 	
+	var road_parent_node = Node3D.new()
+	road_parent_node.name = "Roads"
+	
 	for item in all_instances:
-		generated_city_node.add_child(item["instance"])
-		occupied_cells[item["pos"]] = item["instance"]
+		var instance = item["instance"]
+		road_parent_node.add_child(instance) # Add to temporary node first
+		occupied_cells[item["pos"]] = instance
+		
+		LODManager.register_structure(instance)
+	
+	generated_city_node.add_child(road_parent_node) # Add the parent once
 	
 	for shape_node in all_collision_shapes:
 		if is_instance_valid(shape_node):
@@ -1426,7 +1419,7 @@ func _trigger_road_neighbor_config(occupied_road_cells: Dictionary):
 				if is_instance_valid(neighbor_instance) and neighbor_info:
 					match junction_type:
 						"MJ":
-							decor_type = "SmallTraffic" if randf() > 0.9 else "Stop"
+							decor_type = "Stop"
 						"MT":
 							decor_type = "SmallTraffic"
 						"MI":
@@ -1457,7 +1450,6 @@ func _road_instantiation_worker() -> Dictionary:
 		if not road_scene: continue
 			
 		var instance = road_scene.instantiate()
-		LODManager.register_structure(instance)
 		
 		# We set the position but DO NOT add it to the main tree here.
 		var offset = Vector3(cell_size / 2.0, 0, cell_size / 2.0)
@@ -1483,6 +1475,36 @@ func _road_instantiation_worker() -> Dictionary:
 		"instances": instances_to_add,
 		"collision_shapes": collision_shapes_to_add
 	}
+
+func _building_instantiation_worker(placements: Array) -> Array:
+	var instances_to_add: Array[Dictionary] = []
+	print("Thread started: Instantiating all building/object scenes...")
+
+	for placement_data in placements:
+		var scene: PackedScene = placement_data["scene"]
+		var grid_pos: Vector2i = placement_data["grid_pos"]
+		var footprint: Vector2i = placement_data["footprint"]
+		var rotation_y: float = placement_data["rotation_y"]
+		
+		if not scene: continue
+		
+		var instance = scene.instantiate()
+		instance.set_meta("grid_position", grid_pos)
+
+		var offset = Vector3((footprint.x * cell_size) / 2.0, 0, (footprint.y * cell_size) / 2.0)
+		var world_pos = Vector3(grid_pos.x * cell_size, 0, grid_pos.y * cell_size) + offset
+		
+		instance.position = world_pos
+		instance.rotate_y(deg_to_rad(rotation_y))
+		
+		instances_to_add.append({
+			"instance": instance,
+			"grid_pos": grid_pos,
+			"footprint": footprint
+		})
+
+	print("Thread finished: building instantiation complete.")
+	return instances_to_add
 
 
 func _apply_world_collision_detection(instance):

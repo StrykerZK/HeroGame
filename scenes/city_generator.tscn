@@ -110,5 +110,5 @@ shadow_enabled = true
 environment = SubResource("Environment_ystin")
 
 [node name="Player" parent="." node_paths=PackedStringArray("world_environment_node") instance=ExtResource("11_mpuha")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 278.84253, 357.46768, 196.02185)
+transform = Transform3D(-0.7568468, 0, -0.6535924, 0, 1, 0, 0.6535924, 0, -0.7568468, 278.84253, 357.46768, 196.02185)
 world_environment_node = NodePath("../WorldEnvironment")

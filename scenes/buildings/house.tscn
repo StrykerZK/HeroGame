@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://78r105d8itax"]
+[gd_scene load_steps=6 format=3 uid="uid://78r105d8itax"]
 
 [ext_resource type="Script" uid="uid://bftln882qe6pw" path="res://scripts/building_data.gd" id="1_7yca7"]
 [ext_resource type="Material" uid="uid://jhqx62uer4m8" path="res://assets/materials/walkway.tres" id="2_cwhdv"]
@@ -8,6 +8,8 @@ size = Vector3(20, 0.74, 20)
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_sr1lu"]
 data = PackedVector3Array(-10, 0.37, 10, 10, 0.37, 10, -10, -0.37, 10, 10, 0.37, 10, 10, -0.37, 10, -10, -0.37, 10, 10, 0.37, -10, -10, 0.37, -10, 10, -0.37, -10, -10, 0.37, -10, -10, -0.37, -10, 10, -0.37, -10, 10, 0.37, 10, 10, 0.37, -10, 10, -0.37, 10, 10, 0.37, -10, 10, -0.37, -10, 10, -0.37, 10, -10, 0.37, -10, -10, 0.37, 10, -10, -0.37, -10, -10, 0.37, 10, -10, -0.37, 10, -10, -0.37, -10, 10, 0.37, 10, -10, 0.37, 10, 10, 0.37, -10, -10, 0.37, 10, -10, 0.37, -10, 10, 0.37, -10, -10, -0.37, 10, 10, -0.37, 10, -10, -0.37, -10, 10, -0.37, 10, 10, -0.37, -10, -10, -0.37, -10)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sr1lu"]
 
 [node name="House" type="Node3D" node_paths=PackedStringArray("lod1_node", "lod2_node")]
 script = ExtResource("1_7yca7")
@@ -31,3 +33,7 @@ visible = false
 [node name="LOD2" type="Node3D" parent="."]
 transform = Transform3D(-1.5298986e-07, 0, 3.5, 0, 3.5, 0, -3.5, 0, -1.5298986e-07, 0, 0.509, 5)
 visible = false
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LOD2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4285715, 0.5714286, 6.244484e-08)
+mesh = SubResource("BoxMesh_sr1lu")
