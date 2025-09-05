@@ -1190,9 +1190,6 @@ func _place_road_network(occupied_cells: Dictionary):
 	# ===================================================================
 	# PASS 1: ANALYSIS - Build the road_info_data dictionary
 	# ===================================================================
-	var start_time = Time.get_ticks_msec()
-	var end_time
-	var seconds
 	var data_count = 0
 	for pos in grid_data.keys():
 		var zone = int(grid_data.get(pos))
@@ -1343,38 +1340,28 @@ func _place_road_network(occupied_cells: Dictionary):
 
 		road_info_data[pos] = info
 		data_count += 1
-	# ===================================================================
-	# PASS 2: INSTANTIATION - Place the dynamic scenes
-	# ===================================================================
-	var all_road_collision_shapes: Array[CollisionShape3D] = []
 	
-	for pos in road_info_data:
-		var data = road_info_data[pos]
-		var instance = road_scene.instantiate()
-		
-		instance.position = Vector3(pos.x * cell_size, 0, pos.y * cell_size)
-		generated_city_node.add_child(instance)
-		occupied_cells[pos] = instance
-		
-		if instance.has_method("generate_scene"):
-			instance.generate_scene(data)
-			print("Generated scene")
-		else:
-			push_warning("The assigned road_scene does not have a 'generate_scene(data)' function.")
-		
-		if instance.has_method("extract_collision_shapes"):
-			var shapes = instance.extract_collision_shapes(instance.lod0_node)
-			all_road_collision_shapes.append_array(shapes)
+	var worker_callable = Callable(self, "_road_instantiation_worker")
+	var thread = Thread.new()
+	thread.start(worker_callable)
+	var results = thread.wait_to_finish()
+	var all_instances = results["instances"]
+	var all_collision_shapes = results["collision_shapes"]
 	
-	end_time = Time.get_ticks_msec()
-	seconds = (end_time - start_time) / 1000.0
-	for shape_node in all_road_collision_shapes:
+	var start_time = Time.get_ticks_msec()
+	
+	for item in all_instances:
+		generated_city_node.add_child(item["instance"])
+		occupied_cells[item["pos"]] = item["instance"]
+		print("Instanced")
+	
+	for shape_node in all_collision_shapes:
 		if is_instance_valid(shape_node):
 			shape_node.owner = null
 			shape_node.reparent(road_network_body)
+			print("Reparented Collision")
 	
-	end_time = Time.get_ticks_msec()
-	seconds = (end_time - start_time) / 1000.0
+	print("Main thread processing took: ", Time.get_ticks_msec() - start_time, " ms")
 	_trigger_road_neighbor_config(occupied_cells)
 
 func _trigger_road_neighbor_config(occupied_road_cells: Dictionary):
@@ -1427,6 +1414,42 @@ func _trigger_road_neighbor_config(occupied_road_cells: Dictionary):
 					(neighbor_info.is_major and neighbor_info.major_road_type == Enums.MajorRoadType.STRAIGHT):
 						if neighbor_instance.has_method("configure_for_junction"):
 							neighbor_instance.configure_for_junction(road_instance, has_traffic)
+
+func _road_instantiation_worker() -> Dictionary:
+	var instances_to_add: Array[Dictionary] = []
+	var collision_shapes_to_add: Array[CollisionShape3D] = []
+	
+	print("Thread started: Instantiating road scenes...")
+	
+	for pos in road_info_data:
+		var data = road_info_data[pos]
+		if not road_scene: continue
+			
+		var instance = road_scene.instantiate()
+		
+		# We set the position but DO NOT add it to the main tree here.
+		instance.position = Vector3(pos.x * cell_size, 0, pos.y * cell_size)
+		
+		if instance.has_method("generate_scene"):
+			# We pass 'null' for the body because we can't access it from the thread.
+			# The collision extraction will be handled differently.
+			instance.generate_scene(data)
+		
+		# Collect the instance and its position to be added later.
+		instances_to_add.append({"instance": instance, "pos": pos})
+		
+		# Extract the collision shapes and collect them.
+		if instance.has_method("extract_collision_shapes"):
+			var shapes = instance.extract_collision_shapes(instance.lod0_node)
+			collision_shapes_to_add.append_array(shapes)
+			
+	print("Thread finished.")
+	
+	# Return all the created data in a single dictionary.
+	return {
+		"instances": instances_to_add,
+		"collision_shapes": collision_shapes_to_add
+	}
 
 
 func _apply_world_collision_detection(instance):

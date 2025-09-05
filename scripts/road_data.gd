@@ -2,34 +2,17 @@ class_name RoadData
 extends Node3D
 
 var road_info: Dictionary = {}
-@onready var current_lod_level: int = -1
-@onready var lod0_node: Node3D
+var lod0_node: Node3D
+var current_lod_level: int = -1
+
 @export var lod1_node: Node3D
 @export var lod2_node: Node3D
 
-# --- Scene Assignments ---
-@onready var modules_node: Node3D = %Modules
-
-# Minor Road Modules
-@onready var road_filler = %RoadFiller
-@onready var road_straight = %RoadStraight
-@onready var road_corner = %RoadCorner
-@onready var road_t_shape = %RoadTShape
-@onready var road_intersection = %RoadIntersection
-@onready var road_end = %RoadEnd
-
-# Major Road Modules
-@onready var major_road_t_shape_2_width = %MajorRoadTShape2Width
-@onready var major_road_t_shape = %MajorRoadTShape
-@onready var major_intersection_corner = %MajorIntersectionCorner
-@onready var major_road_straight_2_width = %MajorRoadStraight2Width
-@onready var major_road_edge = %MajorRoadEdge
-@onready var major_road_middle = %MajorRoadMiddle
-@onready var major_road_odd_center = %MajorRoadOddCenter
-@onready var major_road_even_center = %MajorRoadEvenCenter
-
-func _ready():	
-	set_lod_level(2)
+func _ready():
+	# This function is kept for cases where the scene might be used
+	# outside of the city generator, but our main setup logic is now
+	# entirely within generate_scene() to ensure thread safety.
+	pass
 
 func generate_scene(data: Dictionary):
 	# -- Data Keys -- 
@@ -51,42 +34,66 @@ func generate_scene(data: Dictionary):
 	road_info["major_road_width"] = data.get("major_road_width", 2)
 	road_info["traffic_flow"] = data.get("traffic_flow", Vector2i.ZERO)
 	
-	
-	# --- YOUR LOGIC GOES HERE ---
-	# You now have all the information to choose the correct module.
-	var road_node = road_filler
-	
+	# --- Get Node References Manually ---
+	# We fetch nodes by name now instead of using @onready. This is thread-safe.
+	var modules_node: Node3D = get_node_or_null("%Modules")
+	if not is_instance_valid(modules_node):
+		push_error("Road scene instance is missing its '%Modules' child node.")
+		return
+
+	# --- Module Selection Logic ---
+	var road_node: Node3D
+	var node_name_to_find: String
+
 	if road_info.is_major: # Major Scene Assignment
 		match road_info.major_road_type:
 			Enums.MajorRoadType.T_JUNCTION:
-				if road_info.major_road_width == 2: road_node = major_road_t_shape_2_width
-				else: road_node = major_road_t_shape
-			Enums.MajorRoadType.INTERSECTION_CORNER: road_node = major_intersection_corner
-			Enums.MajorRoadType.INTERSECTION_FILLER, Enums.MajorRoadType.UNKNOWN: road_node = road_filler
-			Enums.MajorRoadType.STRAIGHT: # Straight Road Modules
-				if road_info.major_road_width == 2: road_node = major_road_straight_2_width
+				node_name_to_find = "MajorRoadTShape2Width" if road_info.major_road_width == 2 else "MajorRoadTShape"
+			Enums.MajorRoadType.INTERSECTION_CORNER:
+				node_name_to_find = "MajorIntersectionCorner"
+			Enums.MajorRoadType.STRAIGHT:
+				if road_info.major_road_width == 2:
+					node_name_to_find = "MajorRoadStraight2Width"
 				else:
 					match road_info.major_road_lane_type:
-						Enums.MajorRoadLaneType.EDGE: road_node = major_road_edge
-						Enums.MajorRoadLaneType.MIDDLE: road_node = major_road_middle
-						Enums.MajorRoadLaneType.ODD_CENTER: road_node = major_road_odd_center
-						Enums.MajorRoadLaneType.EVEN_CENTER: road_node = major_road_even_center
+						Enums.MajorRoadLaneType.EDGE: node_name_to_find = "MajorRoadEdge"
+						Enums.MajorRoadLaneType.MIDDLE: node_name_to_find = "MajorRoadMiddle"
+						Enums.MajorRoadLaneType.ODD_CENTER: node_name_to_find = "MajorRoadOddCenter"
+						Enums.MajorRoadLaneType.EVEN_CENTER: node_name_to_find = "MajorRoadEvenCenter"
+			_:
+				node_name_to_find = "RoadFiller"
 	else: # Minor Roads
 		match road_info.road_type:
-			Enums.RoadType.STRAIGHT: road_node = road_straight
-			Enums.RoadType.CORNER: road_node = road_corner
-			Enums.RoadType.T_JUNCTION: road_node = road_t_shape
-			Enums.RoadType.INTERSECTION: road_node = road_intersection
-			Enums.RoadType.END: road_node = road_end
-	
-	# Finalize
+			Enums.RoadType.STRAIGHT: node_name_to_find = "RoadStraight"
+			Enums.RoadType.CORNER: node_name_to_find = "RoadCorner"
+			Enums.RoadType.T_JUNCTION: node_name_to_find = "RoadTShape"
+			Enums.RoadType.INTERSECTION: node_name_to_find = "RoadIntersection"
+			Enums.RoadType.END: node_name_to_find = "RoadEnd"
+			_:
+				node_name_to_find = "RoadFiller"
+
+	if node_name_to_find:
+		road_node = modules_node.get_node_or_null(node_name_to_find)
+
+	# --- Crucial Null Check ---
+	# This prevents the crash by ensuring road_node is valid.
+	if not is_instance_valid(road_node):
+		push_error("Could not find a road module named '", node_name_to_find, "'. Using fallback.")
+		road_node = modules_node.get_node_or_null("RoadFiller")
+		if not is_instance_valid(road_node):
+			push_error("CRITICAL: Fallback 'RoadFiller' module also missing. Aborting generation for this piece.")
+			modules_node.queue_free()
+			return
+
+	# --- Finalize Scene Setup ---
 	self.rotation_degrees.y = road_info.scene_rotation
-	_cleanup_modules(road_node)
-	road_node.name = "LOD0"
+	_cleanup_modules(road_node, modules_node)
+	road_node.name = "LOD0" # This line is now safe
+	road_node.show()
 	lod0_node = road_node
 	
-	# You can also store the connection data for later use by your AI systems
-	# set_meta("pathfinding_connections", connections)
+	# Set the initial LOD state now that setup is complete
+	set_lod_level(2)
 
 func extract_collision_shapes(instance) -> Array[CollisionShape3D]:
 	var shapes: Array[CollisionShape3D] = []
@@ -96,47 +103,48 @@ func extract_collision_shapes(instance) -> Array[CollisionShape3D]:
 	return shapes
 
 func configure_for_junction(junction_node, has_traffic: bool):
-	var stop_sign_mesh = lod0_node.get_child(0).find_child("StopSign", false)
-	var traffic_light_mesh = lod0_node.get_child(0).find_child("TrafficLight", false)
-	var crosswalk_mesh = lod0_node.get_child(0).find_child("Crosswalk", false)
+	var stop_sign_node = lod0_node.get_child(0).find_child("StopSign", false)
+	var traffic_light_node = lod0_node.get_child(0).find_child("TrafficLight", false)
+	var crosswalk_node = lod0_node.get_child(0).find_child("Crosswalk", false)
 	
 	if has_traffic:
-		if is_instance_valid(traffic_light_mesh): traffic_light_mesh.visible = true
+		if is_instance_valid(traffic_light_node): traffic_light_node.visible = true
 	else:
-		if is_instance_valid(stop_sign_mesh): stop_sign_mesh.visible = true
+		if is_instance_valid(stop_sign_node): stop_sign_node.visible = true
 	
-	if is_instance_valid(crosswalk_mesh): crosswalk_mesh.visible = true
+	if is_instance_valid(crosswalk_node): crosswalk_node.visible = true
 
 
-func _cleanup_modules(chosen_module: Node3D):
-	if not is_instance_valid(modules_node):
-		push_warning("Missing 'Modules' Container")
+func _cleanup_modules(chosen_module: Node3D, modules_container: Node3D):
+	if not is_instance_valid(modules_container):
+		push_warning("Missing 'Modules' Container reference in _cleanup_modules.")
 		return
 		
-	if is_instance_valid(chosen_module) and chosen_module.get_parent() == modules_node:
+	if is_instance_valid(chosen_module) and chosen_module.get_parent() == modules_container:
 		chosen_module.owner = null
-		modules_node.remove_child(chosen_module)
+		modules_container.remove_child(chosen_module)
 		add_child(chosen_module)
 	else:
 		var module_name = chosen_module.name if is_instance_valid(chosen_module) else "null"
 		push_warning("Chosen module '", module_name, "' is not a valid child of the 'Modules' container.")
-	modules_node.queue_free()
+
+	modules_container.queue_free()
 
 func set_lod_level(level: int):
 	if level == current_lod_level: # Return if same level
 		return
 	
 	# Hide all LOD nodes first to ensure clean switch.
-	if lod0_node: lod0_node.hide()
-	if lod1_node: lod1_node.hide()
-	if lod2_node: lod2_node.hide()
+	if is_instance_valid(lod0_node): lod0_node.hide()
+	if is_instance_valid(lod1_node): lod1_node.hide()
+	if is_instance_valid(lod2_node): lod2_node.hide()
 	
 	match level:
 		0: # High detail
-			if lod0_node: lod0_node.show()
+			if is_instance_valid(lod0_node): lod0_node.show()
 		1: # Medium detail
-			if lod1_node: lod1_node.show()
+			if is_instance_valid(lod1_node): lod1_node.show()
 		2: # Low detail
-			if lod2_node: lod2_node.show()
+			if is_instance_valid(lod2_node): lod2_node.show()
 	
 	current_lod_level = level
