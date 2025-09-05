@@ -1379,7 +1379,9 @@ func _trigger_road_neighbor_config(occupied_road_cells: Dictionary):
 		
 		if is_smart_junction:
 			var neighbor_positions = road_info.get("neighbor_grid_positions", {})
+			var forced_direction = Vector2i.ZERO
 			for direction in neighbor_positions:
+				forced_direction = -direction
 				var neighbor_pos = neighbor_positions[direction]
 				
 				# Get the actual neighbor instance from our dictionary
@@ -1404,8 +1406,10 @@ func _trigger_road_neighbor_config(occupied_road_cells: Dictionary):
 					
 					if (!neighbor_info.is_major and neighbor_info.type == Enums.RoadType.STRAIGHT) or \
 					(neighbor_info.is_major and neighbor_info.major_road_type == Enums.MajorRoadType.STRAIGHT):
+						if junction_type == "MT" and neighbor_info.is_major: continue
+						
 						if neighbor_instance.has_method("configure_for_junction"):
-							neighbor_instance.configure_for_junction(road_instance, has_traffic)
+							neighbor_instance.configure_for_junction(road_instance, has_traffic, forced_direction)
 
 func _road_instantiation_worker() -> Dictionary:
 	var instances_to_add: Array[Dictionary] = []

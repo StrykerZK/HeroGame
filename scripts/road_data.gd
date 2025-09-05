@@ -102,17 +102,40 @@ func extract_collision_shapes(instance) -> Array[CollisionShape3D]:
 			shapes.append(shape_node)
 	return shapes
 
-func configure_for_junction(junction_node, has_traffic: bool):
-	var stop_sign_node = lod0_node.get_child(0).find_child("StopSign", false)
-	var traffic_light_node = lod0_node.get_child(0).find_child("TrafficLight", false)
-	var crosswalk_node = lod0_node.get_child(0).find_child("Crosswalk", false)
+func configure_for_junction(junction_node, has_traffic: bool, forced_direction: Vector2i):
+	var stop_sign_node = lod0_node.find_child("StopSign", false)
+	var traffic_light_node = lod0_node.find_child("TrafficLight", false)
+	var crosswalk_model = lod0_node.find_child("CrosswalkModel", false)
+	var crosswalk_flipped_model = lod0_node.find_child("CrosswalkModelFlipped", false)
+	var main_model = lod0_node.find_child("MainModel", false)
+	
+	var is_flipped = false
 	
 	if has_traffic:
 		if is_instance_valid(traffic_light_node): traffic_light_node.visible = true
 	else:
 		if is_instance_valid(stop_sign_node): stop_sign_node.visible = true
 	
-	if is_instance_valid(crosswalk_node): crosswalk_node.visible = true
+	match forced_direction:
+		Vector2i.UP:
+			self.rotation_degrees.y = 0
+			if road_info["traffic_flow"] == Vector2i.UP: is_flipped = true
+		Vector2i.DOWN:
+			self.rotation_degrees.y = 180
+			if road_info["traffic_flow"] == Vector2i.DOWN: is_flipped = true
+		Vector2i.LEFT:
+			self.rotation_degrees.y = 90
+			if road_info["traffic_flow"] == Vector2i.LEFT: is_flipped = true
+		Vector2i.RIGHT:
+			self.rotation_degrees.y = 270
+			if road_info["traffic_flow"] == Vector2i.RIGHT: is_flipped = true
+	
+	if is_instance_valid(crosswalk_model):
+		main_model.visible = false
+		if is_flipped:
+			crosswalk_flipped_model.visible = true
+		else:
+			crosswalk_model.visible = true
 
 
 func _cleanup_modules(chosen_module: Node3D, modules_container: Node3D):
