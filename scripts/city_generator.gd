@@ -553,6 +553,35 @@ func _fill_remaining_space():
 	_generate_residential_zones()
 	_generate_outskirts_and_parks()
 
+func _calculate_distance_grid(urban_core_tiles: Array[Vector2i]) -> Dictionary:
+	var distance_grid: Dictionary = {}
+	if urban_core_tiles.is_empty():
+		return distance_grid
+
+	var queue: Array[Vector2i] = urban_core_tiles.duplicate()
+	var visited: Dictionary = {}
+
+	# Initialize the queue with all core tiles, which have a distance of 0.
+	for pos in queue:
+		distance_grid[pos] = 0
+		visited[pos] = true
+
+	# Standard Breadth-First Search (BFS) to "flood fill" distances outwards.
+	var head = 0
+	while head < queue.size():
+		var current_pos = queue[head]
+		head += 1
+		var current_dist = distance_grid[current_pos]
+
+		for n_dir in [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]:
+			var neighbor_pos = current_pos + n_dir
+			if Rect2i(Vector2i.ZERO, grid_size).has_point(neighbor_pos) and not visited.has(neighbor_pos):
+				visited[neighbor_pos] = true
+				distance_grid[neighbor_pos] = current_dist + 1
+				queue.append(neighbor_pos)
+				
+	return distance_grid
+
 func _generate_residential_zones():
 	# First, find all the "urban core" tiles to measure distance from.
 	var urban_core_tiles: Array[Vector2i] = []
@@ -565,6 +594,9 @@ func _generate_residential_zones():
 		# Fallback: If no downtown/business, treat everything as housing
 		_generate_residential_filler(Zone.HOUSING)
 		return
+
+	# --- NEW (OPTIMIZED): Pre-calculate the entire distance grid once. ---
+	var distance_grid = _calculate_distance_grid(urban_core_tiles)
 
 	# Find all empty areas adjacent to roads
 	var road_adjacent_candidates: Array[Vector2i] = []
@@ -581,16 +613,18 @@ func _generate_residential_zones():
 		if not visited.has(pos):
 			var area = _find_contiguous_area_from_list(pos, road_adjacent_candidates, visited)
 			if area.size() >= min_residential_area_size:
-				# Calculate the area's average distance to the nearest urban core
+				
+				# --- REPLACED (OPTIMIZED): Use the pre-calculated grid for fast lookups. ---
+				# The old, slow nested loop that iterated through all urban_core_tiles is gone.
 				var total_min_dist = 0.0
 				for tile_pos in area:
-					var min_dist_for_tile = INF
-					for core_pos in urban_core_tiles:
-						min_dist_for_tile = min(min_dist_for_tile, tile_pos.distance_to(core_pos))
-					total_min_dist += min_dist_for_tile
-				var avg_dist = total_min_dist / area.size()
+					# We just look up the value from our map. This is incredibly fast.
+					total_min_dist += distance_grid.get(tile_pos, INF)
+				
+				var avg_dist = total_min_dist / area.size() if not area.is_empty() else INF
+				# --- END REPLACEMENT ---
 
-				# Assign the zone based on the distance
+				# Assign the zone based on the distance (this logic is unchanged)
 				var new_zone_type = Zone.APARTMENTS if avg_dist <= apartment_max_distance_from_core else Zone.HOUSING
 				for tile_pos in area:
 					grid_data[tile_pos] = new_zone_type
