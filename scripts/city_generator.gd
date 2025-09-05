@@ -1257,7 +1257,7 @@ func _place_road_network(occupied_cells: Dictionary):
 						5: scene_rotation = 0
 						6: scene_rotation = 90
 						10: scene_rotation = 180
-						7: scene_rotation = 270
+						9: scene_rotation = 270
 				else:
 					major_road_type = Enums.MajorRoadType.INTERSECTION_FILLER
 			else:
@@ -1387,29 +1387,30 @@ func _trigger_road_neighbor_config(occupied_road_cells: Dictionary):
 				# Get the actual neighbor instance from our dictionary
 				var neighbor_instance = occupied_road_cells.get(neighbor_pos)
 				var neighbor_info = road_info_data.get(neighbor_pos)
-				var has_traffic = false
+				var decor_type = ""
 			
 				if is_instance_valid(neighbor_instance) and neighbor_info:
 					match junction_type:
 						"MJ":
-							has_traffic = true if randf() > 0.9 else false
+							decor_type = "SmallTraffic" if randf() > 0.9 else "Stop"
 						"MT":
-							has_traffic = true
+							decor_type = "SmallTraffic"
 						"MI":
-							match road_info.rotation:
-								0, 180:
-									if road_direction_data.get(neighbor_pos) == Direction.LEFT or \
-									road_direction_data.get(neighbor_pos) == Direction.RIGHT: has_traffic = true
-								90, 270:
-									if road_direction_data.get(neighbor_pos) == Direction.UP or \
-									road_direction_data.get(neighbor_pos) == Direction.DOWN: has_traffic = true
+							if road_info.major_road_type == Enums.MajorRoadType.INTERSECTION_CORNER:
+								match road_info.rotation:
+									0, 180:
+										if road_direction_data.get(neighbor_pos) == Direction.LEFT or \
+										road_direction_data.get(neighbor_pos) == Direction.RIGHT: decor_type = "LargeTraffic"
+									90, 270:
+										if road_direction_data.get(neighbor_pos) == Direction.UP or \
+										road_direction_data.get(neighbor_pos) == Direction.DOWN: decor_type = "LargeTraffic"
 					
 					if (!neighbor_info.is_major and neighbor_info.type == Enums.RoadType.STRAIGHT) or \
 					(neighbor_info.is_major and neighbor_info.major_road_type == Enums.MajorRoadType.STRAIGHT):
 						if junction_type == "MT" and neighbor_info.is_major: continue
 						
 						if neighbor_instance.has_method("configure_for_junction"):
-							neighbor_instance.configure_for_junction(road_instance, has_traffic, forced_direction)
+							neighbor_instance.configure_for_junction(road_instance, decor_type, forced_direction)
 
 func _road_instantiation_worker() -> Dictionary:
 	var instances_to_add: Array[Dictionary] = []

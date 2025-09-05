@@ -30,7 +30,7 @@ var speed_mult := 1.0
 @export var super_acceleration_mult := 8.0
 @export var ascend_descend_speed := 40.0
 @export var flight_turn_speed := 20.0
-@export var air_brake_deceleration := 1000.0
+@export var air_brake_deceleration := 1500.0
 @export var max_landing_deceleration := 2000.0
 @export var landing_curve: Curve # The curve for the slide deceleration.
 @export_subgroup("Misc")
@@ -246,7 +246,7 @@ func _physics_process(delta):
 	
 	# Camera control
 	_camera_pivot.rotation.x -= _camera_input_direction.y * delta
-	_camera_pivot.rotation.x = clamp(_camera_pivot.rotation.x, -PI / 2.001, PI / 6.0)
+	_camera_pivot.rotation.x = clamp(_camera_pivot.rotation.x, -PI / 2.001, PI / 3.0)
 	_shoulder_pivot.rotation.y -= _camera_input_direction.x * delta
 	
 	_camera_input_direction = Vector2.ZERO
@@ -298,12 +298,7 @@ func handle_animations():
 		State.SUPER_FLIGHT:
 			%StandardCollision.disabled = true
 			%FlyCollision.disabled = false
-			if velocity.y < 0.0:
-				_stickman.update_animation("fly_down")
-			elif velocity.y > 0.0:
-				_stickman.update_animation("fly_up")
-			else:
-				_stickman.update_animation("fly")
+			_stickman.update_animation("fly")
 		State.IN_AIR:
 			%StandardCollision.disabled = false
 			%FlyCollision.disabled = true

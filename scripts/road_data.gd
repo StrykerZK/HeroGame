@@ -102,19 +102,23 @@ func extract_collision_shapes(instance) -> Array[CollisionShape3D]:
 			shapes.append(shape_node)
 	return shapes
 
-func configure_for_junction(junction_node, has_traffic: bool, forced_direction: Vector2i):
-	var stop_sign_node = lod0_node.find_child("StopSign", false)
-	var traffic_light_node = lod0_node.find_child("TrafficLight", false)
+func configure_for_junction(junction_node, decor_type: String, forced_direction: Vector2i):
+	var stop_sign_node: Node3D = get_node_or_null("%StopSign")
+	var small_traffic_node: Node3D = get_node_or_null("%SmallTraffic")
+	var large_traffic_node: Node3D = get_node_or_null("%LargeTraffic")
 	var crosswalk_model = lod0_node.find_child("CrosswalkModel", false)
 	var crosswalk_flipped_model = lod0_node.find_child("CrosswalkModelFlipped", false)
 	var main_model = lod0_node.find_child("MainModel", false)
 	
 	var is_flipped = false
 	
-	if has_traffic:
-		if is_instance_valid(traffic_light_node): traffic_light_node.visible = true
-	else:
-		if is_instance_valid(stop_sign_node): stop_sign_node.visible = true
+	match decor_type:
+		"Stop":
+			stop_sign_node.visible = true
+		"SmallTraffic":
+			small_traffic_node.visible = true
+		"LargeTraffic":
+			large_traffic_node.visible = true
 	
 	match forced_direction:
 		Vector2i.UP:
