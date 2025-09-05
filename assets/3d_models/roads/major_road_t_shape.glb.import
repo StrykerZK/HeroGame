@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://b4iy28ts0mlnt"
-path="res://.godot/imported/single_road_corner.glb-9cde3e2f6d320564321e2a88d32962ba.scn"
+uid="uid://bki6pdf0h5sn0"
+path="res://.godot/imported/major_road_t_shape.glb-bd2ec7c092b5fe31a086997ef982d0d5.scn"
 
 [deps]
 
-source_file="res://assets/3d_models/roads/single_road_corner.glb"
-dest_files=["res://.godot/imported/single_road_corner.glb-9cde3e2f6d320564321e2a88d32962ba.scn"]
+source_file="res://assets/3d_models/roads/major_road_t_shape.glb"
+dest_files=["res://.godot/imported/major_road_t_shape.glb-bd2ec7c092b5fe31a086997ef982d0d5.scn"]
 
 [params]
 

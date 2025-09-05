@@ -1353,13 +1353,11 @@ func _place_road_network(occupied_cells: Dictionary):
 	for item in all_instances:
 		generated_city_node.add_child(item["instance"])
 		occupied_cells[item["pos"]] = item["instance"]
-		print("Instanced")
 	
 	for shape_node in all_collision_shapes:
 		if is_instance_valid(shape_node):
 			shape_node.owner = null
 			shape_node.reparent(road_network_body)
-			print("Reparented Collision")
 	
 	print("Main thread processing took: ", Time.get_ticks_msec() - start_time, " ms")
 	_trigger_road_neighbor_config(occupied_cells)

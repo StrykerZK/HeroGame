@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://dbb6dnh2q738n"
-path="res://.godot/imported/single_road_intersection.glb-d6188a48e1e7d96c89dbce6ef0538f5c.scn"
+uid="uid://bemyht6oyvvny"
+path="res://.godot/imported/end.glb-3f890e0f951cb20b62c67ecb384787be.scn"
 
 [deps]
 
-source_file="res://assets/3d_models/roads/single_road_intersection.glb"
-dest_files=["res://.godot/imported/single_road_intersection.glb-d6188a48e1e7d96c89dbce6ef0538f5c.scn"]
+source_file="res://assets/3d_models/roads/end.glb"
+dest_files=["res://.godot/imported/end.glb-3f890e0f951cb20b62c67ecb384787be.scn"]
 
 [params]
 
