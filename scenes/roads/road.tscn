@@ -2693,554 +2693,580 @@ data = PackedVector3Array(-1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1,
 
 [node name="Road" type="Node3D" node_paths=PackedStringArray("lod1_node", "lod2_node")]
 script = ExtResource("1_sl034")
-lod1_node = NodePath("RoadFiller")
+lod1_node = NodePath("LOD1")
 lod2_node = NodePath("LOD2")
 
-[node name="MajorIntersectionCorner" type="Node3D" parent="."]
-visible = false
+[node name="Modules" type="Node3D" parent="."]
+unique_name_in_owner = true
 
-[node name="major_intersection_corner" type="Node3D" parent="MajorIntersectionCorner"]
+[node name="MajorIntersectionCorner" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
+
+[node name="major_intersection_corner" type="Node3D" parent="Modules/MajorIntersectionCorner"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
-[node name="Cube_041" type="MeshInstance3D" parent="MajorIntersectionCorner/major_intersection_corner"]
+[node name="Cube_041" type="MeshInstance3D" parent="Modules/MajorIntersectionCorner/major_intersection_corner"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_d0eau")
 skeleton = NodePath("")
 
-[node name="Sidewalk_029" type="MeshInstance3D" parent="MajorIntersectionCorner/major_intersection_corner"]
+[node name="Sidewalk_029" type="MeshInstance3D" parent="Modules/MajorIntersectionCorner/major_intersection_corner"]
 transform = Transform3D(-4.3083435e-09, 0, 0.048, 0, 0.01714682, 0, 0.024094, 0, 8.583069e-09, -0.9760001, 0.057000004, -0.9759085)
 mesh = SubResource("ArrayMesh_wcgja")
 skeleton = NodePath("")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MajorIntersectionCorner" groups=["road_collision"]]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Modules/MajorIntersectionCorner" groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_ps852")
 
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="MajorIntersectionCorner" groups=["road_collision"]]
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="Modules/MajorIntersectionCorner" groups=["road_collision"]]
 transform = Transform3D(-4.3083435e-08, 0, 0.48000002, 0, 0.1714682, 0, 0.24094, 0, 8.583069e-08, -9.76, 0.57000005, -9.759085)
 shape = SubResource("ConcavePolygonShape3D_y2e6g")
 
-[node name="MajorRoadEdge" type="Node3D" parent="."]
+[node name="MajorRoadEdge" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="major_road_straight" type="Node3D" parent="MajorRoadEdge"]
+[node name="major_road_straight" type="Node3D" parent="Modules/MajorRoadEdge"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
-[node name="Cube_013" type="MeshInstance3D" parent="MajorRoadEdge/major_road_straight"]
+[node name="Cube_013" type="MeshInstance3D" parent="Modules/MajorRoadEdge/major_road_straight"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_54vs0")
 skeleton = NodePath("")
 
-[node name="Cube_014" type="MeshInstance3D" parent="MajorRoadEdge/major_road_straight"]
+[node name="Cube_014" type="MeshInstance3D" parent="Modules/MajorRoadEdge/major_road_straight"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_bt6l5")
 skeleton = NodePath("")
 
-[node name="Sidewalk_017" type="MeshInstance3D" parent="MajorRoadEdge/major_road_straight"]
+[node name="Sidewalk_017" type="MeshInstance3D" parent="Modules/MajorRoadEdge/major_road_straight"]
 transform = Transform3D(-0.024093794, 0, 0, 0, 0.01714682, 0, 0, 0, 0.100000575, -0.97590005, 0.057000004, 0.9)
 mesh = SubResource("ArrayMesh_4puu8")
 skeleton = NodePath("")
 
-[node name="Cube_015" type="MeshInstance3D" parent="MajorRoadEdge/major_road_straight"]
+[node name="Cube_015" type="MeshInstance3D" parent="Modules/MajorRoadEdge/major_road_straight"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 1, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_qh2ax")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="MajorRoadEdge" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/MajorRoadEdge" groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_4nlel")
 
-[node name="SidewalkCollision" type="CollisionShape3D" parent="MajorRoadEdge" groups=["road_collision"]]
+[node name="SidewalkCollision" type="CollisionShape3D" parent="Modules/MajorRoadEdge" groups=["road_collision"]]
 transform = Transform3D(-0.24093793, 0, 0, 0, 0.1714682, 0, 0, 0, 1.0000057, -9.759001, 0.57000005, 9)
 shape = SubResource("ConcavePolygonShape3D_3tlte")
 
-[node name="MajorRoadEvenCenter" type="Node3D" parent="."]
+[node name="MajorRoadEvenCenter" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="major_road_straight_even_center" type="Node3D" parent="MajorRoadEvenCenter"]
+[node name="major_road_straight_even_center" type="Node3D" parent="Modules/MajorRoadEvenCenter"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
-[node name="Cube_037" type="MeshInstance3D" parent="MajorRoadEvenCenter/major_road_straight_even_center"]
+[node name="Cube_037" type="MeshInstance3D" parent="Modules/MajorRoadEvenCenter/major_road_straight_even_center"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_pwblf")
 skeleton = NodePath("")
 
-[node name="Cube_040" type="MeshInstance3D" parent="MajorRoadEvenCenter/major_road_straight_even_center"]
+[node name="Cube_040" type="MeshInstance3D" parent="Modules/MajorRoadEvenCenter/major_road_straight_even_center"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_jjfy4")
 skeleton = NodePath("")
 
-[node name="Cube_042" type="MeshInstance3D" parent="MajorRoadEvenCenter/major_road_straight_even_center"]
+[node name="Cube_042" type="MeshInstance3D" parent="Modules/MajorRoadEvenCenter/major_road_straight_even_center"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, -0.982, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_tyyqp")
 skeleton = NodePath("")
 
-[node name="Plane_004" type="MeshInstance3D" parent="MajorRoadEvenCenter/major_road_straight_even_center"]
+[node name="Plane_004" type="MeshInstance3D" parent="Modules/MajorRoadEvenCenter/major_road_straight_even_center"]
 transform = Transform3D(0.009072001, 0, 0, 0, 1, 0, 0, 0, 1, 0.970928, 0.040015254, 0)
 mesh = SubResource("ArrayMesh_xnkof")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="MajorRoadEvenCenter" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/MajorRoadEvenCenter" groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_83ryc")
 
-[node name="MajorRoadMiddle" type="Node3D" parent="."]
+[node name="MajorRoadMiddle" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="major_road_straight_middle" type="Node3D" parent="MajorRoadMiddle"]
+[node name="major_road_straight_middle" type="Node3D" parent="Modules/MajorRoadMiddle"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
-[node name="Cube_031" type="MeshInstance3D" parent="MajorRoadMiddle/major_road_straight_middle"]
+[node name="Cube_031" type="MeshInstance3D" parent="Modules/MajorRoadMiddle/major_road_straight_middle"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_yfoid")
 skeleton = NodePath("")
 
-[node name="Cube_033" type="MeshInstance3D" parent="MajorRoadMiddle/major_road_straight_middle"]
+[node name="Cube_033" type="MeshInstance3D" parent="Modules/MajorRoadMiddle/major_road_straight_middle"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_uaggi")
 skeleton = NodePath("")
 
-[node name="Cube_034" type="MeshInstance3D" parent="MajorRoadMiddle/major_road_straight_middle"]
+[node name="Cube_034" type="MeshInstance3D" parent="Modules/MajorRoadMiddle/major_road_straight_middle"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 1, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_qvfeo")
 skeleton = NodePath("")
 
-[node name="Cube_035" type="MeshInstance3D" parent="MajorRoadMiddle/major_road_straight_middle"]
+[node name="Cube_035" type="MeshInstance3D" parent="Modules/MajorRoadMiddle/major_road_straight_middle"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, -0.982, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_6nama")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="MajorRoadMiddle" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/MajorRoadMiddle" groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_6qqya")
 
-[node name="MajorRoadOddCenter" type="Node3D" parent="."]
+[node name="MajorRoadOddCenter" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="major_road_straight_odd_center" type="Node3D" parent="MajorRoadOddCenter"]
+[node name="major_road_straight_odd_center" type="Node3D" parent="Modules/MajorRoadOddCenter"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
-[node name="Cube_036" type="MeshInstance3D" parent="MajorRoadOddCenter/major_road_straight_odd_center"]
+[node name="Cube_036" type="MeshInstance3D" parent="Modules/MajorRoadOddCenter/major_road_straight_odd_center"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_t5lwp")
 skeleton = NodePath("")
 
-[node name="Cube_038" type="MeshInstance3D" parent="MajorRoadOddCenter/major_road_straight_odd_center"]
+[node name="Cube_038" type="MeshInstance3D" parent="Modules/MajorRoadOddCenter/major_road_straight_odd_center"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 1, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_jpqi6")
 skeleton = NodePath("")
 
-[node name="Cube_039" type="MeshInstance3D" parent="MajorRoadOddCenter/major_road_straight_odd_center"]
+[node name="Cube_039" type="MeshInstance3D" parent="Modules/MajorRoadOddCenter/major_road_straight_odd_center"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, -0.982, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_b4qwc")
 skeleton = NodePath("")
 
-[node name="Plane_002" type="MeshInstance3D" parent="MajorRoadOddCenter/major_road_straight_odd_center"]
+[node name="Plane_002" type="MeshInstance3D" parent="Modules/MajorRoadOddCenter/major_road_straight_odd_center"]
 transform = Transform3D(0.009072001, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.040015254, 0)
 mesh = SubResource("ArrayMesh_xnk70")
 skeleton = NodePath("")
 
-[node name="Plane_003" type="MeshInstance3D" parent="MajorRoadOddCenter/major_road_straight_odd_center"]
+[node name="Plane_003" type="MeshInstance3D" parent="Modules/MajorRoadOddCenter/major_road_straight_odd_center"]
 transform = Transform3D(0.009072001, 0, 0, 0, 1, 0, 0, 0, 1, 0.02, 0.040015254, 0)
 mesh = SubResource("ArrayMesh_pvjv6")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="MajorRoadOddCenter" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/MajorRoadOddCenter" groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_31drv")
 
-[node name="MajorRoadStraight2Width" type="Node3D" parent="."]
+[node name="MajorRoadStraight2Width" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="major_road_straight_2_width" type="Node3D" parent="MajorRoadStraight2Width"]
+[node name="major_road_straight_2_width" type="Node3D" parent="Modules/MajorRoadStraight2Width"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
-[node name="Cube_027" type="MeshInstance3D" parent="MajorRoadStraight2Width/major_road_straight_2_width"]
+[node name="Cube_027" type="MeshInstance3D" parent="Modules/MajorRoadStraight2Width/major_road_straight_2_width"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_vvlvo")
 skeleton = NodePath("")
 
-[node name="Cube_028" type="MeshInstance3D" parent="MajorRoadStraight2Width/major_road_straight_2_width"]
+[node name="Cube_028" type="MeshInstance3D" parent="Modules/MajorRoadStraight2Width/major_road_straight_2_width"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_wc0me")
 skeleton = NodePath("")
 
-[node name="Sidewalk_023" type="MeshInstance3D" parent="MajorRoadStraight2Width/major_road_straight_2_width"]
+[node name="Sidewalk_023" type="MeshInstance3D" parent="Modules/MajorRoadStraight2Width/major_road_straight_2_width"]
 transform = Transform3D(-0.024093794, 0, 0, 0, 0.01714682, 0, 0, 0, 0.100000575, -0.97590005, 0.057000004, 0.9)
 mesh = SubResource("ArrayMesh_phsgl")
 skeleton = NodePath("")
 
-[node name="Plane" type="MeshInstance3D" parent="MajorRoadStraight2Width/major_road_straight_2_width"]
+[node name="Plane" type="MeshInstance3D" parent="Modules/MajorRoadStraight2Width/major_road_straight_2_width"]
 transform = Transform3D(0.009072001, 0, 0, 0, 1, 0, 0, 0, 1, 0.970928, 0.040015254, 0)
 mesh = SubResource("ArrayMesh_j02nj")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="MajorRoadStraight2Width" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/MajorRoadStraight2Width" groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_2kyd8")
 
-[node name="SidewalkCollision" type="CollisionShape3D" parent="MajorRoadStraight2Width" groups=["road_collision"]]
+[node name="SidewalkCollision" type="CollisionShape3D" parent="Modules/MajorRoadStraight2Width" groups=["road_collision"]]
 transform = Transform3D(-0.24093793, 0, 0, 0, 0.1714682, 0, 0, 0, 1.0000057, -9.759001, 0.57000005, 9)
 shape = SubResource("ConcavePolygonShape3D_nmhkr")
 
-[node name="MajorRoadTShape" type="Node3D" parent="."]
+[node name="MajorRoadTShape" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="major_road_T" type="Node3D" parent="MajorRoadTShape"]
+[node name="major_road_T" type="Node3D" parent="Modules/MajorRoadTShape"]
 transform = Transform3D(-4.371139e-07, 0, 10, 0, 10, 0, -10, 0, -4.371139e-07, 0, 0, 0)
 
-[node name="Cube_016" type="MeshInstance3D" parent="MajorRoadTShape/major_road_T"]
+[node name="Cube_016" type="MeshInstance3D" parent="Modules/MajorRoadTShape/major_road_T"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_v2nm6")
 skeleton = NodePath("")
 
-[node name="Cube_017" type="MeshInstance3D" parent="MajorRoadTShape/major_road_T"]
+[node name="Cube_017" type="MeshInstance3D" parent="Modules/MajorRoadTShape/major_road_T"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0, 0)
 mesh = SubResource("ArrayMesh_yiehc")
 skeleton = NodePath("")
 
-[node name="Cube_018" type="MeshInstance3D" parent="MajorRoadTShape/major_road_T"]
+[node name="Cube_018" type="MeshInstance3D" parent="Modules/MajorRoadTShape/major_road_T"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 1, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_8s1d7")
 skeleton = NodePath("")
 
-[node name="Sidewalk_018" type="MeshInstance3D" parent="MajorRoadTShape/major_road_T"]
+[node name="Sidewalk_018" type="MeshInstance3D" parent="Modules/MajorRoadTShape/major_road_T"]
 transform = Transform3D(-4.3083435e-09, 0, 0.048, 0, 0.01714682, 0, 0.024094, 0, 8.583069e-09, -0.9760001, 0.057000004, -0.9759085)
 mesh = SubResource("ArrayMesh_86n6r")
 skeleton = NodePath("")
 
-[node name="Sidewalk_019" type="MeshInstance3D" parent="MajorRoadTShape/major_road_T"]
+[node name="Sidewalk_019" type="MeshInstance3D" parent="Modules/MajorRoadTShape/major_road_T"]
 transform = Transform3D(0.024094, 0, 0, 0, 0.01714682, 0, 0, 0, -0.048, -0.9759, 0.057000004, 0.9758625)
 mesh = SubResource("ArrayMesh_5h1ng")
 skeleton = NodePath("")
 
-[node name="Cube_019" type="MeshInstance3D" parent="MajorRoadTShape/major_road_T"]
+[node name="Cube_019" type="MeshInstance3D" parent="Modules/MajorRoadTShape/major_road_T"]
 transform = Transform3D(3.244413e-09, 0, -0.08676827, 0, 0.006858711, 0, 0.018144071, 0, 1.5515377e-08, 0, 0, 0)
 mesh = SubResource("ArrayMesh_pcg6p")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="MajorRoadTShape" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/MajorRoadTShape" groups=["road_collision"]]
 transform = Transform3D(-4.371139e-07, 0, 10, 0, 0.20000003, 0, -10, 0, -4.371139e-07, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_rkk5l")
 
-[node name="SidewalkCollision" type="CollisionShape3D" parent="MajorRoadTShape" groups=["road_collision"]]
+[node name="SidewalkCollision" type="CollisionShape3D" parent="Modules/MajorRoadTShape" groups=["road_collision"]]
 transform = Transform3D(0.24094, 0, 6.4849225e-08, 0, 0.1714682, 0, 3.255161e-08, 0, -0.48000002, -9.759085, 0.57000005, 9.76)
 shape = SubResource("ConcavePolygonShape3D_k00hg")
 
-[node name="SidewalkCollision2" type="CollisionShape3D" parent="MajorRoadTShape" groups=["road_collision"]]
+[node name="SidewalkCollision2" type="CollisionShape3D" parent="Modules/MajorRoadTShape" groups=["road_collision"]]
 transform = Transform3D(-1.05318225e-08, 0, -0.48000002, 0, 0.1714682, 0, -0.24094, 0, 2.0981467e-08, 9.758625, 0.57000005, 9.759)
 shape = SubResource("ConcavePolygonShape3D_efvod")
 
-[node name="MajorRoadTShape2Width" type="Node3D" parent="."]
+[node name="MajorRoadTShape2Width" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="major_road_t_shape_2_width" type="Node3D" parent="MajorRoadTShape2Width"]
+[node name="major_road_t_shape_2_width" type="Node3D" parent="Modules/MajorRoadTShape2Width"]
 transform = Transform3D(-4.371139e-07, 0, 10, 0, 10, 0, -10, 0, -4.371139e-07, 0, 0, 0)
 
-[node name="Cube_029" type="MeshInstance3D" parent="MajorRoadTShape2Width/major_road_t_shape_2_width"]
+[node name="Cube_029" type="MeshInstance3D" parent="Modules/MajorRoadTShape2Width/major_road_t_shape_2_width"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_pqwy4")
 skeleton = NodePath("")
 
-[node name="Cube_030" type="MeshInstance3D" parent="MajorRoadTShape2Width/major_road_t_shape_2_width"]
+[node name="Cube_030" type="MeshInstance3D" parent="Modules/MajorRoadTShape2Width/major_road_t_shape_2_width"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0, 0)
 mesh = SubResource("ArrayMesh_bg85o")
 skeleton = NodePath("")
 
-[node name="Sidewalk_024" type="MeshInstance3D" parent="MajorRoadTShape2Width/major_road_t_shape_2_width"]
+[node name="Sidewalk_024" type="MeshInstance3D" parent="Modules/MajorRoadTShape2Width/major_road_t_shape_2_width"]
 transform = Transform3D(-4.3083435e-09, 0, 0.048, 0, 0.01714682, 0, 0.024094, 0, 8.583069e-09, -0.9760001, 0.057000004, -0.9759085)
 mesh = SubResource("ArrayMesh_q0f2h")
 skeleton = NodePath("")
 
-[node name="Sidewalk_025" type="MeshInstance3D" parent="MajorRoadTShape2Width/major_road_t_shape_2_width"]
+[node name="Sidewalk_025" type="MeshInstance3D" parent="Modules/MajorRoadTShape2Width/major_road_t_shape_2_width"]
 transform = Transform3D(0.024094, 0, 0, 0, 0.01714682, 0, 0, 0, -0.048, -0.9759, 0.057000004, 0.9758625)
 mesh = SubResource("ArrayMesh_bq04u")
 skeleton = NodePath("")
 
-[node name="Cube_032" type="MeshInstance3D" parent="MajorRoadTShape2Width/major_road_t_shape_2_width"]
+[node name="Cube_032" type="MeshInstance3D" parent="Modules/MajorRoadTShape2Width/major_road_t_shape_2_width"]
 transform = Transform3D(3.244413e-09, 0, -0.08676827, 0, 0.006858711, 0, 0.018144071, 0, 1.5515377e-08, 0, 0, 0)
 mesh = SubResource("ArrayMesh_olgn8")
 skeleton = NodePath("")
 
-[node name="Plane_001" type="MeshInstance3D" parent="MajorRoadTShape2Width/major_road_t_shape_2_width"]
+[node name="Plane_001" type="MeshInstance3D" parent="Modules/MajorRoadTShape2Width/major_road_t_shape_2_width"]
 transform = Transform3D(0.009072001, 0, 0, 0, 1, 0, 0, 0, 1, 0.970928, 0.040015254, 0)
 mesh = SubResource("ArrayMesh_m2an1")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="MajorRoadTShape2Width" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/MajorRoadTShape2Width" groups=["road_collision"]]
 transform = Transform3D(-4.371139e-07, 0, 10, 0, 0.20000003, 0, -10, 0, -4.371139e-07, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_26kx8")
 
-[node name="SidewalkCollision" type="CollisionShape3D" parent="MajorRoadTShape2Width" groups=["road_collision"]]
+[node name="SidewalkCollision" type="CollisionShape3D" parent="Modules/MajorRoadTShape2Width" groups=["road_collision"]]
 transform = Transform3D(0.24094, 0, 6.4849225e-08, 0, 0.1714682, 0, 3.255161e-08, 0, -0.48000002, -9.759085, 0.57000005, 9.76)
 shape = SubResource("ConcavePolygonShape3D_d6ytr")
 
-[node name="SidewalkCollision2" type="CollisionShape3D" parent="MajorRoadTShape2Width" groups=["road_collision"]]
+[node name="SidewalkCollision2" type="CollisionShape3D" parent="Modules/MajorRoadTShape2Width" groups=["road_collision"]]
 transform = Transform3D(-1.05318225e-08, 0, -0.48000002, 0, 0.1714682, 0, -0.24094, 0, 2.0981467e-08, 9.758625, 0.57000005, 9.759)
 shape = SubResource("ConcavePolygonShape3D_0f8ee")
 
-[node name="RoadCorner" type="Node3D" parent="."]
+[node name="RoadCorner" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="single_road_corner" type="Node3D" parent="RoadCorner"]
+[node name="single_road_corner" type="Node3D" parent="Modules/RoadCorner"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
-[node name="Cube_007" type="MeshInstance3D" parent="RoadCorner/single_road_corner"]
+[node name="Cube_007" type="MeshInstance3D" parent="Modules/RoadCorner/single_road_corner"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_hlpvc")
 skeleton = NodePath("")
 
-[node name="Cube_008" type="MeshInstance3D" parent="RoadCorner/single_road_corner"]
+[node name="Cube_008" type="MeshInstance3D" parent="Modules/RoadCorner/single_road_corner"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_bwtsc")
 skeleton = NodePath("")
 
-[node name="Sidewalk_009" type="MeshInstance3D" parent="RoadCorner/single_road_corner"]
+[node name="Sidewalk_009" type="MeshInstance3D" parent="Modules/RoadCorner/single_road_corner"]
 transform = Transform3D(-0.024093794, 0, 0, 0, 0.01714682, 0, 0, 0, 0.100000575, 0.9761001, 0.057000004, 0.9)
 mesh = SubResource("ArrayMesh_vy0wt")
 skeleton = NodePath("")
 
-[node name="Sidewalk_011" type="MeshInstance3D" parent="RoadCorner/single_road_corner"]
+[node name="Sidewalk_011" type="MeshInstance3D" parent="Modules/RoadCorner/single_road_corner"]
 transform = Transform3D(-4.3083066e-09, 0, -0.100000575, 0, 0.01714682, 0, -0.024093794, 0, 1.7881497e-08, 0.000100013334, 0.056999967, -0.9759)
 mesh = SubResource("ArrayMesh_cso3v")
 skeleton = NodePath("")
 
-[node name="Cube_009" type="MeshInstance3D" parent="RoadCorner/single_road_corner"]
+[node name="Cube_009" type="MeshInstance3D" parent="Modules/RoadCorner/single_road_corner"]
 transform = Transform3D(3.244413e-09, 0, -0.08676827, 0, 0.006858711, 0, 0.018144071, 0, 1.5515377e-08, 0, 0, 0)
 mesh = SubResource("ArrayMesh_xismn")
 skeleton = NodePath("")
 
-[node name="Sidewalk_010" type="MeshInstance3D" parent="RoadCorner/single_road_corner"]
+[node name="Sidewalk_010" type="MeshInstance3D" parent="Modules/RoadCorner/single_road_corner"]
 transform = Transform3D(0.024094, 0, 0, 0, 0.01714682, 0, 0, 0, -0.048, -0.9759, 0.057000004, 0.9758625)
 mesh = SubResource("ArrayMesh_8kwlo")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="RoadCorner" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/RoadCorner" groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_plrse")
 
-[node name="SidewalkCollision" type="CollisionShape3D" parent="RoadCorner" groups=["road_collision"]]
+[node name="SidewalkCollision" type="CollisionShape3D" parent="Modules/RoadCorner" groups=["road_collision"]]
 transform = Transform3D(-0.24093793, 0, 0, 0, 0.1714682, 0, 0, 0, 1.0000057, 9.761001, 0.57000005, 9)
 shape = SubResource("ConcavePolygonShape3D_cgxnx")
 
-[node name="SidewalkCollision2" type="CollisionShape3D" parent="RoadCorner" groups=["road_collision"]]
+[node name="SidewalkCollision2" type="CollisionShape3D" parent="Modules/RoadCorner" groups=["road_collision"]]
 transform = Transform3D(-4.3083066e-08, 0, -1.0000057, 0, 0.1714682, 0, -0.24093793, 0, 1.7881497e-07, 0.0010001333, 0.5699997, -9.759)
 shape = SubResource("ConcavePolygonShape3D_x5qdw")
 
-[node name="SidewalkCollision3" type="CollisionShape3D" parent="RoadCorner" groups=["road_collision"]]
+[node name="SidewalkCollision3" type="CollisionShape3D" parent="Modules/RoadCorner" groups=["road_collision"]]
 transform = Transform3D(0.24094, 0, 0, 0, 0.1714682, 0, 0, 0, -0.48000002, -9.759, 0.57000005, 9.758625)
 shape = SubResource("ConcavePolygonShape3D_201e1")
 
-[node name="RoadEnd" type="Node3D" parent="."]
+[node name="RoadEnd" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="single_road_end" type="Node3D" parent="RoadEnd"]
+[node name="single_road_end" type="Node3D" parent="Modules/RoadEnd"]
 transform = Transform3D(-10, 0, -8.742278e-07, 0, 10, 0, 8.742278e-07, 0, -10, 0, 0, 0)
 
-[node name="Cube_005" type="MeshInstance3D" parent="RoadEnd/single_road_end"]
+[node name="Cube_005" type="MeshInstance3D" parent="Modules/RoadEnd/single_road_end"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_1lc1o")
 skeleton = NodePath("")
 
-[node name="Cube_006" type="MeshInstance3D" parent="RoadEnd/single_road_end"]
+[node name="Cube_006" type="MeshInstance3D" parent="Modules/RoadEnd/single_road_end"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_obsfu")
 skeleton = NodePath("")
 
-[node name="Sidewalk_004" type="MeshInstance3D" parent="RoadEnd/single_road_end"]
+[node name="Sidewalk_004" type="MeshInstance3D" parent="Modules/RoadEnd/single_road_end"]
 transform = Transform3D(-0.024093794, 0, 0, 0, 0.01714682, 0, 0, 0, 0.100000575, 0.9761001, 0.057000004, 0.9)
 mesh = SubResource("ArrayMesh_jvdmw")
 skeleton = NodePath("")
 
-[node name="Sidewalk_005" type="MeshInstance3D" parent="RoadEnd/single_road_end"]
+[node name="Sidewalk_005" type="MeshInstance3D" parent="Modules/RoadEnd/single_road_end"]
 transform = Transform3D(-0.024093794, 0, 0, 0, 0.01714682, 0, 0, 0, 0.100000575, -0.97590005, 0.057000004, 0.9)
 mesh = SubResource("ArrayMesh_kfbv6")
 skeleton = NodePath("")
 
-[node name="Sidewalk_008" type="MeshInstance3D" parent="RoadEnd/single_road_end"]
+[node name="Sidewalk_008" type="MeshInstance3D" parent="Modules/RoadEnd/single_road_end"]
 transform = Transform3D(-4.3083066e-09, 0, -0.100000575, 0, 0.01714682, 0, -0.024093794, 0, 1.7881497e-08, 0.000100013334, 0.056999967, -0.9759)
 mesh = SubResource("ArrayMesh_q036f")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="RoadEnd" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/RoadEnd" groups=["road_collision"]]
 transform = Transform3D(-10, 0, -8.742278e-07, 0, 0.20000003, 0, 8.742278e-07, 0, -10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_s5a7t")
 
-[node name="SidewalkCollision" type="CollisionShape3D" parent="RoadEnd" groups=["road_collision"]]
+[node name="SidewalkCollision" type="CollisionShape3D" parent="Modules/RoadEnd" groups=["road_collision"]]
 transform = Transform3D(0.24093793, 0, -8.742328e-08, 0, 0.1714682, 0, -2.1063464e-08, 0, -1.0000057, -9.761002, 0.57000005, -8.999999)
 shape = SubResource("ConcavePolygonShape3D_60vo5")
 
-[node name="SidewalkCollision2" type="CollisionShape3D" parent="RoadEnd" groups=["road_collision"]]
+[node name="SidewalkCollision2" type="CollisionShape3D" parent="Modules/RoadEnd" groups=["road_collision"]]
 transform = Transform3D(0.24093793, 0, -8.742328e-08, 0, 0.1714682, 0, -2.1063464e-08, 0, -1.0000057, 9.759, 0.57000005, -9.000001)
 shape = SubResource("ConcavePolygonShape3D_8isl5")
 
-[node name="SidewalkCollision3" type="CollisionShape3D" parent="RoadEnd" groups=["road_collision"]]
+[node name="SidewalkCollision3" type="CollisionShape3D" parent="Modules/RoadEnd" groups=["road_collision"]]
 transform = Transform3D(6.414653e-08, 0, 1.0000057, 0, 0.1714682, 0, 0.24093793, 0, -2.6623826e-07, -0.0009992801, 0.5699997, 9.759)
 shape = SubResource("ConcavePolygonShape3D_t2is3")
 
-[node name="RoadIntersection" type="Node3D" parent="."]
+[node name="RoadIntersection" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="single_road_intersection" type="Node3D" parent="RoadIntersection"]
+[node name="single_road_intersection" type="Node3D" parent="Modules/RoadIntersection"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
-[node name="Cube_010" type="MeshInstance3D" parent="RoadIntersection/single_road_intersection"]
+[node name="Cube_010" type="MeshInstance3D" parent="Modules/RoadIntersection/single_road_intersection"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_e8yac")
 skeleton = NodePath("")
 
-[node name="Cube_011" type="MeshInstance3D" parent="RoadIntersection/single_road_intersection"]
+[node name="Cube_011" type="MeshInstance3D" parent="Modules/RoadIntersection/single_road_intersection"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0, 0)
 mesh = SubResource("ArrayMesh_tpp62")
 skeleton = NodePath("")
 
-[node name="Sidewalk_012" type="MeshInstance3D" parent="RoadIntersection/single_road_intersection"]
+[node name="Sidewalk_012" type="MeshInstance3D" parent="Modules/RoadIntersection/single_road_intersection"]
 transform = Transform3D(-0.024094, 0, 0, 0, 0.01714682, 0, 0, 0, 0.048, 0.97609997, 0.057000004, 0.97586244)
 mesh = SubResource("ArrayMesh_1ru4p")
 skeleton = NodePath("")
 
-[node name="Sidewalk_014" type="MeshInstance3D" parent="RoadIntersection/single_road_intersection"]
+[node name="Sidewalk_014" type="MeshInstance3D" parent="Modules/RoadIntersection/single_road_intersection"]
 transform = Transform3D(-0.024094, 0, 0, 0, 0.01714682, 0, 0, 0, 0.048, 0.97609997, 0.057000004, -0.9761375)
 mesh = SubResource("ArrayMesh_4mtx5")
 skeleton = NodePath("")
 
-[node name="Sidewalk_013" type="MeshInstance3D" parent="RoadIntersection/single_road_intersection"]
+[node name="Sidewalk_013" type="MeshInstance3D" parent="Modules/RoadIntersection/single_road_intersection"]
 transform = Transform3D(-4.3083435e-09, 0, -0.048, 0, 0.01714682, 0, -0.024094, 0, 8.583069e-09, -0.976, 0.057000004, 0.9759044)
 mesh = SubResource("ArrayMesh_13xxy")
 skeleton = NodePath("")
 
-[node name="Sidewalk_015" type="MeshInstance3D" parent="RoadIntersection/single_road_intersection"]
+[node name="Sidewalk_015" type="MeshInstance3D" parent="Modules/RoadIntersection/single_road_intersection"]
 transform = Transform3D(-4.3083435e-09, 0, 0.048, 0, 0.01714682, 0, 0.024094, 0, 8.583069e-09, -0.9760001, 0.057000004, -0.9759085)
 mesh = SubResource("ArrayMesh_1n88y")
 skeleton = NodePath("")
 
-[node name="Cube_012" type="MeshInstance3D" parent="RoadIntersection/single_road_intersection"]
+[node name="Cube_012" type="MeshInstance3D" parent="Modules/RoadIntersection/single_road_intersection"]
 transform = Transform3D(3.244413e-09, 0, -0.08676827, 0, 0.006858711, 0, 0.018144071, 0, 1.5515377e-08, 0, 0, 0)
 mesh = SubResource("ArrayMesh_2hwbb")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="RoadIntersection" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/RoadIntersection" groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_jhm5l")
 
-[node name="SidewalkCollision" type="CollisionShape3D" parent="RoadIntersection" groups=["road_collision"]]
+[node name="SidewalkCollision" type="CollisionShape3D" parent="Modules/RoadIntersection" groups=["road_collision"]]
 transform = Transform3D(-0.24094, 0, 0, 0, 0.1714682, 0, 0, 0, 0.48000002, 9.761, 0.57000005, 9.758624)
 shape = SubResource("ConcavePolygonShape3D_5ajck")
 
-[node name="SidewalkCollision2" type="CollisionShape3D" parent="RoadIntersection" groups=["road_collision"]]
+[node name="SidewalkCollision2" type="CollisionShape3D" parent="Modules/RoadIntersection" groups=["road_collision"]]
 transform = Transform3D(-0.24094, 0, 0, 0, 0.1714682, 0, 0, 0, 0.48000002, 9.761, 0.57000005, -9.761375)
 shape = SubResource("ConcavePolygonShape3D_0ffku")
 
-[node name="SidewalkCollision3" type="CollisionShape3D" parent="RoadIntersection" groups=["road_collision"]]
+[node name="SidewalkCollision3" type="CollisionShape3D" parent="Modules/RoadIntersection" groups=["road_collision"]]
 transform = Transform3D(-4.3083435e-08, 0, -0.48000002, 0, 0.1714682, 0, -0.24094, 0, 8.583069e-08, -9.76, 0.57000005, 9.759044)
 shape = SubResource("ConcavePolygonShape3D_fq442")
 
-[node name="SidewalkCollision4" type="CollisionShape3D" parent="RoadIntersection" groups=["road_collision"]]
+[node name="SidewalkCollision4" type="CollisionShape3D" parent="Modules/RoadIntersection" groups=["road_collision"]]
 transform = Transform3D(-4.3083435e-08, 0, 0.48000002, 0, 0.1714682, 0, 0.24094, 0, 8.583069e-08, -9.76, 0.57000005, -9.759085)
 shape = SubResource("ConcavePolygonShape3D_kgcx3")
 
-[node name="RoadStraight" type="Node3D" parent="."]
+[node name="RoadStraight" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="single_road_straight" type="Node3D" parent="RoadStraight"]
+[node name="single_road_straight" type="Node3D" parent="Modules/RoadStraight"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
-[node name="Cube" type="MeshInstance3D" parent="RoadStraight/single_road_straight"]
+[node name="Cube" type="MeshInstance3D" parent="Modules/RoadStraight/single_road_straight"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_3flq2")
 skeleton = NodePath("")
 
-[node name="Cube_003" type="MeshInstance3D" parent="RoadStraight/single_road_straight"]
+[node name="Cube_003" type="MeshInstance3D" parent="Modules/RoadStraight/single_road_straight"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_a8g2j")
 skeleton = NodePath("")
 
-[node name="Sidewalk_006" type="MeshInstance3D" parent="RoadStraight/single_road_straight"]
+[node name="Sidewalk_006" type="MeshInstance3D" parent="Modules/RoadStraight/single_road_straight"]
 transform = Transform3D(-0.024093794, 0, 0, 0, 0.01714682, 0, 0, 0, 0.100000575, -0.97590005, 0.057000004, 0.9)
 mesh = SubResource("ArrayMesh_b21bh")
 skeleton = NodePath("")
 
-[node name="Sidewalk_001" type="MeshInstance3D" parent="RoadStraight/single_road_straight"]
+[node name="Sidewalk_001" type="MeshInstance3D" parent="Modules/RoadStraight/single_road_straight"]
 transform = Transform3D(-0.024093794, 0, 0, 0, 0.01714682, 0, 0, 0, 0.100000575, 0.9761001, 0.057000004, 0.9)
 mesh = SubResource("ArrayMesh_8yp7l")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="RoadStraight" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/RoadStraight" groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_vcr4o")
 
-[node name="SidewalkCollision" type="CollisionShape3D" parent="RoadStraight" groups=["road_collision"]]
+[node name="SidewalkCollision" type="CollisionShape3D" parent="Modules/RoadStraight" groups=["road_collision"]]
 transform = Transform3D(-0.24093793, 0, 0, 0, 0.1714682, 0, 0, 0, 1.0000057, -9.759001, 0.57000005, 9)
 shape = SubResource("ConcavePolygonShape3D_tonhw")
 
-[node name="SidewalkCollision2" type="CollisionShape3D" parent="RoadStraight" groups=["road_collision"]]
+[node name="SidewalkCollision2" type="CollisionShape3D" parent="Modules/RoadStraight" groups=["road_collision"]]
 transform = Transform3D(-0.24093793, 0, 0, 0, 0.1714682, 0, 0, 0, 1.0000057, 9.761001, 0.57000005, 9)
 shape = SubResource("ConcavePolygonShape3D_pw7st")
 
-[node name="RoadTShape" type="Node3D" parent="."]
+[node name="RoadTShape" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
 visible = false
 
-[node name="single_road_T" type="Node3D" parent="RoadTShape"]
+[node name="single_road_T" type="Node3D" parent="Modules/RoadTShape"]
 transform = Transform3D(-4.371139e-07, 0, -10, 0, 10, 0, 10, 0, -4.371139e-07, 0, 0, 0)
 
-[node name="Cube_001" type="MeshInstance3D" parent="RoadTShape/single_road_T"]
+[node name="Cube_001" type="MeshInstance3D" parent="Modules/RoadTShape/single_road_T"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_kb65b")
 skeleton = NodePath("")
 
-[node name="Cube_002" type="MeshInstance3D" parent="RoadTShape/single_road_T"]
+[node name="Cube_002" type="MeshInstance3D" parent="Modules/RoadTShape/single_road_T"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0.033707906, 1)
 mesh = SubResource("ArrayMesh_3i3xg")
 skeleton = NodePath("")
 
-[node name="Sidewalk_002" type="MeshInstance3D" parent="RoadTShape/single_road_T"]
+[node name="Sidewalk_002" type="MeshInstance3D" parent="Modules/RoadTShape/single_road_T"]
 transform = Transform3D(-0.024094, 0, 0, 0, 0.01714682, 0, 0, 0, 0.048, 0.97609997, 0.057000004, 0.97586244)
 mesh = SubResource("ArrayMesh_rdoyb")
 skeleton = NodePath("")
 
-[node name="Sidewalk_003" type="MeshInstance3D" parent="RoadTShape/single_road_T"]
+[node name="Sidewalk_003" type="MeshInstance3D" parent="Modules/RoadTShape/single_road_T"]
 transform = Transform3D(-0.024093794, 0, 0, 0, 0.01714682, 0, 0, 0, 0.100000575, -0.97590005, 0.057000004, 0.9)
 mesh = SubResource("ArrayMesh_kc3dr")
 skeleton = NodePath("")
 
-[node name="Sidewalk_007" type="MeshInstance3D" parent="RoadTShape/single_road_T"]
+[node name="Sidewalk_007" type="MeshInstance3D" parent="Modules/RoadTShape/single_road_T"]
 transform = Transform3D(-0.024094, 0, 0, 0, 0.01714682, 0, 0, 0, 0.048, 0.97609997, 0.057000004, -0.9761375)
 mesh = SubResource("ArrayMesh_rcdu6")
 skeleton = NodePath("")
 
-[node name="Cube_004" type="MeshInstance3D" parent="RoadTShape/single_road_T"]
+[node name="Cube_004" type="MeshInstance3D" parent="Modules/RoadTShape/single_road_T"]
 transform = Transform3D(3.244413e-09, 0, -0.08676827, 0, 0.006858711, 0, 0.018144071, 0, 1.5515377e-08, 0.9591658, 0.03370791, 0)
 mesh = SubResource("ArrayMesh_llyxk")
 skeleton = NodePath("")
 
-[node name="RoadCollision" type="CollisionShape3D" parent="RoadTShape" groups=["road_collision"]]
+[node name="RoadCollision" type="CollisionShape3D" parent="Modules/RoadTShape" groups=["road_collision"]]
 transform = Transform3D(-4.371139e-07, 0, -10, 0, 0.20000003, 0, 10, 0, -4.371139e-07, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_08yp3")
 
-[node name="SidewalkCollision" type="CollisionShape3D" parent="RoadTShape" groups=["road_collision"]]
+[node name="SidewalkCollision" type="CollisionShape3D" parent="Modules/RoadTShape" groups=["road_collision"]]
 transform = Transform3D(1.05318225e-08, 0, -0.48000002, 0, 0.1714682, 0, -0.24094, 0, -2.0981467e-08, -9.758624, 0.57000005, 9.761)
 shape = SubResource("ConcavePolygonShape3D_qpg7m")
 
-[node name="SidewalkCollision2" type="CollisionShape3D" parent="RoadTShape" groups=["road_collision"]]
+[node name="SidewalkCollision2" type="CollisionShape3D" parent="Modules/RoadTShape" groups=["road_collision"]]
 transform = Transform3D(1.0531732e-08, 0, -1.0000057, 0, 0.1714682, 0, -0.24093793, 0, -4.371164e-08, -9, 0.57000005, -9.759001)
 shape = SubResource("ConcavePolygonShape3D_n1v7u")
 
-[node name="SidewalkCollision3" type="CollisionShape3D" parent="RoadTShape" groups=["road_collision"]]
+[node name="SidewalkCollision3" type="CollisionShape3D" parent="Modules/RoadTShape" groups=["road_collision"]]
 transform = Transform3D(1.05318225e-08, 0, -0.48000002, 0, 0.1714682, 0, -0.24094, 0, -2.0981467e-08, 9.761375, 0.57000005, 9.761)
 shape = SubResource("ConcavePolygonShape3D_11n7p")
 
-[node name="RoadFiller" type="Node3D" parent="."]
+[node name="RoadFiller" type="Node3D" parent="Modules"]
+unique_name_in_owner = true
+visible = false
 
-[node name="road_filler" type="Node3D" parent="RoadFiller"]
+[node name="road_filler" type="Node3D" parent="Modules/RoadFiller"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
 
-[node name="Cube_043" type="MeshInstance3D" parent="RoadFiller/road_filler"]
+[node name="Cube_043" type="MeshInstance3D" parent="Modules/RoadFiller/road_filler"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
 mesh = SubResource("ArrayMesh_tpno5")
 skeleton = NodePath("")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="RoadFiller" groups=["road_collision"]]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Modules/RoadFiller" groups=["road_collision"]]
 transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
 shape = SubResource("ConcavePolygonShape3D_seft4")
 
+[node name="LOD1" type="Node3D" parent="."]
+visible = false
+
+[node name="Cube_043" type="MeshInstance3D" parent="LOD1"]
+transform = Transform3D(10, 0, 0, 0, 0.20000003, 0, 0, 0, 10, 0, 0.20000002, 0)
+mesh = SubResource("ArrayMesh_tpno5")
+skeleton = NodePath("")
+
 [node name="LOD2" type="Node3D" parent="."]
+visible = false

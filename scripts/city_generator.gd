@@ -157,6 +157,7 @@ enum Zone {
 enum Direction { NONE, UP, DOWN, LEFT, RIGHT }
 var road_direction_data: Dictionary = {}
 var road_info_data: Dictionary = {}
+var road_lane_index_data: Dictionary = {}
 var grid_data: Dictionary = {}
 var collision_chunks: Dictionary = {}
 var generated_city_node: Node3D
@@ -272,6 +273,8 @@ func _build_horizontal_major_road(y_coord: int, used_y: Array):
 				road_direction_data[pos] = Direction.RIGHT
 			else:
 				road_direction_data[pos] = Direction.LEFT
+			
+			road_lane_index_data[pos] = lane
 
 # ADDED: Helper function to build a vertical major road
 func _build_vertical_major_road(x_coord: int, used_x: Array):
@@ -291,6 +294,8 @@ func _build_vertical_major_road(x_coord: int, used_x: Array):
 				road_direction_data[pos] = Direction.UP
 			else:
 				road_direction_data[pos] = Direction.DOWN
+			
+			road_lane_index_data[pos] = lane
 
 func _generate_minor_roads():
 	for i in range(minor_road_from_edge_count):
@@ -652,7 +657,9 @@ func _place_objects():
 	var occupied_cells: Dictionary = {}
 	var visited_priority_tiles: Dictionary = {}
 
+	print("Placing entire road network...")
 	_place_road_network(occupied_cells)
+	print("...Road network placement complete.")
 
 	var priority_order = [
 		Zone.DOWNTOWN, Zone.BUSINESS, Zone.WEALTHY_RESIDENTIAL,
@@ -1093,6 +1100,7 @@ func _clear_city():
 	if is_instance_valid(road_network_body): road_network_body.free()
 	road_info_data.clear()
 	road_direction_data.clear()
+	road_lane_index_data.clear()
 	grid_data.clear()
 	collision_chunks.clear()
 	LODManager.clear_buildings()
@@ -1182,147 +1190,164 @@ func _place_road_network(occupied_cells: Dictionary):
 	# ===================================================================
 	# PASS 1: ANALYSIS - Build the road_info_data dictionary
 	# ===================================================================
-	for x in range(grid_size.x):
-		for y in range(grid_size.y):
-			var pos = Vector2i(x, y)
-			var zone = grid_data.get(pos)
-
-			if not (zone in [Zone.MAJOR_ROAD, Zone.MINOR_ROAD, Zone.MAJOR_INTERSECTION]):
-				continue
-			
-			var info = {}
-			info["grid_pos"] = pos
-			var connections: Array[Vector2i] = []
-			var is_major = (zone == Zone.MAJOR_ROAD or zone == Zone.MAJOR_INTERSECTION)
-			info["is_major"] = is_major
-
-			# --- Neighbor Analysis ---
-			if _is_road(pos + Vector2i.UP): connections.append(Vector2i.UP)
-			if _is_road(pos + Vector2i.RIGHT): connections.append(Vector2i.RIGHT)
-			if _is_road(pos + Vector2i.DOWN): connections.append(Vector2i.DOWN)
-			if _is_road(pos + Vector2i.LEFT): connections.append(Vector2i.LEFT)
-			info["connections"] = connections
-
-			if is_major:
-				# --- Major Road and Intersection Logic ---
-				var major_road_type = Enums.MajorRoadType.UNKNOWN
-				var scene_rotation = 0
-				var lane_index = 0
-				var flow_dir = road_direction_data.get(pos, Direction.NONE)
-				var traffic_flow_vector = Vector2i.ZERO
-
-				# Check for T-junction with a minor road
-				var is_t_junction = false
-				var is_horizontal = (flow_dir == Direction.LEFT or flow_dir == Direction.RIGHT)
-				if is_horizontal:
-					if grid_data.get(pos + Vector2i.UP) == Zone.MINOR_ROAD or grid_data.get(pos + Vector2i.DOWN) == Zone.MINOR_ROAD:
-						is_t_junction = true
-						scene_rotation = 180 if grid_data.get(pos + Vector2i.UP) == Zone.MINOR_ROAD else 0
-				else: # Vertical
-					if grid_data.get(pos + Vector2i.LEFT) == Zone.MINOR_ROAD or grid_data.get(pos + Vector2i.RIGHT) == Zone.MINOR_ROAD:
-						is_t_junction = true
-						scene_rotation = 90 if grid_data.get(pos + Vector2i.LEFT) == Zone.MINOR_ROAD else 270
-
-				if is_t_junction:
-					major_road_type = Enums.MajorRoadType.T_JUNCTION
-				elif zone == Zone.MAJOR_INTERSECTION:
-					major_road_type = Enums.MajorRoadType.INTERSECTION_PIECE
-				else:
-					major_road_type = Enums.MajorRoadType.STRAIGHT
-
-				# Determine visual rotation and lane index for STRAIGHT pieces
-				if major_road_type == Enums.MajorRoadType.STRAIGHT:
-					if is_horizontal:
-						scene_rotation = 90
-						var check_pos = pos + Vector2i.UP
-						while _is_major_road(check_pos):
-							lane_index += 1
-							check_pos += Vector2i.UP
-					else: # Vertical
-						scene_rotation = 0
-						var check_pos = pos + Vector2i.LEFT
-						while _is_major_road(check_pos):
-							lane_index += 1
-							check_pos += Vector2i.LEFT
-				
-				if major_road_type == Enums.MajorRoadType.STRAIGHT:
-					var lane_type = Enums.MajorRoadLaneType.MIDDLE # Default to middle
-					var total_width = major_road_width
+	var start_time = Time.get_ticks_msec()
+	var end_time
+	var seconds
+	var data_count = 0
+	for pos in grid_data.keys():
+		var zone = int(grid_data.get(pos))
 		
-					# Rule 1: Check if the lane is an outer edge
-					if lane_index == 0 or lane_index == total_width - 1:
-						lane_type = Enums.MajorRoadLaneType.EDGE
-					else:
-						var is_odd_width = total_width % 2 != 0
-						# Rule 2: Handle odd-width roads
-						if is_odd_width:
-							var center_index = int(total_width / 2)
-							if lane_index == center_index:
-								lane_type = Enums.MajorRoadLaneType.ODD_CENTER
-						# Rule 3: Handle even-width roads
-						else: # is_even_width
-							var center_index1 = int(total_width / 2)
-							var center_index2 = center_index1 - 1
-							if lane_index == center_index1 or lane_index == center_index2:
-								lane_type = Enums.MajorRoadLaneType.EVEN_CENTER
-					
-					# Add the new information to the data package
-					info["major_road_lane_type"] = lane_type
-				
-				# Determine traffic flow vector
-				match flow_dir:
-					Direction.UP: traffic_flow_vector = Vector2i.UP
-					Direction.DOWN: traffic_flow_vector = Vector2i.DOWN
-					Direction.LEFT: traffic_flow_vector = Vector2i.LEFT
-					Direction.RIGHT: traffic_flow_vector = Vector2i.RIGHT
+		# Check if the zone is any kind of road.
+		if not (zone in [Zone.MAJOR_ROAD, Zone.MINOR_ROAD, Zone.MAJOR_INTERSECTION]):
+			continue # Skip this cell if it's a building zone, park, etc.
+		
+		var info = {}
+		info["grid_pos"] = pos
+		var connections: Array[Vector2i] = []
+		var is_major = (zone == Zone.MAJOR_ROAD or zone == Zone.MAJOR_INTERSECTION)
+		info["is_major"] = is_major
 
-				info["major_road_type"] = major_road_type
-				info["rotation"] = scene_rotation
-				info["lane_index"] = lane_index
-				info["traffic_flow"] = traffic_flow_vector
-				info["major_road_width"] = major_road_width # Pass the global width for context
-			else:
-				# --- Minor Road Logic (using bitmask) ---
+		# --- Neighbor Analysis ---
+		if _is_road(pos + Vector2i.UP): connections.append(Vector2i.UP)
+		if _is_road(pos + Vector2i.RIGHT): connections.append(Vector2i.RIGHT)
+		if _is_road(pos + Vector2i.DOWN): connections.append(Vector2i.DOWN)
+		if _is_road(pos + Vector2i.LEFT): connections.append(Vector2i.LEFT)
+		info["connections"] = connections
+		
+				# --- NEW LOGIC BLOCK TO INSERT ---
+		# We add the neighbor analysis here. We check _is_road (which uses grid_data)
+		# because road_info_data is not yet complete.
+		var neighbor_positions = {}
+		for dir in [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]:
+			var check_pos = pos + dir
+			if _is_road(check_pos):
+				neighbor_positions[dir] = check_pos
+		info["neighbor_grid_positions"] = neighbor_positions
+		# --- END OF NEW LOGIC BLOCK ---
+		
+		if is_major:
+			# --- Major Road and Intersection Logic ---
+			var major_road_type = Enums.MajorRoadType.UNKNOWN
+			var scene_rotation = 0
+			var lane_index = 0
+			var flow_dir = road_direction_data.get(pos, Direction.NONE)
+			var traffic_flow_vector = Vector2i.ZERO
+
+			# Check for T-junction with a minor road
+			var is_t_junction = false
+			var is_horizontal = (flow_dir == Direction.LEFT or flow_dir == Direction.RIGHT)
+			if is_horizontal:
+				if grid_data.get(pos + Vector2i.UP) == Zone.MINOR_ROAD or grid_data.get(pos + Vector2i.DOWN) == Zone.MINOR_ROAD:
+					is_t_junction = true
+					scene_rotation = 180 if grid_data.get(pos + Vector2i.UP) == Zone.MINOR_ROAD else 0
+			else: # Vertical
+				if grid_data.get(pos + Vector2i.LEFT) == Zone.MINOR_ROAD or grid_data.get(pos + Vector2i.RIGHT) == Zone.MINOR_ROAD:
+					is_t_junction = true
+					scene_rotation = 90 if grid_data.get(pos + Vector2i.LEFT) == Zone.MINOR_ROAD else 270
+			
+			if is_t_junction:
+				major_road_type = Enums.MajorRoadType.T_JUNCTION
+			elif zone == Zone.MAJOR_INTERSECTION:
+				var major_road_neighbor_count = 0
 				var mask = 0
-				if connections.has(Vector2i.UP): mask += 1
-				if connections.has(Vector2i.RIGHT): mask += 2
-				if connections.has(Vector2i.DOWN): mask += 4
-				if connections.has(Vector2i.LEFT): mask += 8
-
-				var road_type = Enums.RoadType.UNKNOWN
-				var scene_rotation = 0
-				match mask:
-					0, 1, 2, 4, 8: road_type = Enums.RoadType.END
-					3, 6, 9, 12: road_type = Enums.RoadType.CORNER
-					5, 10: road_type = Enums.RoadType.STRAIGHT
-					7, 11, 13, 14: road_type = Enums.RoadType.T_JUNCTION
-					15: road_type = Enums.RoadType.CROSSROADS
+				var neighbors = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+				for n_dir in neighbors:
+					if grid_data.get(pos + n_dir) == Zone.MAJOR_ROAD:
+						match n_dir:
+							Vector2i.UP: mask += 1
+							Vector2i.DOWN: mask += 2
+							Vector2i.LEFT: mask += 4
+							Vector2i.RIGHT: mask += 8
+						major_road_neighbor_count += 1
+				if major_road_neighbor_count == 2:
+					major_road_type = Enums.MajorRoadType.INTERSECTION_CORNER
+					match mask:
+						5: scene_rotation = 0
+						6: scene_rotation = 90
+						10: scene_rotation = 180
+						7: scene_rotation = 270
+				else:
+					major_road_type = Enums.MajorRoadType.INTERSECTION_FILLER
+			else:
+				major_road_type = Enums.MajorRoadType.STRAIGHT
+			
+			# Determine visual rotation and lane index for STRAIGHT pieces
+			if major_road_type == Enums.MajorRoadType.STRAIGHT:
+				var lane_type = Enums.MajorRoadLaneType.MIDDLE # Default to middle
+				var total_width = major_road_width
 				
-				match mask:
-					1: scene_rotation = 180
-					2: scene_rotation = 270
-					4: scene_rotation = 0
-					8: scene_rotation = 90;
-					3: scene_rotation = 270
-					6: scene_rotation = 0
-					9: scene_rotation = 180
-					12: scene_rotation = 90;
-					5: scene_rotation = 0
-					10: scene_rotation = 270;
-					7: scene_rotation = 0
-					11: scene_rotation = 270
-					13: scene_rotation = 90
-					14: scene_rotation = 180;
-					15: scene_rotation = 0;
+				lane_index = road_lane_index_data.get(pos, 0)
 				
-				info["type"] = road_type
-				info["rotation"] = scene_rotation
+				if is_horizontal:
+					scene_rotation = 90 if flow_dir == Direction.LEFT else 270
+				else:
+					scene_rotation = 0 if flow_dir == Direction.DOWN else 180
+				
+				# Rule 1: Check if the lane is an outer edge
+				if lane_index == 0 or lane_index == total_width - 1:
+					lane_type = Enums.MajorRoadLaneType.EDGE
+				else:
+					var is_odd_width = total_width % 2 != 0
+					# Rule 2: Handle odd-width roads
+					if is_odd_width:
+						var center_index = int(total_width / 2)
+						if lane_index == center_index:
+							lane_type = Enums.MajorRoadLaneType.ODD_CENTER
+					# Rule 3: Handle even-width roads
+					else: # is_even_width
+						var center_index1 = int(total_width / 2)
+						var center_index2 = center_index1 - 1
+						if lane_index == center_index1 or lane_index == center_index2:
+							lane_type = Enums.MajorRoadLaneType.EVEN_CENTER
+				
+				# Add the new information to the data package
+				info["major_road_lane_type"] = lane_type
+			
+			# Determine traffic flow vector
+			match flow_dir:
+				Direction.UP: traffic_flow_vector = Vector2i.UP
+				Direction.DOWN: traffic_flow_vector = Vector2i.DOWN
+				Direction.LEFT: traffic_flow_vector = Vector2i.LEFT
+				Direction.RIGHT: traffic_flow_vector = Vector2i.RIGHT
 
-			road_info_data[pos] = info
+			info["major_road_type"] = major_road_type
+			info["rotation"] = scene_rotation
+			info["lane_index"] = lane_index
+			info["traffic_flow"] = traffic_flow_vector
+			info["major_road_width"] = major_road_width # Pass the global width for context
+		else:
+			# --- Minor Road Logic (using bitmask) ---
+			var mask = 0
+			if connections.has(Vector2i.UP): mask += 1
+			if connections.has(Vector2i.RIGHT): mask += 2
+			if connections.has(Vector2i.DOWN): mask += 4
+			if connections.has(Vector2i.LEFT): mask += 8
 
+			var road_type = Enums.RoadType.UNKNOWN
+			var scene_rotation = 0
+			match mask:
+				0, 1, 2, 4, 8: road_type = Enums.RoadType.END
+				3, 6, 9, 12: road_type = Enums.RoadType.CORNER
+				5, 10: road_type = Enums.RoadType.STRAIGHT
+				7, 11, 13, 14: road_type = Enums.RoadType.T_JUNCTION
+				15: road_type = Enums.RoadType.INTERSECTION
+			
+			match mask:
+				4, 5, 6, 7, 15: scene_rotation = 0
+				8, 12, 13: scene_rotation = 90
+				1, 9, 14: scene_rotation = 180
+				2, 3, 10, 11: scene_rotation = 270
+				
+			info["type"] = road_type
+			info["rotation"] = scene_rotation
+
+		road_info_data[pos] = info
+		data_count += 1
 	# ===================================================================
 	# PASS 2: INSTANTIATION - Place the dynamic scenes
 	# ===================================================================
+	var all_road_collision_shapes: Array[CollisionShape3D] = []
+	
 	for pos in road_info_data:
 		var data = road_info_data[pos]
 		var instance = road_scene.instantiate()
@@ -1332,10 +1357,77 @@ func _place_road_network(occupied_cells: Dictionary):
 		occupied_cells[pos] = instance
 		
 		if instance.has_method("generate_scene"):
-			instance.generate_scene(data, road_network_body)
+			instance.generate_scene(data)
+			print("Generated scene")
 		else:
 			push_warning("The assigned road_scene does not have a 'generate_scene(data)' function.")
 		
+		if instance.has_method("extract_collision_shapes"):
+			var shapes = instance.extract_collision_shapes(instance.lod0_node)
+			all_road_collision_shapes.append_array(shapes)
+	
+	end_time = Time.get_ticks_msec()
+	seconds = (end_time - start_time) / 1000.0
+	for shape_node in all_road_collision_shapes:
+		if is_instance_valid(shape_node):
+			shape_node.owner = null
+			shape_node.reparent(road_network_body)
+	
+	end_time = Time.get_ticks_msec()
+	seconds = (end_time - start_time) / 1000.0
+	_trigger_road_neighbor_config(occupied_cells)
+
+func _trigger_road_neighbor_config(occupied_road_cells: Dictionary):
+	# This is the final pass that allows "smart" nodes to configure their neighbors.
+	for pos in occupied_road_cells:
+		var road_instance = occupied_road_cells[pos]
+		var road_info = road_info_data.get(pos)
+
+		if not road_info: continue
+
+		# Check if this road piece is a "smart" junction that needs to configure its neighbors.
+		var is_smart_junction = false
+		var junction_type = ""
+		if not road_info.is_major and (road_info.type == Enums.RoadType.T_JUNCTION or road_info.type == Enums.RoadType.INTERSECTION):
+			is_smart_junction = true # Is Minor Junction
+			junction_type = "MJ"
+		elif road_info.is_major and road_info.major_road_type == Enums.MajorRoadType.T_JUNCTION:
+			is_smart_junction = true # Is Major T_Junction
+			junction_type = "MT"
+		elif grid_data.get(pos) == Zone.MAJOR_INTERSECTION:
+			is_smart_junction = true # Is Major Intersection
+			junction_type = "MI"
+		
+		if is_smart_junction:
+			var neighbor_positions = road_info.get("neighbor_grid_positions", {})
+			for direction in neighbor_positions:
+				var neighbor_pos = neighbor_positions[direction]
+				
+				# Get the actual neighbor instance from our dictionary
+				var neighbor_instance = occupied_road_cells.get(neighbor_pos)
+				var neighbor_info = road_info_data.get(neighbor_pos)
+				var has_traffic = false
+			
+				if is_instance_valid(neighbor_instance) and neighbor_info:
+					match junction_type:
+						"MJ":
+							has_traffic = true if randf() > 0.9 else false
+						"MT":
+							has_traffic = true
+						"MI":
+							match road_info.rotation:
+								0, 180:
+									if road_direction_data.get(neighbor_pos) == Direction.LEFT or \
+									road_direction_data.get(neighbor_pos == Direction.RIGHT): has_traffic = true
+								90, 270:
+									if road_direction_data.get(neighbor_pos) == Direction.UP or \
+									road_direction_data.get(neighbor_pos == Direction.DOWN): has_traffic = true
+					
+					if (!neighbor_info.is_major and neighbor_info.type == Enums.RoadType.STRAIGHT) or \
+					(neighbor_info.is_major and neighbor_info.major_road_type == Enums.MajorRoadType.STRAIGHT):
+						if neighbor_instance.has_method("configure_for_junction"):
+							neighbor_instance.configure_for_junction(road_instance, has_traffic)
+
 
 func _apply_world_collision_detection(instance):
 	instance.set_collision_layer_value(1, true)
