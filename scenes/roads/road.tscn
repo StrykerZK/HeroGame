@@ -1,6 +1,7 @@
-[gd_scene load_steps=176 format=4 uid="uid://c2avxn6o4fwn8"]
+[gd_scene load_steps=177 format=4 uid="uid://c2avxn6o4fwn8"]
 
 [ext_resource type="Script" uid="uid://kiukoxctnqt5" path="res://scripts/road_data.gd" id="1_sl034"]
+[ext_resource type="ArrayOccluder3D" uid="uid://bxp8ucuvic0k" path="res://occluders/road.occ" id="2_d5wuq"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_beygk"]
 resource_name = "Road Gray"
@@ -3271,7 +3272,6 @@ unique_name_in_owner = true
 
 [node name="RoadFiller" type="Node3D" parent="Modules"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
-visible = false
 
 [node name="MainModel" type="MeshInstance3D" parent="Modules/RoadFiller"]
 transform = Transform3D(1, 0, 0, 0, 0.020000003, 0, 0, 0, 1, 0, 0.020000001, 0)
@@ -3361,6 +3361,7 @@ skeleton = NodePath("")
 
 [node name="MajorRoadEdge" type="Node3D" parent="Modules"]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
+visible = false
 
 [node name="MainModel" type="MeshInstance3D" parent="Modules/MajorRoadEdge"]
 transform = Transform3D(0.018144071, 0, 0, 0, 0.006858711, 0, 0, 0, 0.08676827, 0, 0.04005709, 0)
@@ -3544,3 +3545,6 @@ visible = false
 transform = Transform3D(0.08666688, 0, -0.024266323, 0, 0.2, 0, 0.024266323, 0, 0.08666688, 2.2, 0.6044237, 0)
 mesh = SubResource("ArrayMesh_dajdh")
 skeleton = NodePath("")
+
+[node name="OccluderInstance3D" type="OccluderInstance3D" parent="."]
+occluder = ExtResource("2_d5wuq")

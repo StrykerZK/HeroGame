@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://bwuyb26fcd3r5"]
+[gd_scene load_steps=6 format=3 uid="uid://bwuyb26fcd3r5"]
 
 [ext_resource type="Script" uid="uid://bftln882qe6pw" path="res://scripts/building_data.gd" id="1_up5au"]
 [ext_resource type="Material" uid="uid://jhqx62uer4m8" path="res://assets/materials/walkway.tres" id="2_mmga2"]
@@ -8,6 +8,9 @@ size = Vector3(20, 0.74, 20)
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_xksak"]
 data = PackedVector3Array(-10, 0.37, 10, 10, 0.37, 10, -10, -0.37, 10, 10, 0.37, 10, 10, -0.37, 10, -10, -0.37, 10, 10, 0.37, -10, -10, 0.37, -10, 10, -0.37, -10, -10, 0.37, -10, -10, -0.37, -10, 10, -0.37, -10, 10, 0.37, 10, 10, 0.37, -10, 10, -0.37, 10, 10, 0.37, -10, 10, -0.37, -10, 10, -0.37, 10, -10, 0.37, -10, -10, 0.37, 10, -10, -0.37, -10, -10, 0.37, 10, -10, -0.37, 10, -10, -0.37, -10, 10, 0.37, 10, -10, 0.37, 10, 10, 0.37, -10, -10, 0.37, 10, -10, 0.37, -10, 10, 0.37, -10, -10, -0.37, 10, 10, -0.37, 10, -10, -0.37, -10, 10, -0.37, 10, 10, -0.37, -10, -10, -0.37, -10)
+
+[sub_resource type="BoxOccluder3D" id="BoxOccluder3D_up5au"]
+size = Vector3(1.1, 1.6, 1.1)
 
 [node name="OfficeSmall" type="Node3D" node_paths=PackedStringArray("lod1_node", "lod2_node")]
 script = ExtResource("1_up5au")
@@ -33,5 +36,6 @@ visible = false
 transform = Transform3D(-1.5298986e-07, 0, 3.5, 0, 3.5, 0, -3.5, 0, -1.5298986e-07, 0, 0.509, 5)
 visible = false
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-1, 0, -8.742277e-08, -3.6410462e-08, 0.9091416, 0.4164871, 7.947969e-08, 0.4164871, -0.9091416, 0, 13.982799, -18.52966)
+[node name="OccluderInstance3D" type="OccluderInstance3D" parent="."]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 8, 0)
+occluder = SubResource("BoxOccluder3D_up5au")
