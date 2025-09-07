@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://00r46fvffx1y"]
+[gd_scene load_steps=9 format=3 uid="uid://00r46fvffx1y"]
 
 [ext_resource type="Texture2D" uid="uid://cg1ysfawy4uu8" path="res://assets/textures/everytexture.com-stock-nature-dirt-texture-00048.jpg" id="1_8uh7m"]
 [ext_resource type="PackedScene" uid="uid://c4p7sai8cuiko" path="res://player/player.tscn" id="2_8uh7m"]
+[ext_resource type="PackedScene" uid="uid://cxarhgmnkha8c" path="res://scenes/ui/game_hud.tscn" id="3_6uqi0"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_37kl0"]
 sky_top_color = Color(0.30904776, 0.65425, 0.87526435, 1)
@@ -51,3 +52,5 @@ radius = 1.133
 radial_segments = 24
 rings = 10
 material = SubResource("StandardMaterial3D_8uh7m")
+
+[node name="GameHUD" parent="." instance=ExtResource("3_6uqi0")]

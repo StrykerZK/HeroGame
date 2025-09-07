@@ -4,6 +4,7 @@
 albedo_color = Color(0.029794872, 0.51663405, 2.8878452e-07, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_64vni"]
+size = Vector2(20, 20)
 
 [node name="Park" type="Node3D"]
 

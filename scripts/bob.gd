@@ -3,11 +3,15 @@ extends Node3D
 
 @onready var anim_player: AnimationPlayer = %AnimationPlayer
 @onready var anim_tree: AnimationTree = %AnimationTree
+@onready var head_mesh:= %head
 
 var anim_state_machine
 
 func _ready():
 	anim_state_machine = anim_tree.get("parameters/playback")
+
+func get_head_mesh() -> MeshInstance3D:
+	return head_mesh
 
 func update_animation(state: String):
 	anim_state_machine.travel(state)

@@ -1,0 +1,34 @@
+[gd_scene load_steps=5 format=3 uid="uid://dy288w87mtwwv"]
+
+[ext_resource type="PackedScene" uid="uid://bv6yk7ataw5la" path="res://scenes/city_generator.tscn" id="1_3exgd"]
+[ext_resource type="PackedScene" uid="uid://c4p7sai8cuiko" path="res://player/player.tscn" id="2_k1pkk"]
+[ext_resource type="PackedScene" uid="uid://cxarhgmnkha8c" path="res://scenes/ui/game_hud.tscn" id="3_nwogb"]
+
+[sub_resource type="GDScript" id="GDScript_k1pkk"]
+resource_name = "corelooptest"
+script/source = "extends Node3D
+
+func _ready() -> void:
+	GameManager.start_villain_quest()
+"
+
+[node name="CoreLoopTest" type="Node3D"]
+script = SubResource("GDScript_k1pkk")
+
+[node name="CityGenerator" parent="." instance=ExtResource("1_3exgd")]
+grid_size = Vector2i(100, 100)
+business_cluster_count = 2
+sports_cluster_count = 1
+major_road_count_horizontal = Vector2i(2, 3)
+major_road_count_vertical = Vector2i(2, 3)
+major_road_width = 2
+minor_road_from_major_chance = 0.25
+minor_road_from_edge_count = 20
+dead_zone_objects = Array[PackedScene]([])
+
+[node name="Player" parent="." instance=ExtResource("2_k1pkk")]
+transform = Transform3D(-0.76874137, 0, -0.63955975, 0, 1, 0, 0.63955975, 0, -0.76874137, 2.0994086, 9.796949, 2.7650032)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="GameHUD" parent="CanvasLayer" instance=ExtResource("3_nwogb")]

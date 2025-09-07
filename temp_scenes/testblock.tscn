@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3 uid="uid://dcbxddsgp3sb8"]
+
+[sub_resource type="GDScript" id="GDScript_4u0e3"]
+resource_name = "TestBlock"
+script/source = "extends Area3D
+
+signal smashed
+
+func take_damage():
+	print(\"Test Block Hit!\")
+	smashed.emit()
+	queue_free()
+"
+
+[sub_resource type="BoxMesh" id="BoxMesh_60dut"]
+size = Vector3(0.9, 0.9, 0.9)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4u0e3"]
+
+[node name="Testblock" type="Area3D" groups=["destructible"]]
+collision_layer = 32
+collision_mask = 10
+script = SubResource("GDScript_4u0e3")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_60dut")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_4u0e3")

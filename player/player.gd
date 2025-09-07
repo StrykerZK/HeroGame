@@ -74,23 +74,33 @@ var _gravity := -70.0
 var click_count := 0
 
 # -- Node assignment --
+# == CAMERA ==
 @onready var _camera_pivot: Node3D = %CameraPivot
 @onready var _camera: Camera3D = %Camera
 @onready var _camera_spring: SpringArm3D = %CameraSpring
 @onready var _shoulder_pivot: Node3D = %ShoulderPivot
+@onready var _camera_animation: AnimationPlayer = %CameraPivotAnimation
+# == LASERS ==
 @onready var _eye_l: Node3D = %EyeL
 @onready var _eye_r: Node3D = %EyeR
 @onready var _laser_l: Node3D = %LaserBeamL
 @onready var _laser_r: Node3D = %LaserBeamR
 @onready var _aim_raycast: RayCast3D = %AimRayCast
 @onready var _laser_hit_raycast: RayCast3D = %LaserHitRaycast
-@onready var _camera_animation: AnimationPlayer = %CameraPivotAnimation
+# == MODEL ==
 @onready var _stickman := %Bob
+@onready var _head: MeshInstance3D
+# == TIMERS ==
 @onready var double_click_timer := %DoubleClickTimer
-@onready var step_up_cast := %StepUpCast
+# == VFX ==
 @onready var sonic_boom_vfx := %SonicBoomFX
+# == SFX ==
 @onready var boom_sfx := %BoomSFX
 @onready var laser_sfx := %LaserSFX
+# == MISC ==
+@onready var step_up_cast := %StepUpCast
+@onready var interact_raycast := %InteractRayCast
+@onready var marker_3d := %Marker3D
 
 # -- Scene assignment --  
 @export_group("Scenes")
@@ -99,6 +109,10 @@ var click_count := 0
 func _ready():
 	if is_instance_valid(LODManager):
 		LODManager.register_player(self)
+	
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	
+	_head = _stickman.get_head_mesh()
 	
 	#if is_multiplayer_authority():
 	#	_setup_local_player_fog()
@@ -117,6 +131,14 @@ func _input(event):
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	
+	# Camera Tracking
+	var is_camera_motion := (
+		event is InputEventMouseMotion and
+		Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
+	)
+	if is_camera_motion:
+		_camera_input_direction = event.screen_relative * mouse_sensitivity
 	
 	# Aiming Logic (Right Click)
 	if event.is_action_pressed("aim"):
@@ -212,12 +234,13 @@ func _input(event):
 		switch_shoulders()
 
 func _unhandled_input(event):
-	var is_camera_motion := (
-		event is InputEventMouseMotion and
-		Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
-	)
-	if is_camera_motion:
-		_camera_input_direction = event.screen_relative * mouse_sensitivity
+	#var is_camera_motion := (
+		#event is InputEventMouseMotion and
+		#Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
+	#)
+	#if is_camera_motion:
+		#_camera_input_direction = event.screen_relative * mouse_sensitivity
+	pass
 
 func _physics_process(delta):
 	# Check state
@@ -244,13 +267,6 @@ func _physics_process(delta):
 		if current_state != State.FLIGHT and current_state != State.SUPER_FLIGHT and current_state != State.IN_AIR:
 			current_state =  State.IN_AIR
 	
-	# Camera control
-	_camera_pivot.rotation.x -= _camera_input_direction.y * delta
-	_camera_pivot.rotation.x = clamp(_camera_pivot.rotation.x, -PI / 2.001, PI / 3.0)
-	_shoulder_pivot.rotation.y -= _camera_input_direction.x * delta
-	
-	_camera_input_direction = Vector2.ZERO
-	
 	# Ground or Flight state movement
 	match current_state:
 		State.FLIGHT, State.SUPER_FLIGHT:
@@ -262,6 +278,26 @@ func _physics_process(delta):
 	
 	if can_move:
 		move_and_slide()
+	
+	# Interact Checking
+	if Input.is_action_just_pressed("interact"):
+		if interact_raycast.is_colliding():
+			print("COLLIDE")
+			var collider = interact_raycast.get_collider()
+			
+			if collider.is_in_group("destructible"):
+				collider.take_damage()
+				print("DMG TAKE CALLED")
+			
+			if collider.is_in_group("collectible"):
+				collider.collect()
+	
+	# Camera control
+	_camera_pivot.rotation.x -= _camera_input_direction.y * delta
+	_camera_pivot.rotation.x = clamp(_camera_pivot.rotation.x, -PI / 2.001, PI / 3.0)
+	_shoulder_pivot.rotation.y -= _camera_input_direction.x * delta
+	
+	_camera_input_direction = Vector2.ZERO
 	
 	# Dynamic Camera
 	handle_rotation(delta)
@@ -278,7 +314,6 @@ func _physics_process(delta):
 		laser_eyes(delta)
 	if _laser_l.visible != firing_laser: _laser_l.visible = firing_laser
 	if _laser_r.visible != firing_laser: _laser_r.visible = firing_laser
-	if _aim_raycast.enabled != firing_laser: _aim_raycast.enabled = firing_laser
 	if _laser_hit_raycast.enabled != firing_laser: _laser_hit_raycast.enabled = firing_laser
 	if laser_sfx.playing != firing_laser: laser_sfx.playing = firing_laser
 
@@ -467,7 +502,12 @@ func landing_movement(delta):
 
 func handle_rotation(delta):
 	var target_basis: Basis
-
+	
+	# Rotate InteractRayCast to match camera
+	_camera_pivot.rotation.x -= _camera_input_direction.y * delta
+	_camera_pivot.rotation.x = clamp(_camera_pivot.rotation.x, -PI / 2.001, PI / 3.0)
+	_shoulder_pivot.rotation.y -= _camera_input_direction.x * delta
+	
 	if is_aiming or firing_laser:
 		# If aiming, align the character with the camera's horizontal rotation
 		var cam_y_rotation = _shoulder_pivot.global_rotation.y

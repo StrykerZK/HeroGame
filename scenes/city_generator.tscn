@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://bv6yk7ataw5la"]
+[gd_scene load_steps=23 format=3 uid="uid://bv6yk7ataw5la"]
 
 [ext_resource type="Script" uid="uid://bc8dmb62cwuyw" path="res://scripts/city_generator.gd" id="1_s04yr"]
 [ext_resource type="PackedScene" uid="uid://cx758x4jd7rax" path="res://scenes/buildings/downtown_small.tscn" id="2_opje5"]
@@ -12,10 +12,9 @@
 [ext_resource type="PackedScene" uid="uid://dvbj4sb6pnlgs" path="res://temp_scenes/entertainment_large_1.tscn" id="6_584jt"]
 [ext_resource type="PackedScene" uid="uid://doy0j5edqikx3" path="res://temp_scenes/government_large_1.tscn" id="7_twqjo"]
 [ext_resource type="PackedScene" uid="uid://dkmtyp11ifovy" path="res://temp_scenes/walkway.tscn" id="10_mpuha"]
-[ext_resource type="PackedScene" uid="uid://c4p7sai8cuiko" path="res://player/player.tscn" id="11_mpuha"]
 [ext_resource type="PackedScene" uid="uid://c562fl4lsf25k" path="res://temp_scenes/trashcan.tscn" id="11_ocjyt"]
 [ext_resource type="PackedScene" uid="uid://rhrytv8m5wam" path="res://temp_scenes/gate.tscn" id="12_ehvgl"]
-[ext_resource type="PackedScene" path="res://scenes/buildings/apartment.tscn" id="12_opje5"]
+[ext_resource type="PackedScene" uid="uid://bibor25njjlg2" path="res://scenes/buildings/apartment.tscn" id="12_opje5"]
 [ext_resource type="PackedScene" uid="uid://d2x2gl03flxq1" path="res://scenes/buildings/hospital_1.tscn" id="13_gt42s"]
 [ext_resource type="PackedScene" uid="uid://d1rp721mf7mj7" path="res://scenes/buildings/police_1.tscn" id="14_h53l6"]
 [ext_resource type="PackedScene" uid="uid://xaxqlrw34dai" path="res://temp_scenes/outofbounds_road.tscn" id="26_w3khq"]
@@ -108,7 +107,3 @@ shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_ystin")
-
-[node name="Player" parent="." node_paths=PackedStringArray("world_environment_node") instance=ExtResource("11_mpuha")]
-transform = Transform3D(-0.7568468, 0, -0.6535924, 0, 1, 0, 0.6535924, 0, -0.7568468, 278.84253, 357.46768, 196.02185)
-world_environment_node = NodePath("../WorldEnvironment")
