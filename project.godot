@@ -17,10 +17,12 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-LODManager="*res://scripts/lod_manager.gd"
-BuildingManager="*res://scripts/building_manager.gd"
-Enums="*res://scripts/enums.gd"
-GameManager="*res://scripts/game_manager.gd"
+LODManager="*res://scripts/globals/lod_manager.gd"
+BuildingManager="*res://scripts/globals/building_manager.gd"
+Enums="*res://scripts/globals/enums.gd"
+GameManager="*res://scripts/globals/game_manager.gd"
+PlayerManager="*res://scripts/globals/player_manager.gd"
+ScoreManager="*res://scripts/globals/score_manager.gd"
 
 [display]
 

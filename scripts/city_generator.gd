@@ -71,7 +71,6 @@ signal progress_updated(percentage, message)
 @export_range(5, 50, 1) var apartment_max_distance_from_core := 15 # NEW
 
 @export_group("Priority Zone Fill Settings")
-# These are now only used as fallbacks if a local_limit is not set to a positive number.
 @export var max_large_buildings_per_zone := 3
 @export var single_buildings_per_zone := 1
 @export var plaza_size := Vector2i(3, 2)
@@ -106,9 +105,10 @@ signal progress_updated(percentage, message)
 @export var university_buildings: Array[PackedScene]
 @export var industrial_buildings: Array[PackedScene]
 @export_subgroup("Standard Buildings & Objects")
-@export var apartment_buildings: Array[PackedScene] # REPLACED
-@export var housing_buildings: Array[PackedScene]   # REPLACED
+@export var apartment_buildings: Array[PackedScene]
+@export var housing_buildings: Array[PackedScene]
 @export var outskirt_objects: Array[PackedScene]
+@export var water_objects: Array[PackedScene]
 @export var dead_zone_objects: Array[PackedScene]
 @export var walkway_objects: Array[PackedScene]
 @export_subgroup("Infrastructure")
@@ -134,13 +134,14 @@ signal progress_updated(percentage, message)
 @export var commercial_color := Color.YELLOW_GREEN
 @export var food_color := Color.ORANGE
 @export var industrial_color := Color.DARK_SLATE_GRAY
-@export var apartment_color := Color.GOLDENROD # REPLACED
-@export var housing_color := Color.DARK_GOLDENROD # REPLACED
+@export var apartment_color := Color.GOLDENROD
+@export var housing_color := Color.DARK_GOLDENROD
 @export var outskirt_color := Color.SANDY_BROWN
+@export var water_color := Color.DEEP_SKY_BLUE
 @export var road_color := Color.DIM_GRAY
 @export var park_color := Color.FOREST_GREEN
 @export var walkway_color := Color.LIGHT_GRAY
-@export var intersection_color := Color.PURPLE # For debugging
+@export var intersection_color := Color.PURPLE
 
 @export_group("Generation")
 @export var generate_in_editor := false:
@@ -155,7 +156,7 @@ enum Zone {
 	DOWNTOWN, BUSINESS, WEALTHY_RESIDENTIAL,
 	HOSPITAL, POLICE, FIRE, GOVERNMENT, UNIVERSITY,
 	SPORTS, ENTERTAINMENT, TECHNOLOGY, COMMERCIAL, FOOD, INDUSTRIAL,
-	APARTMENTS, HOUSING, OUTSKIRT, WALKWAY
+	APARTMENTS, HOUSING, OUTSKIRT, WATER, WALKWAY
 }
 enum Direction { NONE, UP, DOWN, LEFT, RIGHT }
 var road_direction_data: Dictionary = {}
@@ -175,7 +176,7 @@ func _ready():
 		# We now call it like this so it doesn't block the _ready function.
 		generate_city.call_deferred()
 
-func generate_city(): # <-- 'async' keyword removed
+func generate_city():
 	emit_signal("progress_updated", 0.0, "Starting Generation...")
 	await get_tree().process_frame # Allow UI to show up
 
@@ -493,7 +494,7 @@ func _place_area_clusters(zone_type: Zone, count: int, min_size: int, max_size: 
 					if can_place:
 						for t in cluster_tiles: grid_data[t] = zone_type
 						clusters_placed += 1
-						#print("Successfully placed an organic ", Zone.keys()[zone_type], " district. (", clusters_placed, "/", count, ")")
+						print("Successfully placed an organic ", Zone.keys()[zone_type], " district. (", clusters_placed, "/", count, ")")
 
 
 	# --- PASS 2: Forced Placement (Now uses the pre-compiled list) ---

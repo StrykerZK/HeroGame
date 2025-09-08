@@ -88,6 +88,7 @@ hospital_buildings = Array[PackedScene]([ExtResource("13_gt42s")])
 police_buildings = Array[PackedScene]([ExtResource("14_h53l6")])
 apartment_buildings = Array[PackedScene]([ExtResource("12_opje5")])
 housing_buildings = Array[PackedScene]([ExtResource("3_oliwm")])
+water_objects = null
 dead_zone_objects = Array[PackedScene]([ExtResource("11_ocjyt")])
 walkway_objects = Array[PackedScene]([ExtResource("10_mpuha")])
 road_scene = ExtResource("28_ncvi0")
@@ -99,6 +100,7 @@ wealthy_residential_color = Color(0.79620886, 0.7286621, 3.85046e-07, 1)
 technology_color = Color(4.6205523e-06, 0.8339306, 0.9303323, 1)
 commercial_color = Color(1.0107458e-06, 0.7003128, 0.26463595, 1)
 food_color = Color(0.9023514, 0.21924311, 0, 1)
+water_color = null
 walkway_color = Color(0.80694324, 0, 0.20859775, 1)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
